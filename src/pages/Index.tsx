@@ -57,68 +57,53 @@ const Index = () => {
 
         <div className="relative z-10 text-center space-y-8 px-4 max-w-5xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{opacity: 1,y: [0, -1, 0],}}
-            transition={{duration: 3,ease: "easeInOut",repeat: Infinity,repeatType: "mirror"}}
-            className="text-center mt-20 animate-bounce"
+            animate={{
+              scale: [1, 1.05, 1],
+              rotate: [0, 1, -1, 0],
+            }}
+            transition={{
+              duration: 3,
+              ease: "easeInOut",
+              repeat: Infinity,
+            }}
+            className="text-center mt-20"
           >
-            <h1 className="text-7xl md:text-9xl font-bold mb-6 hero_bold">
-              <span className="text-gradient">GameFi Arena</span>
+            <h1 className="text-6xl md:text-8xl font-[700] mb-6 ribeye">
+              <span className="text-gradient">Chainskills Arena</span>
             </h1>
-            <p className="text-sm md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto ribeye">
-              Play competitive games. Win crypto. Join the on-chain gaming revolution.
+            <p className="text-sm md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto hero_bold">
+              <span className="text-gradient">
+                Connect, Play competitive games. Win crypto.
+              </span><br /> Join the on-chain gaming revolution.
             </p>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.3 }}>
             <WalletConnect />
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="flex flex-wrap justify-center gap-8 pt-12"
-          >
-            <div className="glass p-6 rounded-2xl flex items-center gap-4 min-w-[200px]">
-              <Users className="h-8 w-8 text-primary" />
-              <div>
-                <div className="text-3xl font-bold text-gradient">1,234</div>
-                <div className="text-sm text-muted-foreground">Active Players</div>
-              </div>
-            </div>
-            <div className="glass p-6 rounded-2xl flex items-center gap-4 min-w-[200px]">
-              <Trophy className="h-8 w-8 text-secondary" />
-              <div>
-                <div className="text-3xl font-bold text-gradient">$50K</div>
-                <div className="text-sm text-muted-foreground">Total Prizes</div>
-              </div>
-            </div>
-            <div className="glass p-6 rounded-2xl flex items-center gap-4 min-w-[200px]">
-              <Gamepad2 className="h-8 w-8 text-accent" />
-              <div>
-                <div className="text-3xl font-bold text-gradient">6</div>
-                <div className="text-sm text-muted-foreground">Games Live</div>
-              </div>
-            </div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.6 }}
+            className={"flex flex-wrap justify-center gap-8 pt-8"}>
+            {
+              [
+                { icon: Users, metrics: 1234, text: "Active players" },
+                { icon: Trophy, metrics: 1234, text: "Active players" },
+                { icon: Gamepad2, metrics: 6, text: "Live Games" },
+              ].map((data, index) => (
+                <div key={index} className="glass p-4 md:p-6 rounded-2xl flex items-center gap-4 min-w-[200px]">
+                  <data.icon className="h-8 w-8 text-primary text-gradient" />
+                  <div>
+                    <div className="text-sm md:text-3xl font-bold ">{data.metrics}</div>
+                    <div className="text-sm text-muted-foreground text-gradient">{data.text}</div>
+                  </div>
+                </div>
+              ))
+            }
           </motion.div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2"
-        >
-          <Zap className="h-8 w-8 text-primary animate-bounce" />
-        </motion.div>
       </section>
 
-      {/* Games Section */}
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
           <motion.div
