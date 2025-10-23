@@ -16,9 +16,9 @@ export default function Features() {
             <div className="max-w-7xl mx-auto">
                 <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
                     <h2 className="text-5xl md:text-6xl font-bold mb-6">
-                        <span className="text-gradient">Featured Games</span>
+                        <span className="text-gradient ribeye">Featured Games</span>
                     </h2>
-                    <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                    <p className="text-muted-foreground max-w-3xl mx-auto text-md">
                         Choose your game, connect your wallet, and start earning. All games are skill-based and provably fair.
                     </p>
                 </motion.div>
@@ -48,7 +48,6 @@ export default function Features() {
                     </motion.div>
                 </div>
             </div>
-
-        </section>
+          </section>
     )
 }

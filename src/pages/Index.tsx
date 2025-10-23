@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Zap, Trophy, Users, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import Footer from "@/components/footer";
 
 const Index = () => {
   const navigate = useNavigate()
@@ -77,15 +78,7 @@ const Index = () => {
       </div>
     </section>
   )
-  const Footer = () => (
-    <footer className="py-4 px-4 border-t border-border">
-      <div className="max-w-7xl mx-auto text-center">
-        <p className="text-muted-foreground text-sm text-gradient">
-          &copy; {new Date().getFullYear()} Chainskills Arena. Play responsibly. All games are skill-based and on-chain.
-        </p>
-      </div>
-    </footer>
-  )
+
   return (
     <div className="min-h-screen bg-background">
       <Hero />
