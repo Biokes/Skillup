@@ -54,7 +54,7 @@ const Index = () => {
         <motion.div animate={{ scale: [1, 1.05, 1], rotate: [0, 1, -1, 0], }}
           transition={{ duration: 3, ease: "easeInOut", repeat: Infinity, }} className="text-center mt-20"
         >
-          <h1 className="text-6xl md:text-8xl font-[700] mb-6 ribeye">
+          <h1 className="text-6xl md:text-8xl font-[700] ribeye">
             <span className="text-gradient">Chainskills Arena</span>
           </h1>
           <p className="text-sm md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto hero_bold">
@@ -71,7 +71,7 @@ const Index = () => {
           </Button>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.6 }}
+        {/* <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.6 }}
           className={"flex flex-wrap justify-center gap-8 pt-8"}>
           {
             [
@@ -88,7 +88,7 @@ const Index = () => {
               </div>
             ))
           }
-        </motion.div>
+        </motion.div> */}
       </div>
 
     </section>
@@ -156,10 +156,9 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-4 border-t border-border">
+      <footer className="py-4 px-4 border-t border-border">
         <div className="max-w-7xl mx-auto text-center">
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm text-gradient">
             &copy; {new Date().getFullYear()} Chainskills Arena. Play responsibly. All games are skill-based and on-chain.
           </p>
         </div>
