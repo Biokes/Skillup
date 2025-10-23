@@ -19,11 +19,7 @@ export const GameCard = ({ title, description, image, players, status, onPlay }:
       className="glass rounded-2xl overflow-hidden border-2 border-primary/20 hover:border-primary/60 group"
     >
       <div className="relative h-48 overflow-hidden">
-        <img 
-          src={image} 
-          alt={title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        />
+        <img src={image} alt={title}  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"/>
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
         
         {status === "coming-soon" && (
@@ -35,7 +31,7 @@ export const GameCard = ({ title, description, image, players, status, onPlay }:
 
       <div className="p-6 space-y-4">
         <div>
-          <h3 className="text-2xl font-bold mb-2 text-gradient">{title}</h3>
+          <h3 className="text-2xl font-bold mb-2 text-gradient ribeye">{title}</h3>
           <p className="text-muted-foreground text-sm">{description}</p>
         </div>
 
