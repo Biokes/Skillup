@@ -73,13 +73,7 @@ export const WalletConnect = () => {
   }
 
   return (
-    <Button 
-      variant="wallet" 
-      size="lg" 
-      onClick={connectWallet}
-      disabled={loading}
-      className="animate-pulse"
-    >
+    <Button variant="wallet" size="lg" onClick={connectWallet}disabled={loading}className="animate-pulse">
       <Wallet className="mr-2 h-5 w-5" />
       {loading ? "Connecting..." : "Connect Wallet"}
     </Button>
