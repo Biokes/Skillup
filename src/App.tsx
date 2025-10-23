@@ -18,7 +18,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="*" element={<NotFound />} />
-          <Route path="/hub" elemet={<GameHub/>} />
+          <Route path="/hub" element={<GameHub/>} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

@@ -12,7 +12,7 @@ const Index = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/20 to-background" />
       </div>
 
-      <div className="relative z-10 text-center space-y-8 px-4 max-w-5xl mx-auto">
+      <div className="relative z-10 text-center space-y-8 px-4 max-w-5xl mx-auto -my-4">
         <motion.div animate={{ scale: [1, 1.05, 1], rotate: [0, 1, -1, 0], }}
           transition={{ duration: 3, ease: "easeInOut", repeat: Infinity, }} className="text-center mt-20"
         >
