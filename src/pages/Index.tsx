@@ -9,7 +9,6 @@ import { PoolGame } from "@/components/pool/PoolGame";
 import { AirHockeyGame } from "@/components/airhockey/AirHockeyGame";
 import { ChessGame } from "@/components/chess/ChessGame";
 import { Gamepad2, Zap, Trophy, Users } from "lucide-react";
-import heroImage from "@/assets/gaming-hero.jpg";
 import checkersIcon from "@/assets/checkers-icon.jpg";
 import pingpongIcon from "@/assets/pingpong-icon.jpg";
 import rpsIcon from "@/assets/rps-icon.jpg";
@@ -48,8 +47,8 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
-          <img 
-            src={'/background3.jpeg'} 
+          <img
+            src={'/background3.jpeg'}
             alt="Gaming Arena"
             className="w-full h-full object-cover opacity-40"
           />
@@ -59,13 +58,14 @@ const Index = () => {
         <div className="relative z-10 text-center space-y-8 px-4 max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            animate={{opacity: 1,y: [0, -1, 0],}}
+            transition={{duration: 3,ease: "easeInOut",repeat: Infinity,repeatType: "mirror"}}
+            className="text-center mt-20 animate-bounce"
           >
-            <h1 className="text-7xl md:text-9xl font-bold mb-6">
+            <h1 className="text-7xl md:text-9xl font-bold mb-6 hero_bold">
               <span className="text-gradient">GameFi Arena</span>
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <p className="text-sm md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto ribeye">
               Play competitive games. Win crypto. Join the on-chain gaming revolution.
             </p>
           </motion.div>

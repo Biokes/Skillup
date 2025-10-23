@@ -1,10 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Henny+Penny&family=Ribeye&family=UnifrakturCook:wght@700&display=swap');
 
 @layer base {
   :root {
@@ -94,4 +92,14 @@ All colors MUST be HSL.
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
+}
+.hero_bold {
+  font-family: "Orbitron", cursive;
+  font-weight: 800;
+  font-style: normal;
+}
+.ribeye {
+  font-family: "Ribeye", serif;
+  font-weight: 400;
+  font-style: cursive;
 }
