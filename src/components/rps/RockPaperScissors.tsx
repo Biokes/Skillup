@@ -5,9 +5,7 @@ import { ArrowLeft, Hand, Scissors as ScissorsIcon, FileText } from "lucide-reac
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom"
 
-interface RockPaperScissorsProps {
-  onBack: () => void;
-}
+
 
 type Choice = "rock" | "paper" | "scissors" | null;
 
@@ -17,7 +15,7 @@ const choices = [
   { value: "scissors", icon: ScissorsIcon, label: "Scissors" },
 ];
 
-export const RockPaperScissors = ({ onBack }: RockPaperScissorsProps) => {
+export const RockPaperScissors = () => {
   const [player1Choice, setPlayer1Choice] = useState<Choice>(null);
   const [player2Choice, setPlayer2Choice] = useState<Choice>(null);
   const [result, setResult] = useState<string | null>(null);

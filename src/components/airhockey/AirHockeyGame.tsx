@@ -6,10 +6,8 @@ import { ArrowLeft, RotateCcw } from "lucide-react";
 import { motion } from "framer-motion";
 import * as THREE from "three";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom"
 
-interface AirHockeyGameProps {
-  onBack: () => void;
-}
 
 const TABLE_WIDTH = 10;
 const TABLE_HEIGHT = 6;
@@ -187,7 +185,7 @@ const AirHockeyTable = () => {
   );
 };
 
-export const AirHockeyGame = ({ onBack }: AirHockeyGameProps) => {
+export const AirHockeyGame = () => {
   const [score, setScore] = useState({ player1: 0, player2: 0 });
   const [gameKey, setGameKey] = useState(0);
   const puckPositionRef = useRef(new THREE.Vector3(0, 0.2, 0));
@@ -210,6 +208,7 @@ export const AirHockeyGame = ({ onBack }: AirHockeyGameProps) => {
       return newScore;
     });
   };
+  const navigate = useNavigate()
 
   const handleReset = () => {
     setScore({ player1: 0, player2: 0 });
@@ -221,7 +220,7 @@ export const AirHockeyGame = ({ onBack }: AirHockeyGameProps) => {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-7xl space-y-4">
         <div className="flex items-center justify-between">
-          <Button variant="outline" onClick={onBack}>
+          <Button variant="outline" onClick={()=>navigate('/hub')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Hub
           </Button>

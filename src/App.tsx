@@ -7,6 +7,10 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import GameHub from "./pages/GameHub";
 import { CheckersBoard } from "./components/checkers/CheckersBoard";
+import { AirHockeyGame } from "./components/airhockey/AirHockeyGame";
+import { PingPongGame } from "./components/pingpong/PingPongGame";
+import { PoolGame } from "./components/pool/PoolGame";
+import { RockPaperScissors } from "./components/rps/RockPaperScissors";
 
 const queryClient = new QueryClient();
 
@@ -22,10 +26,10 @@ const App = () => (
           <Route path="/hub" element={<GameHub />} />
           <Route path="/checkers" element={<CheckersBoard/>} />
           <Route path="/chess" element={<CheckersBoard/>} />
-          <Route path="/checkers" element={<CheckersBoard/>} />
-          <Route path="/checkers" element={<CheckersBoard/>} />
-          <Route path="/checkers" element={<CheckersBoard/>} />
-          <Route path="/checkers" element={<CheckersBoard/>} />
+          <Route path="/airHockey" element={<AirHockeyGame/>} />
+          <Route path="/pingpong" element={<PingPongGame/>} />
+          <Route path="/pool" element={<PoolGame/>} />
+          <Route path="/checkers" element={<RockPaperScissors/>} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
