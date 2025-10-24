@@ -402,9 +402,11 @@ export const AirHockeyGame = () => {
         <div className="flex items-center justify-between flex-wrap gap-4">
           <Button variant="outline" onClick={() => navigate('/hub')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
+            <span className="hidden md:flex">
             Back to Hub
+            </span>
           </Button>
-          <h1 className="text-3xl md:text-5xl font-bold text-gradient">Air Hockey Arena</h1>
+          <h1 className="text-xl md:text-4xl font-bold text-gradient">Air Hockey Arena</h1>
           <div className="flex gap-2">
             {gameStarted && (
               <Button variant="outline" onClick={togglePause} size="icon">
