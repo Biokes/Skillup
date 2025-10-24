@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Crown, User } from "lucide-react";
 import { toast } from "sonner";
-
+import { useNavigate } from "react-router-dom"
 type PieceType = "red" | "black" | "red-king" | "black-king" | null;
 type Player = "red" | "black";
 
@@ -47,7 +47,7 @@ const createInitialBoard = (): PieceType[][] => {
   return board;
 };
 
-export const CheckersBoard = ({ onBack }: { onBack: () => void }) => {
+export const CheckersBoard = () => {
   const [gameState, setGameState] = useState<GameState>({
     board: createInitialBoard(),
     currentPlayer: "red",
@@ -182,12 +182,13 @@ export const CheckersBoard = ({ onBack }: { onBack: () => void }) => {
     });
     toast.info("New game started!");
   };
+  const navigate = useNavigate()
 
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <Button variant="outline" onClick={onBack}>
+          <Button variant="outline" onClick={()=>navigate('/hub')}>
             <ArrowLeft className="mr-2" />
             Back to Hub
           </Button>

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Hand, Scissors as ScissorsIcon, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom"
 
 interface RockPaperScissorsProps {
   onBack: () => void;
@@ -78,6 +79,8 @@ export const RockPaperScissors = ({ onBack }: RockPaperScissorsProps) => {
     setRound(1);
     setIsPlayer1Turn(true);
   };
+    const navigate = useNavigate()
+
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
@@ -87,7 +90,7 @@ export const RockPaperScissors = ({ onBack }: RockPaperScissorsProps) => {
         className="w-full max-w-4xl space-y-6"
       >
         <div className="flex items-center justify-between">
-          <Button variant="outline" onClick={onBack}>
+          <Button variant="outline" onClick={()=>navigate('/hub')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Hub
           </Button>

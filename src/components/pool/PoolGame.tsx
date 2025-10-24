@@ -6,10 +6,9 @@ import { ArrowLeft, RotateCcw } from "lucide-react";
 import { motion } from "framer-motion";
 import * as THREE from "three";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
-interface PoolGameProps {
-  onBack: () => void;
-}
 
 interface Ball {
   id: number;
@@ -168,7 +167,7 @@ const PoolTable = () => {
   );
 };
 
-export const PoolGame = ({ onBack }: PoolGameProps) => {
+export const PoolGame = () => {
   const [balls, setBalls] = useState<Ball[]>([]);
   const [cueBallPos, setCueBallPos] = useState(new THREE.Vector3(-4, 0, 0));
   const [cueBallVel, setCueBallVel] = useState(new THREE.Vector3(0, 0, 0));
@@ -177,6 +176,7 @@ export const PoolGame = ({ onBack }: PoolGameProps) => {
   const [angle, setAngle] = useState(0);
   const [score, setScore] = useState({ player1: 0, player2: 0 });
   const [currentPlayer, setCurrentPlayer] = useState(1);
+  const navigate = useNavigate()
 
   useEffect(() => {
     initializeBalls();
@@ -318,12 +318,12 @@ export const PoolGame = ({ onBack }: PoolGameProps) => {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-7xl space-y-4">
         <div className="flex items-center justify-between">
-          <Button variant="outline" onClick={onBack}>
+          <Button  onClick={()=>navigate('/hub')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Hub
           </Button>
           <h1 className="text-4xl font-bold text-gradient">Pool Arena</h1>
-          <Button variant="outline" onClick={handleReset}>
+          <Button onClick={handleReset}>
             <RotateCcw className="mr-2 h-4 w-4" />
             Reset
           </Button>
@@ -387,7 +387,7 @@ export const PoolGame = ({ onBack }: PoolGameProps) => {
                 />
               </div>
             </div>
-            <Button variant="gaming" className="w-full" onClick={handleShoot}>
+            <Button className="w-full" onClick={handleShoot}>
               Shoot (Player {currentPlayer})
             </Button>
           </div>

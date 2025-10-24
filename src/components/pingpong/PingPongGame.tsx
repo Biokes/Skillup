@@ -3,12 +3,10 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-route-dom";
 
-interface PingPongGameProps {
-  onBack: () => void;
-}
 
-export const PingPongGame = ({ onBack }: PingPongGameProps) => {
+export const PingPongGame = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameStarted, setGameStarted] = useState(false);
   const [score, setScore] = useState({ player1: 0, player2: 0 });
@@ -184,6 +182,7 @@ export const PingPongGame = ({ onBack }: PingPongGameProps) => {
     setGameStarted(true);
     toast.info("Game Started! First to 5 wins!");
   };
+  const navigate = useNavigate()
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
@@ -193,7 +192,7 @@ export const PingPongGame = ({ onBack }: PingPongGameProps) => {
         className="w-full max-w-5xl space-y-6"
       >
         <div className="flex items-center justify-between">
-          <Button variant="outline" onClick={onBack}>
+          <Button variant="outline" onClick={()=>navigate('/hub')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Hub
           </Button>

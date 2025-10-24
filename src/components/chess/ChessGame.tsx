@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom"
 
 interface ChessGameProps {
   onBack: () => void;
@@ -226,17 +227,18 @@ export const ChessGame = ({ onBack }: ChessGameProps) => {
     setCapturedPieces({ white: [], black: [] });
     toast.info("Game reset!");
   };
+  const navigate = useNavigate()
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-6xl space-y-4">
         <div className="flex items-center justify-between">
-          <Button variant="outline" onClick={onBack}>
+          <Button  onClick={()=>navigate('/hub')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Hub
           </Button>
           <h1 className="text-4xl font-bold text-gradient">Battle Chess</h1>
-          <Button variant="outline" onClick={handleReset}>
+          <Button onClick={handleReset}>
             <RotateCcw className="mr-2 h-4 w-4" />
             Reset
           </Button>

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import GameHub from "./pages/GameHub";
+import { CheckersBoard } from "./components/checkers/CheckersBoard";
 
 const queryClient = new QueryClient();
 
@@ -18,7 +19,13 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="*" element={<NotFound />} />
-          <Route path="/hub" element={<GameHub/>} />
+          <Route path="/hub" element={<GameHub />} />
+          <Route path="/checkers" element={<CheckersBoard/>} />
+          <Route path="/chess" element={<CheckersBoard/>} />
+          <Route path="/checkers" element={<CheckersBoard/>} />
+          <Route path="/checkers" element={<CheckersBoard/>} />
+          <Route path="/checkers" element={<CheckersBoard/>} />
+          <Route path="/checkers" element={<CheckersBoard/>} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
