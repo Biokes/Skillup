@@ -9,7 +9,7 @@ import GameHub from "./pages/GameHub";
 import { CheckersBoard } from "./components/checkers/CheckersBoard";
 import { AirHockeyGame } from "./components/airhockey/AirHockeyGame";
 import { PingPongGame } from "./components/pingpong/PingPongGame";
-import { PoolGame } from "./components/pool/PoolGame";
+// import { PoolGame } from "./components/pool/PoolGame";
 import { RockPaperScissors } from "./components/rps/RockPaperScissors";
 import {ChessGame } from "./components/chess/ChessGame";
 
@@ -29,7 +29,7 @@ const App = () => (
           <Route path="/chess" element={<ChessGame />} />
           <Route path="/airHockey" element={<AirHockeyGame/>} />
           <Route path="/pingpong" element={<PingPongGame/>} />
-          <Route path="/pool" element={<PoolGame/>} />
+          {/* <Route path="/pool" element={<PoolGame/>} />  */}
           <Route path="/rps" element={<RockPaperScissors/>} />
         </Routes>
       </BrowserRouter>
@@ -40,3 +40,4 @@ const App = () => (
 );
 
 export default App;
+

@@ -40,13 +40,11 @@ const initializeBoard = (): Board => {
     .fill(null)
     .map(() => Array(8).fill(null));
 
-  // Set up pawns
   for (let i = 0; i < 8; i++) {
     board[1][i] = { type: "pawn", color: "black" };
     board[6][i] = { type: "pawn", color: "white" };
   }
 
-  // Set up other pieces
   const setup: PieceType[] = ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"];
   for (let i = 0; i < 8; i++) {
     board[0][i] = { type: setup[i], color: "black" };
@@ -61,23 +59,14 @@ export const ChessGame = () => {
   const [selectedSquare, setSelectedSquare] = useState<[number, number] | null>(null);
   const [currentPlayer, setCurrentPlayer] = useState<PieceColor>("white");
   const [validMoves, setValidMoves] = useState<[number, number][]>([]);
-  const [capturedPieces, setCapturedPieces] = useState<{ white: Piece[]; black: Piece[] }>({
-    white: [],
-    black: [],
-  });
+  const [capturedPieces, setCapturedPieces] = useState<{ white: Piece[]; black: Piece[] }>({ white: [], black: [],});
 
-  const isValidMove = (
-    board: Board,
-    from: [number, number],
-    to: [number, number],
-    piece: Piece
-  ): boolean => {
+  const isValidMove = (board: Board,from: [number, number],to: [number, number],piece: Piece): boolean => {
     const [fromRow, fromCol] = from;
     const [toRow, toCol] = to;
     const rowDiff = Math.abs(toRow - fromRow);
     const colDiff = Math.abs(toCol - fromCol);
 
-    // Can't capture own piece
     if (board[toRow][toCol]?.color === piece.color) return false;
 
     switch (piece.type) {
@@ -85,14 +74,12 @@ export const ChessGame = () => {
         const direction = piece.color === "white" ? -1 : 1;
         const startRow = piece.color === "white" ? 6 : 1;
 
-        // Move forward
         if (fromCol === toCol && !board[toRow][toCol]) {
           if (toRow === fromRow + direction) return true;
           if (fromRow === startRow && toRow === fromRow + 2 * direction && !board[fromRow + direction][fromCol])
             return true;
         }
 
-        // Capture diagonally
         if (Math.abs(toCol - fromCol) === 1 && toRow === fromRow + direction && board[toRow][toCol]) {
           return true;
         }
@@ -121,7 +108,6 @@ export const ChessGame = () => {
 
       case "bishop":
         if (rowDiff !== colDiff) return false;
-        // Check diagonal path
         const rowStep = toRow > fromRow ? 1 : -1;
         const colStep = toCol > fromCol ? 1 : -1;
         let r = fromRow + rowStep;
@@ -134,7 +120,6 @@ export const ChessGame = () => {
         return true;
 
       case "queen":
-        // Queen moves like rook or bishop
         return (
           isValidMove(board, from, to, { ...piece, type: "rook" }) ||
           isValidMove(board, from, to, { ...piece, type: "bishop" })
@@ -169,11 +154,9 @@ export const ChessGame = () => {
       const isValid = validMoves.some(([r, c]) => r === row && c === col);
 
       if (isValid) {
-        // Make the move
         const newBoard = board.map((r) => [...r]);
         const piece = newBoard[selectedRow][selectedCol];
-        
-        // Capture piece if present
+
         if (newBoard[row][col]) {
           setCapturedPieces((prev) => ({
             ...prev,
@@ -190,7 +173,6 @@ export const ChessGame = () => {
         setCurrentPlayer(currentPlayer === "white" ? "black" : "white");
         toast.success(`${currentPlayer} moved!`);
 
-        // Check for checkmate (simplified - just check if king can be captured)
         const opponentColor = currentPlayer === "white" ? "black" : "white";
         let kingFound = false;
         for (let r = 0; r < 8; r++) {
@@ -227,18 +209,20 @@ export const ChessGame = () => {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-2 md:p-4">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-6xl space-y-4">
         <div className="flex items-center justify-between">
-          <Button  onClick={()=>navigate('/hub')}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Hub
+          <Button onClick={() => navigate('/hub')}>
+            <ArrowLeft className="md:mr-2 h-4 w-4" />
+            <span className="hidden md:flex">Back to Hub</span>
           </Button>
-          <h1 className="text-4xl font-bold text-gradient">Battle Chess</h1>
-          <Button onClick={handleReset}>
-            <RotateCcw className="mr-2 h-4 w-4" />
-            Reset
-          </Button>
+          <h1 className="text-lg md:text-4xl font-bold text-gradient text-nowrap">Battle Chess</h1>
+          <aside>
+            <Button onClick={handleReset}>
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Reset
+            </Button>
+          </aside>
         </div>
 
         <div className="glass p-6 rounded-2xl">
@@ -303,11 +287,6 @@ export const ChessGame = () => {
                 );
               })
             )}
-          </div>
-
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>Click a piece to select it, then click a highlighted square to move</p>
-            <p>Green highlights show valid moves</p>
           </div>
         </div>
       </motion.div>
