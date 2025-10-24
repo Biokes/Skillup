@@ -29,10 +29,8 @@ const Puck = ({ onScore, isPaused, positionRef, velocityRef }: PuckProps) => {
   useFrame(() => {
     if (!meshRef.current || isPaused) return;
 
-    // Update position with velocity
     positionRef.current.add(velocityRef.current);
 
-    // Wall bounces (left and right walls)
     if (Math.abs(positionRef.current.x) > TABLE_WIDTH / 2 - PUCK_RADIUS) {
       velocityRef.current.x *= -0.95;
       positionRef.current.x = Math.sign(positionRef.current.x) * (TABLE_WIDTH / 2 - PUCK_RADIUS);
@@ -218,30 +216,26 @@ const Paddle = ({ isPlayer1, puckPosRef, puckVelRef, keysRef, isPaused }: Paddle
 const AirHockeyTable = () => {
   return (
     <group>
-      {/* Table surface */}
       <Box args={[TABLE_WIDTH, 0.2, TABLE_HEIGHT]} position={[0, 0, 0]}>
         <meshStandardMaterial color="#1a1a2e" metalness={0.6} roughness={0.4} />
       </Box>
 
-      {/* Center line */}
       <Box args={[TABLE_WIDTH, 0.05, 0.08]} position={[0, 0.15, 0]}>
         <meshStandardMaterial color="#06b6d4" emissive="#06b6d4" emissiveIntensity={0.5} />
       </Box>
 
-      {/* Center circle */}
       <Cylinder args={[1, 1, 0.05]} position={[0, 0.15, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <meshStandardMaterial color="#06b6d4" emissive="#06b6d4" emissiveIntensity={0.3} transparent opacity={0.5} />
       </Cylinder>
 
-      {/* Goals */}
       <Box args={[3, 0.3, 0.1]} position={[0, 0.2, -TABLE_HEIGHT / 2]}>
         <meshStandardMaterial color="#06b6d4" transparent opacity={0.4} emissive="#06b6d4" emissiveIntensity={0.3} />
       </Box>
+
       <Box args={[3, 0.3, 0.1]} position={[0, 0.2, TABLE_HEIGHT / 2]}>
         <meshStandardMaterial color="#a855f7" transparent opacity={0.4} emissive="#a855f7" emissiveIntensity={0.3} />
       </Box>
 
-      {/* Walls */}
       <Box args={[0.2, 0.5, TABLE_HEIGHT]} position={[-TABLE_WIDTH / 2, 0.25, 0]}>
         <meshStandardMaterial color="#2a2a3e" metalness={0.4} roughness={0.6} />
       </Box>
@@ -249,7 +243,6 @@ const AirHockeyTable = () => {
         <meshStandardMaterial color="#2a2a3e" metalness={0.4} roughness={0.6} />
       </Box>
 
-      {/* Side walls near goals */}
       <Box args={[3.5, 0.5, 0.2]} position={[-3.5, 0.25, -TABLE_HEIGHT / 2]}>
         <meshStandardMaterial color="#2a2a3e" metalness={0.4} roughness={0.6} />
       </Box>
@@ -275,21 +268,19 @@ export const AirHockeyGame = () => {
   const [winner, setWinner] = useState<string | null>(null);
   const [pauseTimeRemaining, setPauseTimeRemaining] = useState(0);
   const [pausesLeft, setPausesLeft] = useState({ player1: 2, player2: 2 });
-
   const puckPositionRef = useRef(new THREE.Vector3(0, 0.2, 0));
   const puckVelocityRef = useRef(new THREE.Vector3(0.1, 0, 0.08));
   const keysRef = useRef<{ [key: string]: boolean }>({});
 
   const navigate = useNavigate();
 
-  // Pause countdown timer
   useEffect(() => {
     if (isPaused && pauseTimeRemaining > 0) {
       const timer = setTimeout(() => {
         setPauseTimeRemaining(prev => {
           if (prev <= 1) {
             setIsPaused(false);
-            toast.info("Game auto-resumed");
+            toast.info("⏱️ Time's up! Game auto-resumed");
             return 0;
           }
           return prev - 1;
@@ -310,10 +301,12 @@ export const AirHockeyGame = () => {
 
       if (newScore.player1 >= WINNING_SCORE) {
         setWinner("Player 1");
-        toast.success("🎉 Player 1 Wins!", { duration: 4000 });
+        toast.success("Player 1 Wins!", { duration: 4000 });
+        handleReset();
       } else if (newScore.player2 >= WINNING_SCORE) {
         setWinner("Player 2");
-        toast.success("🎉 Player 2 Wins!", { duration: 4000 });
+        toast.success("Player 2 Wins!", { duration: 4000 });
+        handleReset();
       }
 
       return newScore;
@@ -352,28 +345,30 @@ export const AirHockeyGame = () => {
 
   const handlePause = (player: 1 | 2) => {
     const key = `player${player}` as 'player1' | 'player2';
+    // if (pausesLeft.player1 === 0 && pausesLeft.player2 === 0) {
+    //   toast.error("🚫 No more pauses allowed this game!");
+    //   return;
+    // }
     if (pausesLeft[key] > 0 && !isPaused) {
       setPausesLeft(prev => ({ ...prev, [key]: prev[key] - 1 }));
       setIsPaused(true);
-      setPauseTimeRemaining(10);
-      toast.info(`Player ${player} paused (${pausesLeft[key] - 1} pauses left)`);
+      setPauseTimeRemaining(10); // 10-second countdown
+      toast.info(`⏸️ Player ${player} paused (${pausesLeft[key] - 1} pauses left, 10s countdown)`);
     } else if (pausesLeft[key] === 0) {
       toast.error(`Player ${player} has no pauses left!`);
+    } else if (isPaused) {
+      toast.info("Game already paused!");
     }
   };
 
   const togglePause = () => {
     setIsPaused(prev => !prev);
-    if (isPaused) {
-      setPauseTimeRemaining(0);
-    }
-    toast.info(isPaused ? "Game Resumed" : "Game Paused");
+    if (isPaused) setPauseTimeRemaining(0);
+    toast.info(isPaused ? "▶️ Game Resumed" : "⏸️ Game Paused");
   };
 
-  // Keyboard event handlers
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Prevent default scrolling behavior for game control keys
       if (['w', 's', 'W', 'S', 'a', 'd', 'A', 'D', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'i', 'j', 'k', 'l', 'I', 'J', 'K', 'L', ' ', 'p', 'P'].includes(e.key)) {
         e.preventDefault();
       }
@@ -419,24 +414,14 @@ export const AirHockeyGame = () => {
             <Button variant="outline" onClick={handleReset} size="icon">
               <RotateCcw className="h-4 w-4" />
             </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setShowControls(!showControls)}
-            >
-              <Info className="h-4 w-4" />
-            </Button>
           </div>
         </div>
 
-        <div className="glass p-4 md:p-8 rounded-2xl space-y-6">
-          <div className="flex justify-between items-center">
-            <motion.div
-              className="text-center p-4 glass rounded-xl flex-1 mx-2"
-              animate={{ scale: score.player1 > score.player2 ? 1.05 : 1 }}
-            >
+        <div className="glass p-4 md:p-6 rounded-2xl space-y-4">
+          <div className="flex justify-between items-center gap-5 px-10">
+            <motion.div className="text-center p-1 glass rounded-xl flex-1 mx-2" animate={{ scale: score.player1 > score.player2 ? 1.05 : 1 }}>
               <div className="text-xs md:text-sm text-muted-foreground mb-2">Player 1</div>
-              <div className="text-3xl md:text-5xl font-bold text-primary">{score.player1}</div>
+              <div className="text-xl md:text-2xl font-bold text-primary">{score.player1}</div>
               <div className="text-xs mt-1">Pauses: {pausesLeft.player1}</div>
               {gameStarted && !winner && (
                 <Button
@@ -453,21 +438,12 @@ export const AirHockeyGame = () => {
 
             <div className="text-xl md:text-2xl font-bold text-muted-foreground">VS</div>
 
-            <motion.div
-              className="text-center p-4 glass rounded-xl flex-1 mx-2"
-              animate={{ scale: score.player2 > score.player1 ? 1.05 : 1 }}
-            >
+            <motion.div className="text-center p-1 glass rounded-xl flex-1 mx-2" animate={{ scale: score.player2 > score.player1 ? 1.05 : 1 }}>
               <div className="text-xs md:text-sm text-muted-foreground mb-2">Player 2</div>
-              <div className="text-3xl md:text-5xl font-bold text-secondary">{score.player2}</div>
+              <div className="text-xl md:text-2xl font-bold text-secondary">{score.player2}</div>
               <div className="text-xs mt-1">Pauses: {pausesLeft.player2}</div>
               {gameStarted && !winner && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="mt-2 h-6 text-xs"
-                  onClick={() => handlePause(2)}
-                  disabled={isPaused || pausesLeft.player2 === 0}
-                >
+                <Button size="sm" variant="outline" className="mt-2 h-6 text-xs" onClick={() => handlePause(2)} disabled={isPaused || pausesLeft.player2 === 0}>
                   Pause
                 </Button>
               )}
