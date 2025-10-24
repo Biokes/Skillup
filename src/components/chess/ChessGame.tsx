@@ -5,9 +5,6 @@ import { ArrowLeft, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom"
 
-interface ChessGameProps {
-  onBack: () => void;
-}
 
 type PieceType = "king" | "queen" | "rook" | "bishop" | "knight" | "pawn";
 type PieceColor = "white" | "black";
@@ -59,7 +56,7 @@ const initializeBoard = (): Board => {
   return board;
 };
 
-export const ChessGame = ({ onBack }: ChessGameProps) => {
+export const ChessGame = () => {
   const [board, setBoard] = useState<Board>(initializeBoard());
   const [selectedSquare, setSelectedSquare] = useState<[number, number] | null>(null);
   const [currentPlayer, setCurrentPlayer] = useState<PieceColor>("white");

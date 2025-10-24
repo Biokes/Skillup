@@ -11,27 +11,30 @@ import { AirHockeyGame } from "./components/airhockey/AirHockeyGame";
 import { PingPongGame } from "./components/pingpong/PingPongGame";
 import { PoolGame } from "./components/pool/PoolGame";
 import { RockPaperScissors } from "./components/rps/RockPaperScissors";
+import {ChessGame } from "./components/chess/ChessGame";
+
+
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="*" element={<NotFound />} />
           <Route path="/hub" element={<GameHub />} />
           <Route path="/checkers" element={<CheckersBoard/>} />
-          <Route path="/chess" element={<CheckersBoard/>} />
+          <Route path="/chess" element={<ChessGame />} />
           <Route path="/airHockey" element={<AirHockeyGame/>} />
           <Route path="/pingpong" element={<PingPongGame/>} />
           <Route path="/pool" element={<PoolGame/>} />
-          <Route path="/checkers" element={<RockPaperScissors/>} />
+          <Route path="/rps" element={<RockPaperScissors/>} />
         </Routes>
       </BrowserRouter>
+      <Toaster />
+      <Sonner />
     </TooltipProvider>
   </QueryClientProvider>
 );

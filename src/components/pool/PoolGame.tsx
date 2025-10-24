@@ -7,7 +7,6 @@ import { motion } from "framer-motion";
 import * as THREE from "three";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom"
-import { useNavigate } from "react-router-dom"
 
 
 interface Ball {
@@ -313,6 +312,7 @@ export const PoolGame = () => {
       setCurrentPlayer(currentPlayer === 1 ? 2 : 1);
     }
   };
+  
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
