@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { useNavigate } from "react-route-dom";
+import { useNavigate } from "react-router-dom";
 
 
 export const PingPongGame = () => {
