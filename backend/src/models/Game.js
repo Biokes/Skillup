@@ -2,103 +2,34 @@ const mongoose = require('mongoose');
 const { GAME_TYPES } = require('./PlayerGameStats');
 
 const gameSchema = new mongoose.Schema({
-  roomCode: {
-    type: String,
-    required: true,
-    unique: true,
-    index: true
+  roomCode: {type: String,required: true,unique: true,index: true},
+  gameType: {type: String,required: true,enum: GAME_TYPES,index: true},
+  player1: {name: { type: String, required: true },rating: { type: Number, required: true },walletAddress: { type: String, lowercase: true }},
+  player2: {name: { type: String },rating: { type: Number },walletAddress: { type: String, lowercase: true }},
+  winner: {type: String, enum: ['player1', 'player2', null],default: null},
+  score: {type: mongoose.Schema.Types.Mixed,default: {}},
+  isStaked: {type: Boolean,default: false,index: true},
+  stakeAmount: {type: String,default: null},
+  player1Address: { type: String, lowercase: true, index: true,
+  player2Address: {   type: String,   lowercase: true,   index: true },
+  player1TxHash: { type: String},
+  player2TxHash: {  type: String},
+  winnerAddress: { type: String, lowercase: true},
+  claimed: { type: Boolean, default: false, index: true},
+  claimTxHash: {type: String},
+  claimedAt: { type: Date},
+  status: { type: String, enum: ['waiting', 'playing', 'finished'], default: 'waiting'},
+  endedAt: {type: Date}
   },
-  gameType: {
-    type: String,
-    required: true,
-    enum: GAME_TYPES,
-    index: true
-  },
-  player1: {
-    name: { type: String, required: true },
-    rating: { type: Number, required: true },
-    walletAddress: { type: String, lowercase: true }
-  },
-  player2: {
-    name: { type: String },
-    rating: { type: Number },
-    walletAddress: { type: String, lowercase: true }
-  },
-  winner: {
-    type: String,
-    enum: ['player1', 'player2', null],
-    default: null
-  },
-  score: {
-    type: mongoose.Schema.Types.Mixed, // Game-specific score format
-    default: {}
-  },
-
-  // Staking fields
-  isStaked: {
-    type: Boolean,
-    default: false,
-    index: true
-  },
-  stakeAmount: {
-    type: String,
-    default: null
-  },
-  player1Address: {
-    type: String,
-    lowercase: true,
-    index: true
-  },
-  player2Address: {
-    type: String,
-    lowercase: true,
-    index: true
-  },
-  player1TxHash: {
-    type: String
-  },
-  player2TxHash: {
-    type: String
-  },
-  winnerAddress: {
-    type: String,
-    lowercase: true
-  },
-  winnerSignature: {
-    type: String
-  },
-  claimed: {
-    type: Boolean,
-    default: false,
-    index: true
-  },
-  claimTxHash: {
-    type: String
-  },
-  claimedAt: {
-    type: Date
-  },
-
-  // Game status and timestamps
-  status: {
-    type: String,
-    enum: ['waiting', 'playing', 'finished'],
-    default: 'waiting'
-  },
-  endedAt: {
-    type: Date
-  }
-}, {
-  timestamps: true
+ {
+    timestamps: true
 });
 
-// Compound indexes for efficient queries
 gameSchema.index({ gameType: 1, status: 1 });
 gameSchema.index({ gameType: 1, createdAt: -1 });
 gameSchema.index({ winnerAddress: 1, isStaked: 1, claimed: 1 });
 gameSchema.index({ isStaked: 1, claimed: 1 });
 
-// Method to mark game as claimed
 gameSchema.methods.markAsClaimed = function(txHash) {
   this.claimed = true;
   this.claimTxHash = txHash;
@@ -106,18 +37,12 @@ gameSchema.methods.markAsClaimed = function(txHash) {
   return this.save();
 };
 
-// Method to check if both players have staked
-gameSchema.methods.bothPlayersStaked = function() {
-  return this.isStaked &&
-         this.player1Address &&
-         this.player2Address &&
-         this.player1TxHash &&
-         this.player2TxHash;
+gameSchema.methods.bothPlayersStaked = () => {
+  return this.isStaked && this.player1Address && this.player2Address && this.player1TxHash && this.player2TxHash;
 };
 
-// Method to calculate prize amount
 gameSchema.methods.getPrizeAmount = function() {
-  if (!this.stakeAmount) return '0';
+  if (!this.isStaked) return '0';
   return (parseFloat(this.stakeAmount) * 2).toString();
 };
 

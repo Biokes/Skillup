@@ -20,13 +20,9 @@ export const useMultiplayerGame = (gameType: GameType) => {
   const playerName = accountId || `Player_${Math.random().toString(36).substr(2, 6)}`;
   const walletAddress = accountId || '0x0000000000000000000000000000000000000000';
 
-  // Initialize socket connection on mount
   useEffect(() => {
-    // Connect socket with player info
     socketService.connect(playerName, walletAddress);
-
     return () => {
-      // Disconnect socket on unmount
       socketService.disconnect();
     };
   }, [playerName, walletAddress]);
@@ -35,8 +31,6 @@ export const useMultiplayerGame = (gameType: GameType) => {
     setRoomCode(data.roomCode);
     setShowRoomView('create');
     setShowMatchModal(false);
-
-    // Show waiting toast
     const toastId = toast.loading('Waiting for Player 2 to join...', {
       duration: Infinity,
     });
@@ -46,24 +40,16 @@ export const useMultiplayerGame = (gameType: GameType) => {
   const handleWaitingForOpponent = useCallback((data: { roomCode: string }) => {
     setRoomCode(data.roomCode);
     setShowRoomView('waiting');
-
-    // Show waiting toast
-    const toastId = toast.loading('Waiting for opponent to join...', {
-      duration: Infinity,
-    });
+    const toastId = toast.loading('Waiting for opponent to join...',{duration: Infinity});
     setWaitingToastId(toastId);
   }, []);
 
   const handleRoomReady = useCallback(() => {
-    // Dismiss waiting toast
     if (waitingToastId) {
       toast.dismiss(waitingToastId);
       setWaitingToastId(null);
     }
-
     toast.success('Opponent found! Get ready...');
-
-    // Start countdown
     setCountdown(3);
   }, [waitingToastId]);
 

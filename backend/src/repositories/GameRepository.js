@@ -17,6 +17,13 @@ class GameRepository extends BaseRepository {
     return await this.find(query, { sort: { createdAt: -1 } });
   }
 
+  async findWaitingGames(gameType = null) {
+    const query = { status: { $in: ['waiting'] } };
+    if (gameType) query.gameType = gameType;
+
+    return await this.find(query, { sort: { createdAt: -1 } });
+  }
+
   async findFinishedGames(gameType = null, limit = 50) {
     const query = { status: 'finished' };
     if (gameType) query.gameType = gameType;
@@ -51,12 +58,7 @@ class GameRepository extends BaseRepository {
   }
 
   async getPlayerGameHistory(playerName, gameType, filters = {}) {
-    const {
-      result = 'all',     // all, wins, losses, draws
-      staked = null,      // true, false, null
-      limit = 50,
-      offset = 0
-    } = filters;
+    const { result = 'all', staked = null, limit = 50, offset = 0 } = filters;
 
     const query = {
       gameType,

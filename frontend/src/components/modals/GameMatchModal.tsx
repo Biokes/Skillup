@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Coins, Zap, Users, Plus, Search, ArrowLeft } from 'lucide-react';
 import { MatchType } from '@/types/game';
 import { useHederaWallet } from '@/contexts/HederaWalletContext';
+import { toast } from 'sonner';
 // import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
 
 interface GameMatchModalProps {
@@ -49,12 +50,10 @@ export const GameMatchModal = ({
               )}
             </Button>
 
-            <Button
-              variant="outline"
-              className="h-auto py-6 flex flex-col items-start gap-2 hover:bg-blue-500/10 hover:border-blue-500"
+            <Button variant="outline" className="h-auto py-6 flex flex-col items-start gap-2 hover:bg-blue-500/10 hover:border-blue-500"
               onClick={() => {
                 onSelectMatchType('quick');
-                setShowQuickMatchOptions(true);
+                toast.loading("Looking for an opponent", {duration: Infinity})
               }}
             >
               <div className="flex items-center gap-2 w-full">
@@ -66,10 +65,11 @@ export const GameMatchModal = ({
               </span>
             </Button>
 
-            <Button
-              variant="outline"
-              className="h-auto py-6 flex flex-col items-start gap-2 hover:bg-green-500/10 hover:border-green-500"
-              onClick={() => onSelectMatchType('friendly')}
+            <Button variant="outline" className="h-auto py-6 flex flex-col items-start gap-2 hover:bg-green-500/10 hover:border-green-500"
+              onClick={() => {
+                onSelectMatchType('friendly');
+                setShowQuickMatchOptions(true);
+              }}
             >
               <div className="flex items-center gap-2 w-full">
                 <Users className="h-6 w-6 text-green-500" />
@@ -90,10 +90,9 @@ export const GameMatchModal = ({
               Create a game or join an available match
             </p>
 
-            <Button
-              onClick={() => {
+            <Button onClick={() => {
                 onCreateQuickMatch?.();
-                onClose();
+                // onClose();
               }}
               className="h-auto py-3 flex flex-col items-start gap-2"
             >
@@ -106,7 +105,10 @@ export const GameMatchModal = ({
               </span>
             </Button>
 
-            <Button onClick={() => {onJoinQuickMatch?.();onClose();}}
+              <Button onClick={() => {
+                onJoinQuickMatch?.();
+                // onClose();
+              }}
               variant="outline" className="h-auto py-3 flex flex-col items-start gap-2"
             >
               <div className="flex items-center gap-2 w-full">

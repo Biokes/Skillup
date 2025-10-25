@@ -77,6 +77,7 @@ export default function Features() {
                 {selectedGame && (
                     <GameMatchModal onClose={() => setOpenModal(false)} onSelectMatchType={handleSelectMatchType}
                         onCreateQuickMatch={() => {
+                            console.log("creating quick match")
                             createQuickMatch()
                             setOpenModal(false);
                             navigate(`/${selectedGame}?mode=quick-create`);

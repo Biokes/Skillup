@@ -4,8 +4,7 @@
   "description": "Backend server for Chain Skill Games with multi-game support",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
+    "dev": "node src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["games", "blockchain", "multiplayer", "socket.io"],
@@ -21,8 +20,5 @@
   },
   "devDependencies": {
     "nodemon": "3.1.10"
-  },
-  "engines": {
-    "node": ">=16.0.0"
   }
 }

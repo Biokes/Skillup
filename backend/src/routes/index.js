@@ -112,6 +112,23 @@ router.get('/games/:roomCode', async (req, res) => {
   }
 });
 
+router.get("/games/activeGames/:gameType", async (req, res) => {
+  const gameType = req.params.gameType;
+  const game = await gameRepo.getActiveGameByGameType(gameType)
+  if (!game) {
+    return res.status(200).json({
+      isSuccessful: false,
+      data: "no game available"
+    })
+  }
+   else { 
+       return res.status(200).json({
+      isSuccessful: true,
+      data: game
+    })
+   } 
+})
+
 router.get('/games/type/:gameType', async (req, res) => {
   try {
     const { gameType } = req.params;
