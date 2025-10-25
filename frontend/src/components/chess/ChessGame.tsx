@@ -78,6 +78,7 @@ export const ChessGame = () => {
     isPaused,
     gameResult,
     playerName,
+    countdown,
     selectMatchType,
     createFriendlyRoom,
     joinFriendlyRoom,
@@ -240,13 +241,13 @@ export const ChessGame = () => {
 
       {/* Room Views */}
       {showRoomView === 'create' && roomCode && (
-        <CreateRoomCode roomCode={roomCode} onCancel={leaveGame} />
+        <CreateRoomCode roomCode={roomCode} onCancel={leaveGame} countdown={countdown} />
       )}
       {showRoomView === 'join' && (
         <JoinRoomCode onJoin={joinFriendlyRoom} onCancel={() => setShowRoomView(null)} />
       )}
       {showRoomView === 'waiting' && (
-        <QuickMatchWaiting onCancel={leaveGame} />
+        <QuickMatchWaiting onCancel={leaveGame} countdown={countdown} />
       )}
       {matchType === 'friendly' && !showRoomView && !isPlaying && (
         <FriendlyMatchChoice

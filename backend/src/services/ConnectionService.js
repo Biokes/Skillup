@@ -7,18 +7,11 @@ class ConnectionService {
     this.sessionRepo = new SessionRepository();
     this.playerRepo = new PlayerRepository();
 
-    // Cleanup inactive sessions every 5 minutes
     setInterval(() => {
       this.cleanupInactiveSessions();
     }, 5 * 60 * 1000);
   }
 
-  /**
-   * Handle new player connection
-   * @param {object} socket - Socket.IO socket
-   * @param {object} playerData - Player connection data
-   * @returns {Promise<object>} Session data
-   */
   async handleConnection(socket, playerData) {
     const { playerName, walletAddress, deviceId, metadata = {} } = playerData;
 

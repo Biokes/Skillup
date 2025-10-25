@@ -14,57 +14,47 @@ export const useMultiplayerGame = (gameType: GameType) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [waitingToastId, setWaitingToastId] = useState<string | number | null>(null);
 
   const playerName = accountId || `Player_${Math.random().toString(36).substr(2, 6)}`;
   const walletAddress = accountId || '0x0000000000000000000000000000000000000000';
-
-  useEffect(() => {
-    if (!socketService.isConnected() && playerName) {
-      socketService.connect(playerName, walletAddress);
-    }
-
-    socketService.on('roomCreated', handleRoomCreated);
-    socketService.on('waitingForOpponent', handleWaitingForOpponent);
-    socketService.on('roomReady', handleRoomReady);
-    socketService.on('gameStart', handleGameStart);
-    socketService.on('gameUpdate', handleGameUpdate);
-    socketService.on('gameOver', handleGameOver);
-    socketService.on('gamePaused', handleGamePaused);
-    socketService.on('gameResumed', handleGameResumed);
-    socketService.on('opponentLeft', handleOpponentLeft);
-    socketService.on('opponentDisconnected', handleOpponentDisconnected);
-    socketService.on('error', handleError);
-
-    return () => {
-      socketService.off('roomCreated');
-      socketService.off('waitingForOpponent');
-      socketService.off('roomReady');
-      socketService.off('gameStart');
-      socketService.off('gameUpdate');
-      socketService.off('gameOver');
-      socketService.off('gamePaused');
-      socketService.off('gameResumed');
-      socketService.off('opponentLeft');
-      socketService.off('opponentDisconnected');
-      socketService.off('error');
-    };
-  }, [playerName, walletAddress]);
 
   const handleRoomCreated = useCallback((data: { roomCode: string }) => {
     setRoomCode(data.roomCode);
     setShowRoomView('create');
     setShowMatchModal(false);
+
+    // Show waiting toast
+    const toastId = toast.loading('Waiting for Player 2 to join...', {
+      duration: Infinity,
+    });
+    setWaitingToastId(toastId);
   }, []);
 
   const handleWaitingForOpponent = useCallback((data: { roomCode: string }) => {
     setRoomCode(data.roomCode);
     setShowRoomView('waiting');
+
+    // Show waiting toast
+    const toastId = toast.loading('Waiting for opponent to join...', {
+      duration: Infinity,
+    });
+    setWaitingToastId(toastId);
   }, []);
 
   const handleRoomReady = useCallback(() => {
-    setShowRoomView(null);
-    toast.success('Opponent found! Game starting...');
-  }, []);
+    // Dismiss waiting toast
+    if (waitingToastId) {
+      toast.dismiss(waitingToastId);
+      setWaitingToastId(null);
+    }
+
+    toast.success('Opponent found! Get ready...');
+
+    // Start countdown
+    setCountdown(3);
+  }, [waitingToastId]);
 
   const handleGameStart = useCallback((state: GameState) => {
     setGameState(state);
@@ -197,6 +187,68 @@ export const useMultiplayerGame = (gameType: GameType) => {
     setShowMatchModal(true);
   }, []);
 
+  // Countdown effect
+  useEffect(() => {
+    if (countdown === null) return;
+
+    if (countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+        toast.info(`${countdown}`, {
+          duration: 1000,
+          position: 'top-center',
+        });
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    } else {
+      // Countdown finished, hide waiting view
+      setCountdown(null);
+      setShowRoomView(null);
+    }
+  }, [countdown]);
+
+  // Setup socket event listeners
+  useEffect(() => {
+    socketService.on('roomCreated', handleRoomCreated);
+    socketService.on('waitingForOpponent', handleWaitingForOpponent);
+    socketService.on('roomReady', handleRoomReady);
+    socketService.on('gameStart', handleGameStart);
+    socketService.on('gameUpdate', handleGameUpdate);
+    socketService.on('gameOver', handleGameOver);
+    socketService.on('gamePaused', handleGamePaused);
+    socketService.on('gameResumed', handleGameResumed);
+    socketService.on('opponentLeft', handleOpponentLeft);
+    socketService.on('opponentDisconnected', handleOpponentDisconnected);
+    socketService.on('error', handleError);
+
+    return () => {
+      socketService.off('roomCreated', handleRoomCreated);
+      socketService.off('waitingForOpponent', handleWaitingForOpponent);
+      socketService.off('roomReady', handleRoomReady);
+      socketService.off('gameStart', handleGameStart);
+      socketService.off('gameUpdate', handleGameUpdate);
+      socketService.off('gameOver', handleGameOver);
+      socketService.off('gamePaused', handleGamePaused);
+      socketService.off('gameResumed', handleGameResumed);
+      socketService.off('opponentLeft', handleOpponentLeft);
+      socketService.off('opponentDisconnected', handleOpponentDisconnected);
+      socketService.off('error', handleError);
+    };
+  }, [
+    handleRoomCreated,
+    handleWaitingForOpponent,
+    handleRoomReady,
+    handleGameStart,
+    handleGameUpdate,
+    handleGameOver,
+    handleGamePaused,
+    handleGameResumed,
+    handleOpponentLeft,
+    handleOpponentDisconnected,
+    handleError,
+  ]);
+
   return {
     showMatchModal,
     matchType,
@@ -207,6 +259,7 @@ export const useMultiplayerGame = (gameType: GameType) => {
     isPaused,
     gameResult,
     playerName,
+    countdown,
     selectMatchType,
     createFriendlyRoom,
     joinFriendlyRoom,

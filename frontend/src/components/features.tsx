@@ -9,12 +9,16 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { GameMatchModal } from "./modals/GameMatchModal";
+import { useMultiplayerGame } from "@/hooks/useMultiplayerGame";
+import { GameType } from "@/types/game";
 
 export default function Features() {
     const navigate = useNavigate();
     const [isOpenModal, setOpenModal] = useState(false);
     const [selectedGame, setSelectedGame] = useState<string | null>(null);
-
+    const [gameType] = useState<string>("checkers")
+      const { createQuickMatch } = useMultiplayerGame(gameType as GameType)
+    
     const games = [
         { title: "Checkers Arena", description: "Classic checkers...", image: checkersIcon, players: "2 Players", type: "checkers", path: "/checkers", delay: 0.1 },
         { title: "Cyber Ping Pong", description: "Fast-paced arcade action...", image: pingpongIcon, players: "2 Players", type: "pingpong", path: "/pingpong", delay: 0.2 },
@@ -40,12 +44,7 @@ export default function Features() {
     return (
         <section className="py-20 px-4">
             <div className="max-w-7xl mx-auto">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="text-center mb-16"
-                >
+                <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
                     <h2 className="text-5xl md:text-6xl font-bold mb-6">
                         <span className="text-gradient ribeye">Featured Games</span>
                     </h2>
@@ -76,10 +75,9 @@ export default function Features() {
                 </div>
 
                 {selectedGame && (
-                    <GameMatchModal
-                        onClose={() => setOpenModal(false)}
-                        onSelectMatchType={handleSelectMatchType}
+                    <GameMatchModal onClose={() => setOpenModal(false)} onSelectMatchType={handleSelectMatchType}
                         onCreateQuickMatch={() => {
+                            createQuickMatch()
                             setOpenModal(false);
                             navigate(`/${selectedGame}?mode=quick-create`);
                         }}

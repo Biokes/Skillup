@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Coins, Zap, Users, Plus, Search, ArrowLeft } from 'lucide-react';
-import { GameType, MatchType } from '@/types/game';
+import { MatchType } from '@/types/game';
 import { useHederaWallet } from '@/contexts/HederaWalletContext';
+// import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
 
 interface GameMatchModalProps {
   onSelectMatchType: (matchType: MatchType) => void;
@@ -94,7 +95,7 @@ export const GameMatchModal = ({
                 onCreateQuickMatch?.();
                 onClose();
               }}
-              className="h-auto py-6 flex flex-col items-start gap-2"
+              className="h-auto py-3 flex flex-col items-start gap-2"
             >
               <div className="flex items-center gap-2 w-full">
                 <Plus className="h-6 w-6" />
@@ -105,13 +106,8 @@ export const GameMatchModal = ({
               </span>
             </Button>
 
-            <Button
-              onClick={() => {
-                onJoinQuickMatch?.();
-                onClose();
-              }}
-              variant="outline"
-              className="h-auto py-6 flex flex-col items-start gap-2"
+            <Button onClick={() => {onJoinQuickMatch?.();onClose();}}
+              variant="outline" className="h-auto py-3 flex flex-col items-start gap-2"
             >
               <div className="flex items-center gap-2 w-full">
                 <Search className="h-6 w-6" />
@@ -122,11 +118,7 @@ export const GameMatchModal = ({
               </span>
             </Button>
 
-            <Button
-              variant="ghost"
-              onClick={() => setShowQuickMatchOptions(false)}
-              className="mt-2"
-            >
+            <Button variant="ghost" onClick={() => setShowQuickMatchOptions(false)} className="mt-2">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back
             </Button>
