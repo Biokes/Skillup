@@ -7,6 +7,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import * as THREE from "three";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useMultiplayerGame } from "@/hooks/useMultiplayerGame";
+import { GameMatchModal } from "@/components/modals/GameMatchModal";
+import { CreateRoomCode } from "@/components/room/CreateRoomCode";
+import { JoinRoomCode } from "@/components/room/JoinRoomCode";
+import { QuickMatchWaiting } from "@/components/room/QuickMatchWaiting";
+import { FriendlyMatchChoice } from "@/components/room/FriendlyMatchChoice";
+import { socketService } from "@/services/socketService";
 
 const TABLE_WIDTH = 10;
 const TABLE_HEIGHT = 8;
@@ -260,111 +267,63 @@ const AirHockeyTable = () => {
 };
 
 export const AirHockeyGame = () => {
-  const [score, setScore] = useState({ player1: 0, player2: 0 });
+  const navigate = useNavigate();
   const [gameKey, setGameKey] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [gameStarted, setGameStarted] = useState(false);
-  const [winner, setWinner] = useState<string | null>(null);
-  const [pauseTimeRemaining, setPauseTimeRemaining] = useState(0);
-  const [pausesLeft, setPausesLeft] = useState({ player1: 2, player2: 2 });
   const puckPositionRef = useRef(new THREE.Vector3(0, 0.2, 0));
   const puckVelocityRef = useRef(new THREE.Vector3(0.1, 0, 0.08));
   const keysRef = useRef<{ [key: string]: boolean }>({});
 
-  const navigate = useNavigate();
+  // Multiplayer integration
+  const {
+    showMatchModal,
+    matchType,
+    roomCode,
+    showRoomView,
+    gameState,
+    isPlaying,
+    isPaused,
+    gameResult,
+    playerName,
+    selectMatchType,
+    createFriendlyRoom,
+    joinFriendlyRoom,
+    createQuickMatch,
+    joinQuickMatch,
+    pauseGame,
+    resumeGame,
+    forfeitGame,
+    leaveGame,
+    playAgain,
+    setShowRoomView,
+  } = useMultiplayerGame('airhockey');
 
+  // Get score and players from server game state
+  const score = gameState?.score || { player1: 0, player2: 0 };
+  const players = gameState?.players || [];
+
+  // Sync server game state to local puck position
   useEffect(() => {
-    if (isPaused && pauseTimeRemaining > 0) {
-      const timer = setTimeout(() => {
-        setPauseTimeRemaining(prev => {
-          if (prev <= 1) {
-            setIsPaused(false);
-            toast.info("⏱️ Time's up! Game auto-resumed");
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearTimeout(timer);
+    if (gameState && isPlaying && gameState.puck) {
+      puckPositionRef.current.set(
+        gameState.puck.x,
+        0.2,
+        gameState.puck.z
+      );
+      puckVelocityRef.current.set(
+        gameState.puck.dx || 0,
+        0,
+        gameState.puck.dz || 0
+      );
     }
-  }, [isPaused, pauseTimeRemaining]);
+  }, [gameState, isPlaying]);
 
   const handleScore = (player: number) => {
-    setScore((prev) => {
-      const newScore = {
-        ...prev,
-        [`player${player}`]: prev[`player${player}` as keyof typeof prev] + 1,
-      };
-
-      toast.success(`Player ${player} scores! ${newScore.player1} - ${newScore.player2}`);
-
-      if (newScore.player1 >= WINNING_SCORE) {
-        setWinner("Player 1");
-        toast.success("Player 1 Wins!", { duration: 4000 });
-        handleReset();
-      } else if (newScore.player2 >= WINNING_SCORE) {
-        setWinner("Player 2");
-        toast.success("Player 2 Wins!", { duration: 4000 });
-        handleReset();
-      }
-
-      return newScore;
-    });
+    // Server handles scoring
   };
 
   const handleReset = () => {
-    setScore({ player1: 0, player2: 0 });
-    setGameKey((prev) => prev + 1);
-    setWinner(null);
-    setGameStarted(false);
-    setIsPaused(false);
-    setPausesLeft({ player1: 2, player2: 2 });
-    setPauseTimeRemaining(0);
-    puckPositionRef.current.set(0, 0.2, 0);
-    puckVelocityRef.current.set(0.1, 0, 0.08);
-    toast.info("Game reset!");
-  };
-
-  const handleStartGame = () => {
-    setScore({ player1: 0, player2: 0 });
-    setWinner(null);
-    setIsPaused(false);
-    setGameStarted(true);
-    setPausesLeft({ player1: 2, player2: 2 });
-    setPauseTimeRemaining(0);
-    setGameKey((prev) => prev + 1);
-    puckPositionRef.current.set(0, 0.2, 0);
-    puckVelocityRef.current.set(
-      (Math.random() - 0.5) * 0.15,
-      0,
-      (Math.random() > 0.5 ? 0.1 : -0.1)
-    );
-    toast.info("🎮 Game Started! First to 7 wins!", { duration: 3000 });
-  };
-
-  const handlePause = (player: 1 | 2) => {
-    const key = `player${player}` as 'player1' | 'player2';
-    // if (pausesLeft.player1 === 0 && pausesLeft.player2 === 0) {
-    //   toast.error("🚫 No more pauses allowed this game!");
-    //   return;
-    // }
-    if (pausesLeft[key] > 0 && !isPaused) {
-      setPausesLeft(prev => ({ ...prev, [key]: prev[key] - 1 }));
-      setIsPaused(true);
-      setPauseTimeRemaining(10); // 10-second countdown
-      toast.info(`⏸️ Player ${player} paused (${pausesLeft[key] - 1} pauses left, 10s countdown)`);
-    } else if (pausesLeft[key] === 0) {
-      toast.error(`Player ${player} has no pauses left!`);
-    } else if (isPaused) {
-      toast.info("Game already paused!");
-    }
-  };
-
-  const togglePause = () => {
-    setIsPaused(prev => !prev);
-    if (isPaused) setPauseTimeRemaining(0);
-    toast.info(isPaused ? "▶️ Game Resumed" : "⏸️ Game Paused");
+    leaveGame();
   };
 
   useEffect(() => {
@@ -374,8 +333,12 @@ export const AirHockeyGame = () => {
       }
 
       keysRef.current[e.key] = true;
-      if (gameStarted && (e.key === 'p' || e.key === 'P')) {
-        togglePause();
+      if (isPlaying && (e.key === 'p' || e.key === 'P')) {
+        if (isPaused) {
+          resumeGame();
+        } else {
+          pauseGame();
+        }
       }
     };
 
@@ -390,10 +353,80 @@ export const AirHockeyGame = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [gameStarted, isPaused]);
+  }, [isPlaying, isPaused, pauseGame, resumeGame]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+      {/* Match Type Selection Modal */}
+      {showMatchModal && (
+        <GameMatchModal
+          onSelectMatchType={selectMatchType}
+          onCreateQuickMatch={createQuickMatch}
+          onJoinQuickMatch={joinQuickMatch}
+          onClose={() => navigate('/hub')}
+        />
+      )}
+
+      {/* Room Views */}
+      {showRoomView === 'create' && roomCode && (
+        <CreateRoomCode roomCode={roomCode} onCancel={leaveGame} />
+      )}
+      {showRoomView === 'join' && (
+        <JoinRoomCode onJoin={joinFriendlyRoom} onCancel={() => setShowRoomView(null)} />
+      )}
+      {showRoomView === 'waiting' && (
+        <QuickMatchWaiting onCancel={leaveGame} />
+      )}
+      {matchType === 'friendly' && !showRoomView && !isPlaying && (
+        <FriendlyMatchChoice
+          onCreateRoom={createFriendlyRoom}
+          onJoinRoom={() => setShowRoomView('join')}
+          onCancel={leaveGame}
+        />
+      )}
+
+      {/* Game Over Modal */}
+      {gameResult && (
+        <motion.div
+          initial={{ scale: 0, rotate: -10 }}
+          animate={{ scale: 1, rotate: 0 }}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        >
+          <div className="glass p-6 md:p-8 rounded-2xl max-w-md w-full space-y-6">
+            <div className="text-center space-y-4">
+              <div className="text-3xl md:text-5xl font-bold text-gradient mb-4">
+                {gameResult.winnerName ? `${gameResult.winnerName} Wins! 🏆` : 'Draw!'}
+              </div>
+              {gameResult.ratings && (
+                <div className="space-y-2">
+                  <p className="text-lg">Rating Changes:</p>
+                  <div className="flex justify-between">
+                    <span>{players[0]?.name || 'Player 1'}</span>
+                    <span className={gameResult.ratings.player1Change > 0 ? 'text-green-400' : 'text-red-400'}>
+                      {gameResult.ratings.player1} ({gameResult.ratings.player1Change > 0 ? '+' : ''}{gameResult.ratings.player1Change})
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{players[1]?.name || 'Player 2'}</span>
+                    <span className={gameResult.ratings.player2Change > 0 ? 'text-green-400' : 'text-red-400'}>
+                      {gameResult.ratings.player2} ({gameResult.ratings.player2Change > 0 ? '+' : ''}{gameResult.ratings.player2Change})
+                    </span>
+                  </div>
+                </div>
+              )}
+              <div className="flex gap-4 mt-6">
+                <Button variant="gaming" className="flex-1" onClick={playAgain}>
+                  Play Again
+                </Button>
+                <Button variant="outline" className="flex-1" onClick={() => navigate('/hub')}>
+                  Exit
+                </Button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -408,8 +441,8 @@ export const AirHockeyGame = () => {
           </Button>
           <h1 className="text-xl md:text-4xl font-bold text-gradient">Air Hockey Arena</h1>
           <div className="flex gap-2">
-            {gameStarted && (
-              <Button variant="outline" onClick={togglePause} size="icon">
+            {isPlaying && (
+              <Button variant="outline" onClick={isPaused ? resumeGame : pauseGame} size="icon">
                 {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
               </Button>
             )}
@@ -422,32 +455,20 @@ export const AirHockeyGame = () => {
         <div className="glass p-4 md:p-6 rounded-2xl space-y-4">
           <div className="flex justify-between items-center gap-5 px-10">
             <motion.div className="text-center p-1 glass rounded-xl flex-1 mx-2" animate={{ scale: score.player1 > score.player2 ? 1.05 : 1 }}>
-              <div className="text-xs md:text-sm text-muted-foreground mb-2">Player 1</div>
+              <div className="text-xs md:text-sm text-muted-foreground mb-2">{players[0]?.name || 'Player 1'}</div>
               <div className="text-xl md:text-2xl font-bold text-primary">{score.player1}</div>
-              <div className="text-xs mt-1">Pauses: {pausesLeft.player1}</div>
-              {gameStarted && !winner && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="mt-2 h-6 text-xs"
-                  onClick={() => handlePause(1)}
-                  disabled={isPaused || pausesLeft.player1 === 0}
-                >
-                  Pause
-                </Button>
+              {players[0]?.rating && (
+                <div className="text-xs mt-1 text-muted-foreground">Rating: {players[0].rating}</div>
               )}
             </motion.div>
 
             <div className="text-xl md:text-2xl font-bold text-muted-foreground">VS</div>
 
             <motion.div className="text-center p-1 glass rounded-xl flex-1 mx-2" animate={{ scale: score.player2 > score.player1 ? 1.05 : 1 }}>
-              <div className="text-xs md:text-sm text-muted-foreground mb-2">Player 2</div>
+              <div className="text-xs md:text-sm text-muted-foreground mb-2">{players[1]?.name || 'Player 2'}</div>
               <div className="text-xl md:text-2xl font-bold text-secondary">{score.player2}</div>
-              <div className="text-xs mt-1">Pauses: {pausesLeft.player2}</div>
-              {gameStarted && !winner && (
-                <Button size="sm" variant="outline" className="mt-2 h-6 text-xs" onClick={() => handlePause(2)} disabled={isPaused || pausesLeft.player2 === 0}>
-                  Pause
-                </Button>
+              {players[1]?.rating && (
+                <div className="text-xs mt-1 text-muted-foreground">Rating: {players[1].rating}</div>
               )}
             </motion.div>
           </div>
@@ -498,52 +519,16 @@ export const AirHockeyGame = () => {
                 <div className="text-center space-y-4">
                   <Pause className="h-16 w-16 mx-auto text-primary" />
                   <div className="text-3xl font-bold text-white">PAUSED</div>
-                  {pauseTimeRemaining > 0 && (
-                    <div className="text-2xl text-amber-400">
-                      Auto-resume in: {pauseTimeRemaining}s
-                    </div>
-                  )}
-                  <Button onClick={togglePause} variant="gaming" size="lg">
+                  <p className="text-muted-foreground">Waiting for resume...</p>
+                  <Button onClick={resumeGame} variant="gaming" size="lg">
                     <Play className="mr-2 h-5 w-5" />
                     Resume
                   </Button>
                 </div>
               </motion.div>
             )}
-
-            {!gameStarted && !winner && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-10"
-              >
-                <Button onClick={handleStartGame} variant="gaming" size="lg" className="text-xl px-8 py-6">
-                  🎮 Start Game
-                </Button>
-              </motion.div>
-            )}
           </div>
 
-          <AnimatePresence>
-            {winner && (
-              <motion.div
-                initial={{ scale: 0, rotate: -10 }}
-                animate={{ scale: 1, rotate: 0 }}
-                exit={{ scale: 0 }}
-                className="text-center space-y-4 p-6 glass rounded-xl"
-              >
-                <div className="text-4xl md:text-5xl font-bold text-gradient mb-4">
-                  {winner} Wins! 🏆
-                </div>
-                <div className="text-lg text-muted-foreground">
-                  Final Score: {score.player1} - {score.player2}
-                </div>
-                <Button onClick={handleStartGame} variant="gaming" size="lg" className="mt-4">
-                  🔄 Play Again
-                </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           <AnimatePresence>
             {showControls && (
@@ -553,26 +538,20 @@ export const AirHockeyGame = () => {
                 exit={{ opacity: 0, height: 0 }}
                 className="text-center space-y-2 text-sm text-muted-foreground glass p-4 rounded-xl"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
                   <div>
-                    <div className="text-primary font-semibold mb-2">Player 1 Controls (Cyan)</div>
+                    <div className="text-primary font-semibold mb-2">Controls</div>
                     <div className="space-y-1">
-                      <p>W/S - Move Forward/Back</p>
-                      <p>A/D - Move Left/Right</p>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-secondary font-semibold mb-2">Player 2 Controls (Purple)</div>
-                    <div className="space-y-1">
-                      <p>↑/↓ or I/K - Move Forward/Back</p>
-                      <p>←/→ or J/L - Move Left/Right</p>
+                      <p>W/A/S/D - Move Paddle (Player 1)</p>
+                      <p>↑/←/↓/→ or I/J/K/L - Move Paddle (Player 2)</p>
+                      <p>P - Pause/Resume Game</p>
                     </div>
                   </div>
                 </div>
                 <div className="border-t border-primary/20 pt-3 mt-3">
-                  <p className="font-semibold text-primary">P - Pause/Resume</p>
-                  <p>Each player has 2 pauses (10 seconds each)</p>
+                  <p className="font-semibold text-primary">Multiplayer Air Hockey</p>
                   <p>First to {WINNING_SCORE} points wins!</p>
+                  <p className="text-xs mt-2 text-muted-foreground">Playing as: {playerName}</p>
                   <p className="text-xs mt-2 text-amber-400">💡 Tip: Hit the puck while moving to add momentum!</p>
                 </div>
               </motion.div>

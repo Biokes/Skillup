@@ -4,18 +4,43 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pause, Play, Info } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useMultiplayerGame } from "@/hooks/useMultiplayerGame";
+import { GameMatchModal } from "@/components/modals/GameMatchModal";
+import { CreateRoomCode } from "@/components/room/CreateRoomCode";
+import { JoinRoomCode } from "@/components/room/JoinRoomCode";
+import { QuickMatchWaiting } from "@/components/room/QuickMatchWaiting";
+import { FriendlyMatchChoice } from "@/components/room/FriendlyMatchChoice";
+import { socketService } from "@/services/socketService";
 
 export const PingPongGame = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [gameStarted, setGameStarted] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [score, setScore] = useState({ player1: 0, player2: 0 });
-  const [winner, setWinner] = useState<string | null>(null);
+  const navigate = useNavigate();
   const [showControls, setShowControls] = useState(true);
   const [rally, setRally] = useState(0);
-  const [pauseTimeRemaining, setPauseTimeRemaining] = useState(0);
-  const [pausesLeft, setPausesLeft] = useState({ player1: 2, player2: 2 });
-  const navigate = useNavigate();
+
+  // Multiplayer integration
+  const {
+    showMatchModal,
+    matchType,
+    roomCode,
+    showRoomView,
+    gameState,
+    isPlaying,
+    isPaused,
+    gameResult,
+    playerName,
+    selectMatchType,
+    createFriendlyRoom,
+    joinFriendlyRoom,
+    createQuickMatch,
+    joinQuickMatch,
+    pauseGame,
+    resumeGame,
+    forfeitGame,
+    leaveGame,
+    playAgain,
+    setShowRoomView,
+  } = useMultiplayerGame('pingpong');
 
   // Persistent game state using refs
   const gameStateRef = useRef({
@@ -28,33 +53,46 @@ export const PingPongGame = () => {
 
   // Auto-hide controls after 5 seconds
   useEffect(() => {
-    if (gameStarted && !isPaused) {
+    if (isPlaying && !isPaused) {
       const timer = setTimeout(() => setShowControls(false), 5000);
       return () => clearTimeout(timer);
     } else {
       setShowControls(true);
     }
-  }, [gameStarted, isPaused]);
+  }, [isPlaying, isPaused]);
 
-  // Pause countdown timer
+  // Sync server game state to local rendering state
   useEffect(() => {
-    if (isPaused && pauseTimeRemaining > 0) {
-      const timer = setTimeout(() => {
-        setPauseTimeRemaining(prev => {
-          if (prev <= 1) {
-            setIsPaused(false);
-            toast.info("Game auto-resumed");
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearTimeout(timer);
+    if (gameState && isPlaying) {
+      const state = gameStateRef.current;
+
+      // Update ball position from server
+      if (gameState.ball) {
+        state.ball.x = gameState.ball.x;
+        state.ball.y = gameState.ball.y;
+        state.ball.dx = gameState.ball.dx;
+        state.ball.dy = gameState.ball.dy;
+        state.ball.speed = gameState.ball.speed;
+      }
+
+      // Update paddle positions from server
+      if (gameState.paddle1) {
+        state.paddle1.y = gameState.paddle1.y;
+      }
+      if (gameState.paddle2) {
+        state.paddle2.y = gameState.paddle2.y;
+      }
+
+      // Update rally
+      if (gameState.currentRally !== undefined) {
+        setRally(gameState.currentRally);
+        state.currentRally = gameState.currentRally;
+      }
     }
-  }, [isPaused, pauseTimeRemaining]);
+  }, [gameState, isPlaying]);
 
   useEffect(() => {
-    if (!gameStarted || !canvasRef.current) return;
+    if (!isPlaying || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -117,6 +155,7 @@ export const PingPongGame = () => {
 
     // Controls
     const keys: { [key: string]: boolean } = {};
+    const lastEmittedPaddleY = useRef({ paddle1: -1, paddle2: -1 });
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Prevent default scrolling behavior
@@ -128,9 +167,9 @@ export const PingPongGame = () => {
 
       if (e.key === 'p' || e.key === 'P') {
         if (isPaused) {
-          setIsPaused(false);
-          setPauseTimeRemaining(0);
-          toast.info("Game Resumed");
+          resumeGame();
+        } else {
+          pauseGame();
         }
       }
     };
@@ -278,119 +317,66 @@ export const PingPongGame = () => {
     const update = () => {
       if (isPaused) return; // Don't update game state when paused
 
-      // Move paddles
-      if (keys["w"] || keys["W"]) {
-        if (state.paddle1.y > 0) state.paddle1.y -= state.paddle1.speed;
-      }
-      if (keys["s"] || keys["S"]) {
-        if (state.paddle1.y < canvas.height - state.paddle1.height) state.paddle1.y += state.paddle1.speed;
-      }
-      if (keys["ArrowUp"]) {
-        if (state.paddle2.y > 0) state.paddle2.y -= state.paddle2.speed;
-      }
-      if (keys["ArrowDown"]) {
-        if (state.paddle2.y < canvas.height - state.paddle2.height) state.paddle2.y += state.paddle2.speed;
+      // Handle local paddle movement and emit to server
+      const isPlayer1 = gameState && gameState.players && gameState.players[0]?.socketId === socketService.getSocketId();
+
+      // Move paddles locally for smooth feedback
+      if (isPlayer1) {
+        if (keys["w"] || keys["W"]) {
+          if (state.paddle1.y > 0) {
+            state.paddle1.y -= state.paddle1.speed;
+            // Emit paddle position to server (throttled)
+            if (Math.abs(state.paddle1.y - lastEmittedPaddleY.current.paddle1) > 2) {
+              socketService.paddleMove({ position: state.paddle1.y });
+              lastEmittedPaddleY.current.paddle1 = state.paddle1.y;
+            }
+          }
+        }
+        if (keys["s"] || keys["S"]) {
+          if (state.paddle1.y < canvas.height - state.paddle1.height) {
+            state.paddle1.y += state.paddle1.speed;
+            // Emit paddle position to server (throttled)
+            if (Math.abs(state.paddle1.y - lastEmittedPaddleY.current.paddle1) > 2) {
+              socketService.paddleMove({ position: state.paddle1.y });
+              lastEmittedPaddleY.current.paddle1 = state.paddle1.y;
+            }
+          }
+        }
+      } else {
+        // Player 2
+        if (keys["ArrowUp"]) {
+          if (state.paddle2.y > 0) {
+            state.paddle2.y -= state.paddle2.speed;
+            // Emit paddle position to server (throttled)
+            if (Math.abs(state.paddle2.y - lastEmittedPaddleY.current.paddle2) > 2) {
+              socketService.paddleMove({ position: state.paddle2.y });
+              lastEmittedPaddleY.current.paddle2 = state.paddle2.y;
+            }
+          }
+        }
+        if (keys["ArrowDown"]) {
+          if (state.paddle2.y < canvas.height - state.paddle2.height) {
+            state.paddle2.y += state.paddle2.speed;
+            // Emit paddle position to server (throttled)
+            if (Math.abs(state.paddle2.y - lastEmittedPaddleY.current.paddle2) > 2) {
+              socketService.paddleMove({ position: state.paddle2.y });
+              lastEmittedPaddleY.current.paddle2 = state.paddle2.y;
+            }
+          }
+        }
       }
 
-      // Move ball
-      state.ball.x += state.ball.dx;
-      state.ball.y += state.ball.dy;
-
-      // Add trail point
+      // Add ball trail for visual effect
       state.ball.trail.push({ x: state.ball.x, y: state.ball.y, alpha: 1 });
       if (state.ball.trail.length > 15) {
         state.ball.trail.shift();
       }
 
-      // Ball collision with top/bottom walls
-      if (state.ball.y + state.ball.radius > canvas.height || state.ball.y - state.ball.radius < 0) {
-        state.ball.dy *= -0.98;
-        state.ball.y = state.ball.y + state.ball.radius > canvas.height
-          ? canvas.height - state.ball.radius
-          : state.ball.radius;
-        createParticles(state.ball.x, state.ball.y, 'rgb(6, 182, 212)', 6);
-      }
+      // Visual effects for paddle glow (client-side only)
+      state.paddle1.glowIntensity *= 0.9;
+      state.paddle2.glowIntensity *= 0.9;
 
-      // Ball collision with paddle 1
-      if (
-        state.ball.dx < 0 &&
-        state.ball.x - state.ball.radius < state.paddle1.x + state.paddle1.width &&
-        state.ball.x + state.ball.radius > state.paddle1.x &&
-        state.ball.y + state.ball.radius > state.paddle1.y &&
-        state.ball.y - state.ball.radius < state.paddle1.y + state.paddle1.height
-      ) {
-        const hitPos = (state.ball.y - (state.paddle1.y + state.paddle1.height / 2)) / (state.paddle1.height / 2);
-        state.ball.dy = hitPos * 8;
-        state.ball.dx = Math.abs(state.ball.dx) * BALL_ACCELERATION;
-        state.ball.x = state.paddle1.x + state.paddle1.width + state.ball.radius;
-
-        if (Math.abs(state.ball.dx) > state.ball.maxSpeed) {
-          state.ball.dx = state.ball.maxSpeed * Math.sign(state.ball.dx);
-        }
-
-        state.paddle1.glowIntensity = 1;
-        createParticles(state.ball.x, state.ball.y, state.paddle1.color, 15);
-        state.currentRally++;
-        setRally(state.currentRally);
-
-        if ('vibrate' in navigator) navigator.vibrate(50);
-      }
-
-      // Ball collision with paddle 2
-      if (
-        state.ball.dx > 0 &&
-        state.ball.x + state.ball.radius > state.paddle2.x &&
-        state.ball.x - state.ball.radius < state.paddle2.x + state.paddle2.width &&
-        state.ball.y + state.ball.radius > state.paddle2.y &&
-        state.ball.y - state.ball.radius < state.paddle2.y + state.paddle2.height
-      ) {
-        const hitPos = (state.ball.y - (state.paddle2.y + state.paddle2.height / 2)) / (state.paddle2.height / 2);
-        state.ball.dy = hitPos * 8;
-        state.ball.dx = -Math.abs(state.ball.dx) * BALL_ACCELERATION;
-        state.ball.x = state.paddle2.x - state.ball.radius;
-
-        if (Math.abs(state.ball.dx) > state.ball.maxSpeed) {
-          state.ball.dx = -state.ball.maxSpeed * Math.sign(state.ball.dx);
-        }
-
-        state.paddle2.glowIntensity = 1;
-        createParticles(state.ball.x, state.ball.y, state.paddle2.color, 15);
-        state.currentRally++;
-        setRally(state.currentRally);
-
-        if ('vibrate' in navigator) navigator.vibrate(50);
-      }
-
-      // Scoring
-      if (state.ball.x < 0) {
-        const newScore = { ...score, player2: score.player2 + 1 };
-        setScore(newScore);
-        createParticles(state.ball.x, state.ball.y, '#a855f7', 30);
-
-        if (newScore.player2 >= WINNING_SCORE) {
-          setWinner("Player 2");
-          setGameStarted(false);
-          toast.success("🎉 Player 2 Wins!", { duration: 4000 });
-        } else {
-          toast.success(`Player 2 scores! ${newScore.player1} - ${newScore.player2}`);
-        }
-        resetBall();
-      }
-
-      if (state.ball.x > canvas.width) {
-        const newScore = { ...score, player1: score.player1 + 1 };
-        setScore(newScore);
-        createParticles(state.ball.x, state.ball.y, '#06b6d4', 30);
-
-        if (newScore.player1 >= WINNING_SCORE) {
-          setWinner("Player 1");
-          setGameStarted(false);
-          toast.success("🎉 Player 1 Wins!", { duration: 4000 });
-        } else {
-          toast.success(`Player 1 scores! ${newScore.player1} - ${newScore.player2}`);
-        }
-        resetBall();
-      }
+      // Server handles all game logic (collisions, scoring, etc.)
     };
 
     const gameLoop = () => {
@@ -407,41 +393,84 @@ export const PingPongGame = () => {
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener('resize', resizeCanvas);
     };
-  }, [gameStarted, score, isPaused]);
+  }, [isPlaying, gameState, isPaused, pauseGame, resumeGame]);
 
-  const handleStartGame = () => {
-    setScore({ player1: 0, player2: 0 });
-    setWinner(null);
-    setIsPaused(false);
-    setRally(0);
-    setPausesLeft({ player1: 2, player2: 2 });
-    setPauseTimeRemaining(0);
-    setGameStarted(true);
-    toast.info("🎮 Game Started! First to 5 wins!", { duration: 3000 });
-  };
-
-  const handlePause = (player: 1 | 2) => {
-    const key = `player${player}` as 'player1' | 'player2';
-    if (pausesLeft[key] > 0 && !isPaused) {
-      setPausesLeft(prev => ({ ...prev, [key]: prev[key] - 1 }));
-      setIsPaused(true);
-      setPauseTimeRemaining(10);
-      toast.info(`Player ${player} paused (${pausesLeft[key] - 1} pauses left)`);
-    } else if (pausesLeft[key] === 0) {
-      toast.error(`Player ${player} has no pauses left!`);
-    }
-  };
-
-  const togglePause = () => {
-    setIsPaused(prev => !prev);
-    if (isPaused) {
-      setPauseTimeRemaining(0);
-    }
-    toast.info(isPaused ? "Game Resumed" : "Game Paused");
-  };
+  // Get score from server game state
+  const score = gameState?.score || { player1: 0, player2: 0 };
+  const players = gameState?.players || [];
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+      {/* Match Type Selection Modal */}
+      {showMatchModal && (
+        <GameMatchModal
+          onSelectMatchType={selectMatchType}
+          onCreateQuickMatch={createQuickMatch}
+          onJoinQuickMatch={joinQuickMatch}
+          onClose={() => navigate('/hub')}
+        />
+      )}
+
+      {/* Room Views */}
+      {showRoomView === 'create' && roomCode && (
+        <CreateRoomCode roomCode={roomCode} onCancel={leaveGame} />
+      )}
+      {showRoomView === 'join' && (
+        <JoinRoomCode onJoin={joinFriendlyRoom} onCancel={() => setShowRoomView(null)} />
+      )}
+      {showRoomView === 'waiting' && (
+        <QuickMatchWaiting onCancel={leaveGame} />
+      )}
+      {matchType === 'friendly' && !showRoomView && !isPlaying && (
+        <FriendlyMatchChoice
+          onCreateRoom={createFriendlyRoom}
+          onJoinRoom={() => setShowRoomView('join')}
+          onCancel={leaveGame}
+        />
+      )}
+
+      {/* Game Over Modal */}
+      {gameResult && (
+        <motion.div
+          initial={{ scale: 0, rotate: -10 }}
+          animate={{ scale: 1, rotate: 0 }}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        >
+          <div className="glass p-6 md:p-8 rounded-2xl max-w-md w-full space-y-6">
+            <div className="text-center space-y-4">
+              <div className="text-3xl md:text-5xl font-bold text-gradient mb-4">
+                {gameResult.winnerName ? `${gameResult.winnerName} Wins! 🏆` : 'Draw!'}
+              </div>
+              {gameResult.ratings && (
+                <div className="space-y-2">
+                  <p className="text-lg">Rating Changes:</p>
+                  <div className="flex justify-between">
+                    <span>{players[0]?.name || 'Player 1'}</span>
+                    <span className={gameResult.ratings.player1Change > 0 ? 'text-green-400' : 'text-red-400'}>
+                      {gameResult.ratings.player1} ({gameResult.ratings.player1Change > 0 ? '+' : ''}{gameResult.ratings.player1Change})
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{players[1]?.name || 'Player 2'}</span>
+                    <span className={gameResult.ratings.player2Change > 0 ? 'text-green-400' : 'text-red-400'}>
+                      {gameResult.ratings.player2} ({gameResult.ratings.player2Change > 0 ? '+' : ''}{gameResult.ratings.player2Change})
+                    </span>
+                  </div>
+                </div>
+              )}
+              <div className="flex gap-4 mt-6">
+                <Button variant="gaming" className="flex-1" onClick={playAgain}>
+                  Play Again
+                </Button>
+                <Button variant="outline" className="flex-1" onClick={() => navigate('/hub')}>
+                  Exit
+                </Button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -454,8 +483,8 @@ export const PingPongGame = () => {
           </Button>
           <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-gradient">Cyber Ping Pong</h1>
           <div className="flex gap-1 md:gap-2">
-            {gameStarted && (
-              <Button variant="outline" onClick={togglePause} size="sm" className="h-8 w-8 md:h-10 md:w-10 p-0">
+            {isPlaying && (
+              <Button variant="outline" onClick={isPaused ? resumeGame : pauseGame} size="sm" className="h-8 w-8 md:h-10 md:w-10 p-0">
                 {isPaused ? <Play className="h-3 w-3 md:h-4 md:w-4" /> : <Pause className="h-3 w-3 md:h-4 md:w-4" />}
               </Button>
             )}
@@ -476,19 +505,10 @@ export const PingPongGame = () => {
               className="text-center p-2 md:p-4 glass rounded-xl flex-1"
               animate={{ scale: score.player1 > score.player2 ? 1.05 : 1 }}
             >
-              <div className="text-xs md:text-sm text-muted-foreground mb-1">Player 1</div>
+              <div className="text-xs md:text-sm text-muted-foreground mb-1">{players[0]?.name || 'Player 1'}</div>
               <div className="text-2xl md:text-4xl lg:text-5xl font-bold text-primary">{score.player1}</div>
-              <div className="text-xs mt-1">Pauses: {pausesLeft.player1}</div>
-              {gameStarted && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="mt-2 h-6 text-xs"
-                  onClick={() => handlePause(1)}
-                  disabled={isPaused || pausesLeft.player1 === 0}
-                >
-                  Pause
-                </Button>
+              {players[0]?.rating && (
+                <div className="text-xs mt-1 text-muted-foreground">Rating: {players[0].rating}</div>
               )}
             </motion.div>
 
@@ -509,19 +529,10 @@ export const PingPongGame = () => {
               className="text-center p-2 md:p-4 glass rounded-xl flex-1"
               animate={{ scale: score.player2 > score.player1 ? 1.05 : 1 }}
             >
-              <div className="text-xs md:text-sm text-muted-foreground mb-1">Player 2</div>
+              <div className="text-xs md:text-sm text-muted-foreground mb-1">{players[1]?.name || 'Player 2'}</div>
               <div className="text-2xl md:text-4xl lg:text-5xl font-bold text-secondary">{score.player2}</div>
-              <div className="text-xs mt-1">Pauses: {pausesLeft.player2}</div>
-              {gameStarted && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="mt-2 h-6 text-xs"
-                  onClick={() => handlePause(2)}
-                  disabled={isPaused || pausesLeft.player2 === 0}
-                >
-                  Pause
-                </Button>
+              {players[1]?.rating && (
+                <div className="text-xs mt-1 text-muted-foreground">Rating: {players[1].rating}</div>
               )}
             </motion.div>
           </div>
@@ -542,12 +553,8 @@ export const PingPongGame = () => {
                 <div className="text-center space-y-4">
                   <Pause className="h-12 md:h-16 w-12 md:w-16 mx-auto text-primary" />
                   <div className="text-2xl md:text-3xl font-bold text-white">PAUSED</div>
-                  {pauseTimeRemaining > 0 && (
-                    <div className="text-xl md:text-2xl text-amber-400">
-                      Auto-resume in: {pauseTimeRemaining}s
-                    </div>
-                  )}
-                  <Button onClick={togglePause} variant="gaming" size="sm" className="md:text-base">
+                  <p className="text-muted-foreground">Waiting for resume...</p>
+                  <Button onClick={resumeGame} variant="gaming" size="sm" className="md:text-base">
                     <Play className="mr-2 h-4 w-4" />
                     Resume
                   </Button>
@@ -556,29 +563,6 @@ export const PingPongGame = () => {
             )}
           </div>
 
-          <AnimatePresence>
-            {winner && (
-              <motion.div
-                initial={{ scale: 0, rotate: -10 }}
-                animate={{ scale: 1, rotate: 0 }}
-                exit={{ scale: 0 }}
-                className="text-center space-y-4 p-4 md:p-6 glass rounded-xl"
-              >
-                <div className="text-3xl md:text-5xl font-bold text-gradient mb-4">
-                  {winner} Wins! 🏆
-                </div>
-                <div className="text-base md:text-lg text-muted-foreground">
-                  Final Score: {score.player1} - {score.player2}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {!gameStarted && (
-            <Button variant="gaming" className="w-full py-4 md:py-6 text-base md:text-lg" onClick={handleStartGame}>
-              {winner ? "🔄 Play Again" : "🎮 Start Game"}
-            </Button>
-          )}
 
           <AnimatePresence>
             {showControls && (
@@ -588,26 +572,20 @@ export const PingPongGame = () => {
                 exit={{ opacity: 0, height: 0 }}
                 className="text-center space-y-2 text-xs md:text-sm text-muted-foreground glass p-3 md:p-4 rounded-xl"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-3">
                   <div>
-                    <div className="text-primary font-semibold mb-1">Player 1 Controls</div>
+                    <div className="text-primary font-semibold mb-1">Controls</div>
                     <div className="space-y-1">
-                      <p>W - Move Up</p>
-                      <p>S - Move Down</p>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-secondary font-semibold mb-1">Player 2 Controls</div>
-                    <div className="space-y-1">
-                      <p>↑ - Move Up</p>
-                      <p>↓ - Move Down</p>
+                      <p>W / S - Move Paddle Up/Down (Player 1)</p>
+                      <p>↑ / ↓ - Move Paddle Up/Down (Player 2)</p>
+                      <p>P - Pause/Resume Game</p>
                     </div>
                   </div>
                 </div>
                 <div className="border-t border-primary/20 pt-3 mt-3">
-                  <p className="font-semibold text-primary">P - Pause/Resume</p>
-                  <p>Each player has 2 pauses (10 seconds each)</p>
+                  <p className="font-semibold text-primary">Multiplayer Ping Pong</p>
                   <p>First to 5 points wins!</p>
+                  <p className="text-xs mt-2 text-muted-foreground">Playing as: {playerName}</p>
                   <p className="text-xs mt-2 text-amber-400">💡 Tip: Hit the ball at different paddle positions for spin!</p>
                 </div>
               </motion.div>

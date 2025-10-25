@@ -7,14 +7,12 @@ const PlayerGameStatsRepository = require('../repositories/PlayerGameStatsReposi
 
 const router = express.Router();
 
-// Initialize services
 const leaderboardService = new LeaderboardService();
 const paymentService = new PaymentService();
 const gameRepo = new GameRepository();
 const playerRepo = new PlayerRepository();
 const statsRepo = new PlayerGameStatsRepository();
 
-// Health check
 router.get('/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -25,9 +23,6 @@ router.get('/health', (req, res) => {
   });
 });
 
-// ===== LEADERBOARD ENDPOINTS =====
-
-// Get leaderboard for a specific game
 router.get('/leaderboard/:gameType', async (req, res) => {
   try {
     const { gameType } = req.params;
@@ -42,7 +37,6 @@ router.get('/leaderboard/:gameType', async (req, res) => {
   }
 });
 
-// Get global leaderboard
 router.get('/leaderboard', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
@@ -54,9 +48,6 @@ router.get('/leaderboard', async (req, res) => {
   }
 });
 
-// ===== PLAYER ENDPOINTS =====
-
-// Get all players
 router.get('/players', async (req, res) => {
   try {
     const players = await playerRepo.find({}, { sort: { createdAt: -1 } });
@@ -67,7 +58,6 @@ router.get('/players', async (req, res) => {
   }
 });
 
-// Get player by wallet address
 router.get('/players/wallet/:address', async (req, res) => {
   try {
     const player = await playerRepo.findByWalletAddress(req.params.address);
@@ -81,7 +71,6 @@ router.get('/players/wallet/:address', async (req, res) => {
   }
 });
 
-// Get player stats for a specific game
 router.get('/players/:playerId/stats/:gameType', async (req, res) => {
   try {
     const { playerId, gameType } = req.params;
@@ -98,7 +87,6 @@ router.get('/players/:playerId/stats/:gameType', async (req, res) => {
   }
 });
 
-// Get all stats for a player
 router.get('/players/:playerId/stats', async (req, res) => {
   try {
     const stats = await leaderboardService.getAllPlayerStats(req.params.playerId);
@@ -109,9 +97,6 @@ router.get('/players/:playerId/stats', async (req, res) => {
   }
 });
 
-// ===== GAME ENDPOINTS =====
-
-// Get game by room code
 router.get('/games/:roomCode', async (req, res) => {
   try {
     const game = await gameRepo.findByRoomCode(req.params.roomCode);
@@ -127,7 +112,6 @@ router.get('/games/:roomCode', async (req, res) => {
   }
 });
 
-// Get recent games for a game type
 router.get('/games/type/:gameType', async (req, res) => {
   try {
     const { gameType } = req.params;
@@ -141,7 +125,6 @@ router.get('/games/type/:gameType', async (req, res) => {
   }
 });
 
-// Get player game history
 router.get('/games/player/:playerName/history', async (req, res) => {
   try {
     const { playerName } = req.params;
@@ -178,9 +161,6 @@ router.get('/games/player/:playerName/history', async (req, res) => {
   }
 });
 
-// ===== PAYMENT ENDPOINTS =====
-
-// Get unclaimed wins for a wallet
 router.get('/payments/unclaimed/:address', async (req, res) => {
   try {
     const games = await paymentService.getUnclaimedWins(req.params.address);
@@ -191,7 +171,6 @@ router.get('/payments/unclaimed/:address', async (req, res) => {
   }
 });
 
-// Mark game as claimed
 router.post('/payments/claim', async (req, res) => {
   try {
     const { gameId, claimTxHash } = req.body;

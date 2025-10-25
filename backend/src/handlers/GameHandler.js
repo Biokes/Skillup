@@ -68,6 +68,18 @@ class GameHandler {
       socket.emit('activeGamesList', activeGames);
     });
 
+    socket.on('findQuickMatch', async (data) => {
+      await this.handleFindQuickMatch(socket, data);
+    });
+
+    socket.on('createQuickMatch', async (data) => {
+      await this.handleCreateQuickMatch(socket, data);
+    });
+
+    socket.on('joinQuickMatch', async (data) => {
+      await this.handleJoinQuickMatch(socket, data);
+    });
+
     // ===== GAME EVENTS =====
 
     socket.on('paddleMove', (data) => {
@@ -166,6 +178,76 @@ class GameHandler {
       // Start game
       this.io.to(roomCode).emit('roomReady', { room: result.room });
       this.startGame(roomCode, result.room.gameType);
+    } catch (error) {
+      socket.emit('error', { message: error.message });
+    }
+  }
+
+  async handleFindQuickMatch(socket, data) {
+    const { gameType, player } = data;
+
+    try {
+      // Find any waiting room for this game type
+      const waitingRooms = Array.from(this.roomService.rooms.values())
+        .filter(room =>
+          room.gameType === gameType &&
+          room.status === 'waiting' &&
+          !room.guest &&
+          !room.isStaked // Only join non-staked rooms
+        );
+
+      if (waitingRooms.length > 0) {
+        // Join first available room
+        const room = waitingRooms[0];
+        await this.handleJoinRoom(socket, { roomCode: room.code, player });
+      } else {
+        // Create new room and wait
+        const room = this.roomService.createRoom(gameType, player, socket.id);
+        socket.join(room.code);
+        socket.emit('waitingForOpponent', { roomCode: room.code });
+        console.log(`Player ${player.name} waiting for opponent in ${room.code}`);
+      }
+    } catch (error) {
+      socket.emit('error', { message: error.message });
+    }
+  }
+
+  async handleCreateQuickMatch(socket, data) {
+    const { gameType, player } = data;
+
+    try {
+      // Create a new quick match room
+      const room = this.roomService.createRoom(gameType, player, socket.id);
+      socket.join(room.code);
+      socket.emit('waitingForOpponent', { roomCode: room.code });
+      console.log(`Quick match created: ${room.code} by ${player.name} (${gameType})`);
+    } catch (error) {
+      socket.emit('error', { message: error.message });
+    }
+  }
+
+  async handleJoinQuickMatch(socket, data) {
+    const { gameType, player } = data;
+
+    try {
+      // Find any waiting room for this game type
+      const waitingRooms = Array.from(this.roomService.rooms.values())
+        .filter(room =>
+          room.gameType === gameType &&
+          room.status === 'waiting' &&
+          !room.guest &&
+          !room.isStaked // Only join non-staked rooms
+        );
+
+      if (waitingRooms.length > 0) {
+        // Join first available room
+        const room = waitingRooms[0];
+        await this.handleJoinRoom(socket, { roomCode: room.code, player });
+        console.log(`Player ${player.name} joined quick match ${room.code}`);
+      } else {
+        // No games available
+        socket.emit('error', { message: 'No quick match games available. Try creating one!' });
+      }
     } catch (error) {
       socket.emit('error', { message: error.message });
     }
