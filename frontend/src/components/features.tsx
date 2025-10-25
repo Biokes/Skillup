@@ -83,6 +83,7 @@ export default function Features() {
                             navigate(`/${selectedGame}?mode=quick-create`);
                         }}
                         onJoinQuickMatch={() => {
+                            fetch(`http://localhost:games/activeGames/${selectedGame.gameType}`)
                             setOpenModal(false);
                             navigate(`/${selectedGame}?mode=quick-join`);
                         }}

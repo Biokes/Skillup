@@ -17,10 +17,8 @@ class GameRepository extends BaseRepository {
     return await this.find(query, { sort: { createdAt: -1 } });
   }
 
-  async findWaitingGames(gameType = null) {
-    const query = { status: { $in: ['waiting'] } };
-    if (gameType) query.gameType = gameType;
-
+  async findWaitingGames(gameType) {
+    const query = { status: 'waiting', gameType: gameType };
     return await this.find(query, { sort: { createdAt: -1 } });
   }
 

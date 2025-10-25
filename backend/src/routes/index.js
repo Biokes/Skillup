@@ -114,7 +114,7 @@ router.get('/games/:roomCode', async (req, res) => {
 
 router.get("/games/activeGames/:gameType", async (req, res) => {
   const gameType = req.params.gameType;
-  const game = await gameRepo.getActiveGameByGameType(gameType)
+  const game = await gameRepo.findActiveGames(gameType)
   if (!game) {
     return res.status(200).json({
       isSuccessful: false,
@@ -123,8 +123,8 @@ router.get("/games/activeGames/:gameType", async (req, res) => {
   }
    else { 
        return res.status(200).json({
-      isSuccessful: true,
-      data: game
+        isSuccessful: true,
+        data: game 
     })
    } 
 })

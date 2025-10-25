@@ -10,7 +10,7 @@ const gameSchema = new mongoose.Schema({
   score: {type: mongoose.Schema.Types.Mixed,default: {}},
   isStaked: {type: Boolean,default: false,index: true},
   stakeAmount: {type: String,default: null},
-  player1Address: { type: String, lowercase: true, index: true,
+  player1Address: { type: String, lowercase: true, index: true, },
   player2Address: {   type: String,   lowercase: true,   index: true },
   player1TxHash: { type: String},
   player2TxHash: {  type: String},
