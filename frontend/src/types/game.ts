@@ -1,6 +1,15 @@
-export type GameType = 'pingpong' | 'airhockey' | 'chess' | 'pool' | 'rps' | 'checkers';
+import { MatchType } from "@/types/game";
+import React from "React";
 
-export type MatchType = 'staked' | 'quick' | 'friendly';
+export type GameType =
+  | "pingpong"
+  | "airhockey"
+  | "chess"
+  | "pool"
+  | "rps"
+  | "checkers";
+
+export type MatchType = "staked" | "quick" | "friendly";
 
 export interface Player {
   name: string;
@@ -14,7 +23,7 @@ export interface GameState {
   roomCode?: string;
   gameType?: GameType;
   players: Player[];
-  status?: 'waiting' | 'active' | 'paused' | 'finished';
+  status?: "waiting" | "active" | "paused" | "finished";
   score?: any;
   isPaused: boolean;
   currentPlayer?: any;
@@ -43,6 +52,28 @@ export interface GameResult {
     score: any;
   };
 }
-export interface GameContextType { 
-
+export interface GameContextType {
+  game: string | GameType;
+  setGameType: React.Dispatch<React.SetStateAction<GameType | string>>;
+  showMatchModal: boolean;
+  matchType: MatchType | null;
+  selectMatchType: (type: MatchType) => void;
+  roomCode: string;
+  showRoomView: "create" | "join" | "waiting" | null;
+  setShowRoomView: React.Dispatch<React.SetStateAction<"create" | "join" | "waiting" | null>>;
+  gameState: GameState | null;
+  isPlaying: boolean;
+  isPaused: boolean;
+  gameResult: GameResult | null;
+  countdown: number | null;
+  playerName: string;
+  createFriendlyRoom: () => void;
+  joinFriendlyRoom: (code: string) => void;
+  createQuickMatch: () => void;
+  joinQuickMatch: () => void;
+  pauseGame: () => void;
+  resumeGame: () => void;
+  forfeitGame: () => void;
+  leaveGame: () => void;
+  playAgain: () => void;
 }
