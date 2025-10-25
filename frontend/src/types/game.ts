@@ -43,3 +43,6 @@ export interface GameResult {
     score: any;
   };
 }
+export interface GameContextType { 
+
+}

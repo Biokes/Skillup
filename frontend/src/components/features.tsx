@@ -11,14 +11,15 @@ import { useNavigate } from "react-router-dom";
 import { GameMatchModal } from "./modals/GameMatchModal";
 import { useMultiplayerGame } from "@/hooks/useMultiplayerGame";
 import { GameType } from "@/types/game";
+import { BASE_URL } from "@/lib/utils";
 
 export default function Features() {
     const navigate = useNavigate();
     const [isOpenModal, setOpenModal] = useState(false);
-    const [selectedGame, setSelectedGame] = useState<string | null>(null);
+    const [selectedGame, setSelectedGame] = useState<string>(null);
     const [gameType] = useState<string>("checkers")
-      const { createQuickMatch } = useMultiplayerGame(gameType as GameType)
-    
+    const { createQuickMatch } = useMultiplayerGame(gameType as GameType)
+
     const games = [
         { title: "Checkers Arena", description: "Classic checkers...", image: checkersIcon, players: "2 Players", type: "checkers", path: "/checkers", delay: 0.1 },
         { title: "Cyber Ping Pong", description: "Fast-paced arcade action...", image: pingpongIcon, players: "2 Players", type: "pingpong", path: "/pingpong", delay: 0.2 },
@@ -34,17 +35,40 @@ export default function Features() {
     };
 
     const handleSelectMatchType = (matchType: string) => {
-        if (matchType === "quick") return;
-        if (selectedGame) {
-            setOpenModal(false);
-            navigate(`/${selectedGame}?mode=${matchType}`);
-        }
+        // if (matchType === "quick") return;
+        // if (selectedGame) {
+        //     // setOpenModal(false);
+        //     // navigate(`/${selectedGame}?mode=${matchType}`);
+        // }
     };
+
+    const joinQuickMatch = async () => {
+        try {
+            const activeGames = await fetch(`${BASE_URL}/games/activeGames/${selectedGame}`)
+            const games = activeGames.json()
+            console.log("found games: ", games);
+            setOpenModal(false);
+            navigate(`/${selectedGame}?mode=quick-join`);
+        } catch (error) {
+            console.error("error during finding games: ", error?.message)
+        }
+    }
+
+    const handleCreateQuickMatch = () => {
+        createQuickMatch()
+        setOpenModal(false);
+        navigate(`/${selectedGame}`);
+    }
 
     return (
         <section className="py-20 px-4">
             <div className="max-w-7xl mx-auto">
-                <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="text-center mb-16"
+                >
                     <h2 className="text-5xl md:text-6xl font-bold mb-6">
                         <span className="text-gradient ribeye">Featured Games</span>
                     </h2>
@@ -52,7 +76,6 @@ export default function Features() {
                         Choose your game, connect your wallet, and start earning.
                     </p>
                 </motion.div>
-
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
                     {games.map((game, index) => (
                         <motion.div
@@ -73,22 +96,12 @@ export default function Features() {
                         </motion.div>
                     ))}
                 </div>
-
-                {selectedGame && (
-                    <GameMatchModal onClose={() => setOpenModal(false)} onSelectMatchType={handleSelectMatchType}
-                        onCreateQuickMatch={() => {
-                            console.log("creating quick match")
-                            createQuickMatch()
-                            setOpenModal(false);
-                            navigate(`/${selectedGame}?mode=quick-create`);
-                        }}
-                        onJoinQuickMatch={() => {
-                            fetch(`http://localhost:games/activeGames/${selectedGame.gameType}`)
-                            setOpenModal(false);
-                            navigate(`/${selectedGame}?mode=quick-join`);
-                        }}
-                    />
-                )}
+                <GameMatchModal isOpen={isOpenModal}
+                    onClose={() => setOpenModal(false)}
+                    onSelectMatchType={handleSelectMatchType}
+                    onCreateQuickMatch={handleCreateQuickMatch}
+                    onJoinQuickMatch={joinQuickMatch}
+                />
             </div>
         </section>
     );

@@ -12,6 +12,7 @@ interface GameMatchModalProps {
   onCreateQuickMatch?: () => void;
   onJoinQuickMatch?: () => void;
   onClose: () => void;
+  isOpen: boolean;
 }
 
 export const GameMatchModal = ({
@@ -19,12 +20,13 @@ export const GameMatchModal = ({
   onCreateQuickMatch,
   onJoinQuickMatch,
   onClose,
+  isOpen
 }: GameMatchModalProps) => {
   const { isConnected } = useHederaWallet();
   const [showQuickMatchOptions, setShowQuickMatchOptions] = useState(false);
 
   return (
-    <Dialog open={true} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl">
@@ -67,8 +69,8 @@ export const GameMatchModal = ({
 
             <Button variant="outline" className="h-auto py-6 flex flex-col items-start gap-2 hover:bg-green-500/10 hover:border-green-500"
               onClick={() => {
-                onSelectMatchType('friendly');
                 setShowQuickMatchOptions(true);
+                onSelectMatchType('friendly');
               }}
             >
               <div className="flex items-center gap-2 w-full">

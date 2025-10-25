@@ -24,7 +24,7 @@ export const HederaWalletProvider = ({ children }: { children: ReactNode }) => {
 
   const initHashConnect = async () => {
     const hc = new HashConnect(
-      import.meta.env.VITE_HEDERA_NETWORK === 'testnet',
+      import.meta.env.VITE_HEDERA_NETWORK === 'mainnet',
       import.meta.env.VITE_DEBUG === 'true'
     );
 

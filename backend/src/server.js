@@ -52,7 +52,7 @@ async function startServer() {
 ╔════════════════════════════════════════════════╗
 ║   Chain Skill Games Backend Server             ║
 ╠════════════════════════════════════════════════╣
-║   Port: ${PORT.toString().padEnd(38)}║
+║   Port: ${PORT.toString().padEnd(39)}║
 ║   Environment: ${(process.env.NODE_ENV || 'development').padEnd(32)}║
 ║   Frontend: ${(FRONTEND_URL || 'all origins').padEnd(35)}║
 ╚════════════════════════════════════════════════╝
@@ -61,7 +61,6 @@ Health: http://localhost:${PORT}/api/health
       `);
     });
 
-    // Graceful shutdown
     process.on('SIGTERM', async () => {
       console.log('SIGTERM received, closing server...');
       httpServer.close(async () => {

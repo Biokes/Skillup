@@ -184,7 +184,6 @@ export const useMultiplayerGame = (gameType: GameType) => {
     setShowMatchModal(true);
   }, []);
 
-  // Countdown effect
   useEffect(() => {
     if (countdown === null) return;
 
@@ -199,13 +198,11 @@ export const useMultiplayerGame = (gameType: GameType) => {
 
       return () => clearTimeout(timer);
     } else {
-      // Countdown finished, hide waiting view
       setCountdown(null);
       setShowRoomView(null);
     }
   }, [countdown]);
 
-  // Setup socket event listeners
   useEffect(() => {
     socketService.on('roomCreated', handleRoomCreated);
     socketService.on('waitingForOpponent', handleWaitingForOpponent);
