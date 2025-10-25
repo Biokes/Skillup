@@ -20,6 +20,17 @@ export const useMultiplayerGame = (gameType: GameType) => {
   const playerName = accountId || `Player_${Math.random().toString(36).substr(2, 6)}`;
   const walletAddress = accountId || '0x0000000000000000000000000000000000000000';
 
+  // Initialize socket connection on mount
+  useEffect(() => {
+    // Connect socket with player info
+    socketService.connect(playerName, walletAddress);
+
+    return () => {
+      // Disconnect socket on unmount
+      socketService.disconnect();
+    };
+  }, [playerName, walletAddress]);
+
   const handleRoomCreated = useCallback((data: { roomCode: string }) => {
     setRoomCode(data.roomCode);
     setShowRoomView('create');

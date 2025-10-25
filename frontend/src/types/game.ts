@@ -10,13 +10,22 @@ export interface Player {
 }
 
 export interface GameState {
-  id: string;
-  roomCode: string;
-  gameType: GameType;
+  id?: string;
+  roomCode?: string;
+  gameType?: GameType;
   players: Player[];
-  status: 'waiting' | 'active' | 'paused' | 'finished';
-  score: number[] | number;
+  status?: 'waiting' | 'active' | 'paused' | 'finished';
+  score?: any;
   isPaused: boolean;
+  currentPlayer?: any;
+  // Game-specific properties
+  ball?: any;
+  paddle1?: any;
+  paddle2?: any;
+  puck?: any;
+  board?: any;
+  capturedPieces?: any;
+  currentRally?: number;
 }
 
 export interface GameResult {
@@ -24,11 +33,13 @@ export interface GameResult {
   winnerName?: string;
   isDraw: boolean;
   ratings?: {
-    winner: { oldRating: number; newRating: number };
-    loser: { oldRating: number; newRating: number };
+    player1: number;
+    player2: number;
+    player1Change: number;
+    player2Change: number;
   };
-  stats: {
+  stats?: {
     duration: number;
-    score: number;
+    score: any;
   };
 }
