@@ -9,16 +9,17 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { GameMatchModal } from "./modals/GameMatchModal";
-import { useMultiplayerGame } from "@/hooks/useMultiplayerGame";
-import { GameType } from "@/types/game";
+// import { useMultiplayerGame } from "@/hooks/useMultiplayerGame";
+// import { GameType } from "@/types/game";
 import { BASE_URL } from "@/lib/utils";
+import { useGame } from "@/hooks/useGameContext";
 
 export default function Features() {
     const navigate = useNavigate();
     const [isOpenModal, setOpenModal] = useState(false);
     const [selectedGame, setSelectedGame] = useState<string>(null);
-    const [gameType] = useState<string>("checkers")
-    const { createQuickMatch } = useMultiplayerGame(gameType as GameType)
+    // const [gameType] = useState<string>("checkers")
+    const { createQuickMatch } = useGame()
 
     const games = [
         { title: "Checkers Arena", description: "Classic checkers...", image: checkersIcon, players: "2 Players", type: "checkers", path: "/checkers", delay: 0.1 },

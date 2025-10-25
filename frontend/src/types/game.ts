@@ -1,4 +1,3 @@
-import { MatchType } from "@/types/game";
 import React from "React";
 
 export type GameType =
@@ -53,7 +52,7 @@ export interface GameResult {
   };
 }
 export interface GameContextType {
-  game: string | GameType;
+  gameType: string | GameType;
   setGameType: React.Dispatch<React.SetStateAction<GameType | string>>;
   showMatchModal: boolean;
   matchType: MatchType | null;

@@ -1,32 +1,33 @@
-import { io, Socket } from 'socket.io-client';
-import { GameType, Player, GameState, GameResult } from '@/types/game';
+import { io, Socket } from "socket.io-client";
+import { GameType, Player, GameState, GameResult } from "@/types/game";
 
 class SocketService {
   private socket: Socket | null = null;
   private listeners: Map<string, Function[]> = new Map();
 
   connect(username: string, walletAddress: string) {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+    const backendUrl =
+      import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
 
     this.socket = io(backendUrl, {
       query: { username, walletAddress, deviceId: `${Date.now()}` },
-      transports: ['websocket'],
+      transports: ["websocket"],
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
 
-    this.socket.on('connect', () => {
-      console.log('✅ Connected to backend');
+    this.socket.on("connect", () => {
+      console.log("✅ Connected to backend");
     });
 
-    this.socket.on('disconnect', () => {
-      console.log('❌ Disconnected from backend');
+    this.socket.on("disconnect", () => {
+      console.log("❌ Disconnected from backend");
     });
 
-    this.socket.on('error', (data: { message: string }) => {
-      console.error('Socket error:', data.message);
-      this.emit('error', data.message);
+    this.socket.on("error", (data: { message: string }) => {
+      console.error("Socket error:", data.message);
+      this.emit("error", data.message);
     });
 
     this.setupGameEventListeners();
@@ -35,69 +36,72 @@ class SocketService {
   private setupGameEventListeners() {
     if (!this.socket) return;
 
-    this.socket.on('roomCreated', (data: { roomCode: string; room: any }) => {
-      this.emit('roomCreated', data);
+    this.socket.on("roomCreated", (data: { roomCode: string; room: any }) => {
+      this.emit("roomCreated", data);
     });
 
-    this.socket.on('waitingForOpponent', (data: { roomCode: string }) => {
-      this.emit('waitingForOpponent', data);
+    this.socket.on("waitingForOpponent", (data: { roomCode: string }) => {
+      this.emit("waitingForOpponent", data);
     });
 
-    this.socket.on('roomReady', (data: { room: any }) => {
-      this.emit('roomReady', data);
+    this.socket.on("roomReady", (data: { room: any }) => {
+      this.emit("roomReady", data);
     });
 
-    this.socket.on('gameStart', (gameState: GameState) => {
-      this.emit('gameStart', gameState);
+    this.socket.on("gameStart", (gameState: GameState) => {
+      this.emit("gameStart", gameState);
     });
 
-    this.socket.on('gameUpdate', (gameState: GameState) => {
-      this.emit('gameUpdate', gameState);
+    this.socket.on("gameUpdate", (gameState: GameState) => {
+      this.emit("gameUpdate", gameState);
     });
 
-    this.socket.on('gameOver', (result: GameResult) => {
-      this.emit('gameOver', result);
+    this.socket.on("gameOver", (result: GameResult) => {
+      this.emit("gameOver", result);
     });
 
-    this.socket.on('gamePaused', (data: { pausesRemaining: number }) => {
-      this.emit('gamePaused', data);
+    this.socket.on("gamePaused", (data: { pausesRemaining: number }) => {
+      this.emit("gamePaused", data);
     });
 
-    this.socket.on('gameResumed', () => {
-      this.emit('gameResumed');
+    this.socket.on("gameResumed", () => {
+      this.emit("gameResumed");
     });
 
-    this.socket.on('opponentLeft', () => {
-      this.emit('opponentLeft');
+    this.socket.on("opponentLeft", () => {
+      this.emit("opponentLeft");
     });
 
-    this.socket.on('opponentDisconnected', () => {
-      this.emit('opponentDisconnected');
+    this.socket.on("opponentDisconnected", () => {
+      this.emit("opponentDisconnected");
     });
 
-    this.socket.on('leaderboardUpdate', (data: { gameType: GameType; leaderboard: any[] }) => {
-      this.emit('leaderboardUpdate', data);
-    });
+    this.socket.on(
+      "leaderboardUpdate",
+      (data: { gameType: GameType; leaderboard: any[] }) => {
+        this.emit("leaderboardUpdate", data);
+      }
+    );
   }
 
   createRoom(gameType: GameType, player: Player, roomCode?: string) {
-    this.socket?.emit('createRoom', { gameType, player, roomCode });
+    this.socket?.emit("createRoom", { gameType, player, roomCode });
   }
 
   joinRoom(roomCode: string, player: Player) {
-    this.socket?.emit('joinRoom', { roomCode, player });
+    this.socket?.emit("joinRoom", { roomCode, player });
   }
 
   findQuickMatch(gameType: GameType, player: Player) {
-    this.socket?.emit('findQuickMatch', { gameType, player });
+    this.socket?.emit("findQuickMatch", { gameType, player });
   }
 
   createQuickMatch(gameType: GameType, player: Player) {
-    this.socket?.emit('createQuickMatch', { gameType, player });
+    this.socket?.emit("createQuickMatch", { gameType, player });
   }
 
   joinQuickMatch(gameType: GameType, player: Player) {
-    this.socket?.emit('joinQuickMatch', { gameType, player });
+    this.socket?.emit("joinQuickMatch", { gameType, player });
   }
 
   createStakedGame(data: {
@@ -108,43 +112,43 @@ class SocketService {
     player1Address: string;
     player1TxHash: string;
   }) {
-    this.socket?.emit('createStakedGame', data);
+    this.socket?.emit("createStakedGame", data);
   }
 
   leaveRoom() {
-    this.socket?.emit('leaveRoom');
+    this.socket?.emit("leaveRoom");
   }
 
   paddleMove(data: { position: number }) {
-    this.socket?.emit('paddleMove', data);
+    this.socket?.emit("paddleMove", data);
   }
 
   strikerMove(position: { x: number; y: number }) {
-    this.socket?.emit('strikerMove', { position });
+    this.socket?.emit("strikerMove", { position });
   }
 
   chessMove(moveData: { from: string; to: string; promotion?: string }) {
-    this.socket?.emit('chessMove', moveData);
+    this.socket?.emit("chessMove", moveData);
   }
 
   poolShoot(angle: number, power: number) {
-    this.socket?.emit('poolShoot', { angle, power });
+    this.socket?.emit("poolShoot", { angle, power });
   }
 
   pauseGame() {
-    this.socket?.emit('pauseGame');
+    this.socket?.emit("pauseGame");
   }
 
   resumeGame() {
-    this.socket?.emit('resumeGame');
+    this.socket?.emit("resumeGame");
   }
 
   forfeitGame() {
-    this.socket?.emit('forfeitGame');
+    this.socket?.emit("forfeitGame");
   }
 
   getLeaderboard(gameType: GameType, limit = 10) {
-    this.socket?.emit('getLeaderboard', { gameType, limit });
+    this.socket?.emit("getLeaderboard", { gameType, limit });
   }
 
   on(event: string, callback: Function) {
