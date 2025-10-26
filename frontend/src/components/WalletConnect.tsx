@@ -21,14 +21,7 @@ export const WalletConnect = () => {
   const handleDisconnect = () => {
     if (disconnect) {
       void disconnect();
-    }
-    toast.info("wallet disconnected", { duration: 5 })
-  };
-
-  const handleNavigateToHub = async () => {
-    await handleConnectWallet()
-    if (userAccountId) {
-      console.log("wallet connected")
+      toast.info("wallet disconnected", { duration: 5 })
     }
   };
 
