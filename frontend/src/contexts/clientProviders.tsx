@@ -140,7 +140,7 @@ export default function ClientProviders({ children }: ClientProvidersProps) {
         return <LoadingState />;
 
     return (
-        <DAppConnectorContext.Provider value={{ dAppConnector, userAccountId, sessionTopic, disconnect, refresh }}>            {children}
+        <DAppConnectorContext.Provider value={{ dAppConnector, userAccountId, sessionTopic, disconnect, refresh }}>
             <QueryClientProvider client={queryClient}>
                 {children}
             </QueryClientProvider>

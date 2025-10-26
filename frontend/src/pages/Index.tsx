@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Footer from "@/components/footer";
 
 
-const Index = () => {
+export default function Index (){
   const navigate = useNavigate()
   const Hero = () => {
     return (
@@ -53,7 +53,6 @@ const Index = () => {
       </section>
     );
   };
-
   const FAQ = () => (
     <section className="py-20 px-4 bg-gradient-to-b from-transparent to-card/50">
       <div className="max-w-7xl mx-auto">
@@ -132,4 +131,3 @@ const Index = () => {
   );
 };
 
-export default Index;
