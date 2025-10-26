@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import GameHub from "./pages/GameHub";
-// import { CheckersBoard } from "./components/checkers/CheckersBoard";
+import { CheckersBoard } from "./components/checkers/CheckersBoard";
 // import { AirHockeyGame } from "./components/airhockey/AirHockeyGame";
 // import { PingPongGame } from "./components/pingpong/PingPongGame";
 // // import { PoolGame } from "./components/pool/PoolGame";
@@ -16,28 +16,28 @@ import GameProviders from "./contexts/GameContext";
 
 
 const App = () => (
-
-    <ClientProviders>
-      <GameProviders>
-        <TooltipProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="*" element={<NotFound />} />
-              <Route path="/hub" element={<GameHub />} />
-              {/* <Route path="/checkers" element={<CheckersBoard />} />
-              <Route path="/chess" element={<ChessGame />} />
+  <ClientProviders>
+    <GameProviders>
+      <TooltipProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="*" element={<NotFound />} />
+            <Route path="/hub" element={<GameHub />} />
+            <Route path="/checkers" element={<CheckersBoard />} />
+            {/* <Route path="/chess" element={<ChessGame />} /> */}
+            {/* 
               <Route path="/airHockey" element={<AirHockeyGame />} />
               <Route path="/pingpong" element={<PingPongGame />} />
               {/* <Route path="/pool" element={<PoolGame/>} />  */}
-              {/* <Route path="/rps" element={<RockPaperScissors />} /> */}
-            </Routes>
-          </BrowserRouter>
-          <Toaster />
-          <Sonner />
-        </TooltipProvider>
-      </GameProviders>
-    </ClientProviders>
+            {/* <Route path="/rps" element={<RockPaperScissors />} /> */}
+          </Routes>
+        </BrowserRouter>
+        <Toaster />
+        <Sonner />
+      </TooltipProvider>
+    </GameProviders>
+  </ClientProviders>
 
 );
 
