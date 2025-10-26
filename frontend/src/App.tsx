@@ -1,7 +1,6 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 // import { HederaWalletProvider } from "@/contexts/HederaWalletContext";
 import Index from "./pages/Index";
@@ -15,11 +14,9 @@ import GameHub from "./pages/GameHub";
 // import { ChessGame } from "./components/chess/ChessGame";
 import GameProviders from "./contexts/GameContext";
 
-const queryClient = new QueryClient();
 
 const App = () => (
-  // <QueryClientProvider client={queryClient}>
-    {/* <HederaWalletProvider> */}
+
     <ClientProviders>
       <GameProviders>
         <TooltipProvider>
@@ -42,8 +39,6 @@ const App = () => (
       </GameProviders>
     </ClientProviders>
 
-    {/* </HederaWalletProvider> */}
-  // </QueryClientProvider>
 );
 
 export default App;
