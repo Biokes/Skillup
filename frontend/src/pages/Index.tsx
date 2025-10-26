@@ -18,34 +18,13 @@ const Index = () => {
   //   setIsLoading(true);
   //   sessionStorage.setItem("chainSkillsPlayerName", playerName.trim());
   //   sessionStorage.setItem("playerName", playerName.trim());
-    
+
   //   setIsLoading(false);
   //   setShowNameDialog(false);
   //       navigate("/hub");
   // };
 
-   const { dAppConnector, userAccountId, disconnect, refresh } = useDAppConnector() ?? {};
 
-  const handleLogin = async () => {
-    if (dAppConnector) {
-      await dAppConnector.openModal();
-      if (refresh) refresh();
-    }
-  };
-
-  const handleDisconnect = () => {
-    if (disconnect) {
-      void disconnect();
-    }
-  };
-
-  const handleNavigateToHub = async () => {
-    
-    await handleLogin()
-    if (userAccountId) { 
-      console.log("wallet connected")
-    }
-  };
 
   // const handleKeyPress = (e: React.KeyboardEvent) => {
   //   if (e.key === "Enter") {
@@ -68,11 +47,7 @@ const Index = () => {
         <div className="relative z-10 text-center space-y-8 px-4 max-w-5xl mx-auto -my-4">
           <motion.div
             animate={{ scale: [1, 1.05, 1], rotate: [0, 1, -1, 0] }}
-            transition={{
-              duration: 3,
-              ease: "easeInOut",
-              repeat: Infinity,
-            }}
+            transition={{ duration: 3, ease: "easeInOut", repeat: Infinity, }}
             className="text-center mt-20"
           >
             <h1 className="text-6xl md:text-8xl font-[700] ribeye">
@@ -92,7 +67,7 @@ const Index = () => {
             transition={{ duration: 0.8, delay: 0.3 }}
           >
             <Button
-              onClick={handleNavigateToHub}
+              onClick={()=>navigate('/hub')}
               className="animate-pulse ribeye hover:scale-[1.07] transition transform-all"
             >
               Take me to the Hub
