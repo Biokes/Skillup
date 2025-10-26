@@ -32,7 +32,6 @@ class GameHandler {
 
   handleConnection(socket) {
     const { username, walletAddress, deviceId } = socket.handshake.query;
-
     console.log('New connection:', {
       socketId: socket.id,
       username,
@@ -40,7 +39,6 @@ class GameHandler {
       transport: socket.conn.transport.name
     });
 
-    // Register connection
     if (username && walletAddress) {
       this.connectionService.handleConnection(socket, {
         playerName: username,
@@ -49,7 +47,6 @@ class GameHandler {
       }).catch(err => console.error('Connection error:', err));
     }
 
-    // ===== ROOM EVENTS =====
 
     socket.on('createRoom', async (data) => {
       await this.handleCreateRoom(socket, data);

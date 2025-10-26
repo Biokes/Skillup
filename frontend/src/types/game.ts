@@ -54,19 +54,19 @@ export interface GameResult {
 export interface GameContextType {
   pauseCountdown: number | null;
   gameType: string | GameType;
-  setGameType: React.Dispatch<React.SetStateAction<GameType | string>>;
   showMatchModal: boolean;
   matchType: MatchType | null;
-  selectMatchType: (type: MatchType) => void;
   roomCode: string;
   showRoomView: "create" | "join" | "waiting" | null;
-  setShowRoomView: React.Dispatch<React.SetStateAction<"create" | "join" | "waiting" | null>>;
   gameState: GameState | null;
   isPlaying: boolean;
   isPaused: boolean;
   gameResult: GameResult | null;
   countdown: number | null;
   playerName: string;
+  selectMatchType: (type: MatchType) => void;
+  setGameType: React.Dispatch<React.SetStateAction<GameType | string>>;
+  setShowRoomView: React.Dispatch<React.SetStateAction<"create" | "join" | "waiting" | null>>;
   createFriendlyRoom: () => void;
   joinFriendlyRoom: (code: string) => void;
   createQuickMatch: () => void;
