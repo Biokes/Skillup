@@ -9,16 +9,13 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { GameMatchModal } from "./modals/GameMatchModal";
-// import { useMultiplayerGame } from "@/hooks/useMultiplayerGame";
-// import { GameType } from "@/types/game";
 import { BASE_URL } from "@/lib/utils";
 import { useGame } from "@/hooks/useGameContext";
 
 export default function Features() {
     const navigate = useNavigate();
     const [isOpenModal, setOpenModal] = useState(false);
-    const [selectedGame, setSelectedGame] = useState<string>(null);
-    // const [gameType] = useState<string>("checkers")
+    const { gameType, setGameType } = useGame()
     const { createQuickMatch } = useGame()
 
     const games = [
@@ -31,8 +28,9 @@ export default function Features() {
     ];
 
     const openModal = (gameType: string) => {
-        setSelectedGame(gameType);
         setOpenModal(true);
+        setGameType(gameType)
+
     };
 
     const handleSelectMatchType = (matchType: string) => {
@@ -45,11 +43,11 @@ export default function Features() {
 
     const joinQuickMatch = async () => {
         try {
-            const activeGames = await fetch(`${BASE_URL}/games/activeGames/${selectedGame}`)
+            const activeGames = await fetch(`${BASE_URL}/games/activeGames/${gameType}`)
             const games = activeGames.json()
             console.log("found games: ", games);
             setOpenModal(false);
-            navigate(`/${selectedGame}?mode=quick-join`);
+            navigate(`/${gameType}?mode=quick-join`);
         } catch (error) {
             console.error("error during finding games: ", error?.message)
         }
@@ -58,7 +56,7 @@ export default function Features() {
     const handleCreateQuickMatch = () => {
         createQuickMatch()
         setOpenModal(false);
-        navigate(`/${selectedGame}`);
+        navigate(`/${gameType}`);
     }
 
     return (

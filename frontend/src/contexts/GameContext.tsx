@@ -19,8 +19,7 @@ export default function GameProviders({ children }: { children: ReactNode }) {
     const [gameResult, setGameResult] = useState<GameResult | null>(null);
     const [countdown, setCountdown] = useState<number | null>(null);
     const [waitingToastId, setWaitingToastId] = useState<string | number | null>(null);
-
-    const playerName = accountId || `Player_${Math.random().toString(36).substr(2, 6)}`;
+    const playerName = accountId || localStorage.getItem("playerName") || `Player_${Math.random().toString(36).substr(2, 6)}`;
     const walletAddress = accountId || '0x0000000000000000000000000000000000000000';
 
     useEffect(() => {
@@ -35,7 +34,7 @@ export default function GameProviders({ children }: { children: ReactNode }) {
         setShowRoomView('create');
         setShowMatchModal(false);
         const toastId = toast.loading('Waiting for Player 2 to join...', {
-            duration: Infinity,
+            duration: 20,
         });
         setWaitingToastId(toastId);
     }, []);
@@ -43,7 +42,7 @@ export default function GameProviders({ children }: { children: ReactNode }) {
     const handleWaitingForOpponent = useCallback((data: { roomCode: string }) => {
         setRoomCode(data.roomCode);
         setShowRoomView('waiting');
-        const toastId = toast.loading('Waiting for opponent to join...', { duration: Infinity });
+        const toastId = toast.loading('Waiting for opponent to join...', { duration: 20 });
         setWaitingToastId(toastId);
     }, []);
 
@@ -136,6 +135,7 @@ export default function GameProviders({ children }: { children: ReactNode }) {
             rating: 1000,
             walletAddress,
         };
+        socketService.findQuickMatch(gameType as GameType, player)
         socketService.createQuickMatch(gameType as GameType, player);
         setShowRoomView('waiting');
     }, [gameType, playerName, walletAddress]);

@@ -13,12 +13,14 @@ import { PingPongGame } from "./components/pingpong/PingPongGame";
 // import { PoolGame } from "./components/pool/PoolGame";
 import { RockPaperScissors } from "./components/rps/RockPaperScissors";
 import { ChessGame } from "./components/chess/ChessGame";
+import GameProviders from "./contexts/GameContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <HederaWalletProvider>
+      <HederaWalletProvider>
+    <GameProviders>
       <TooltipProvider>
         <BrowserRouter>
           <Routes>
@@ -36,6 +38,7 @@ const App = () => (
         <Toaster />
         <Sonner />
       </TooltipProvider>
+    </GameProviders>
     </HederaWalletProvider>
   </QueryClientProvider>
 );
