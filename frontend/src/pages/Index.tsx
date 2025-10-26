@@ -3,35 +3,10 @@ import { Zap, Trophy, Users, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Footer from "@/components/footer";
-import { useState } from "react";
-import { useDAppConnector } from "@/contexts/clientProviders";
-// import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,} from "@/components/ui/alert-dialog";
-// import { Input } from "@/components/ui/input";
-// import { toast } from "sonner";
+
 
 const Index = () => {
-  const navigate = useNavigate();
-  // const [showNameDialog, setShowNameDialog] = useState(false);
-  // const [playerName, setPlayerName] = useState("");
-  // const [isLoading, setIsLoading] = useState(false);
-  // const handleNameSubmit = () => {
-  //   setIsLoading(true);
-  //   sessionStorage.setItem("chainSkillsPlayerName", playerName.trim());
-  //   sessionStorage.setItem("playerName", playerName.trim());
-
-  //   setIsLoading(false);
-  //   setShowNameDialog(false);
-  //       navigate("/hub");
-  // };
-
-
-
-  // const handleKeyPress = (e: React.KeyboardEvent) => {
-  //   if (e.key === "Enter") {
-  //     handleNameSubmit();
-  //   }
-  // };
-
+  const navigate = useNavigate()
   const Hero = () => {
     return (
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
@@ -153,42 +128,6 @@ const Index = () => {
       <Hero />
       <FAQ />
       <Footer />
-      {/* <AlertDialog open={showNameDialog} onOpenChange={setShowNameDialog}>
-        <AlertDialogContent className="max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="ribeye text-gradient text-xl text-center">Welcome to Chainskills Arena!</AlertDialogTitle>
-            <AlertDialogDescription>
-              Enter your player name to get started. You can change this later.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <div className="py-4">
-            <Input
-              placeholder="Enter your player name..."
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="w-full"
-              maxLength={20}
-              disabled={isLoading}
-              autoFocus
-            />
-            <p className="text-xs text-muted-foreground mt-2">
-              {playerName.length}/20 characters
-            </p>
-          </div>
-
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleNameSubmit}
-              disabled={isLoading || !playerName.trim() || playerName.trim().length < 3}
-            >
-              {isLoading ? "Setting up..." : "Continue"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog> */}
     </div>
   );
 };
