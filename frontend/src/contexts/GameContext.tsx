@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { socketService } from '@/services/socketService';
-// import { useHederaWallet } from '@/contexts/HederaWalletContext';
 import { toast } from 'sonner';
 import { MatchType, Player, GameState, GameResult, GameType } from '@/types/game';
 import { useDAppConnector } from "./clientProviders";

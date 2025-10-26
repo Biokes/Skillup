@@ -19,9 +19,8 @@ export const GameCard = ({ title, description, image, players, status, onPlay }:
       className="glass rounded-2xl overflow-hidden border-2 border-primary/20 hover:border-primary/60 group"
     >
       <div className="relative h-48 overflow-hidden">
-        <img src={image} alt={title}  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"/>
+        <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"/>
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-        
         {status === "coming-soon" && (
           <div className="absolute top-4 right-4 bg-accent px-3 py-1 rounded-full">
             <span className="text-xs font-bold">Coming Soon</span>

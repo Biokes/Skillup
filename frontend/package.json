@@ -17,7 +17,7 @@
     "@walletconnect/modal": "^2.7.0",
     "@walletconnect/sign-client": "^2.22.4",
     "@walletconnect/types": "^2.22.4",
-    "@walletconnect/utils": "^2.22.4",
+    "@walletconnect/utils": "^2.22.4",  
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.15",

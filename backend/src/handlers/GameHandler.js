@@ -27,7 +27,7 @@ class GameHandler {
       pool: new PoolService()
     };
 
-    this.gameLoops = new Map(); // roomCode -> intervalId
+    this.gameLoops = new Map();
   }
 
   handleConnection(socket) {
@@ -80,7 +80,6 @@ class GameHandler {
       await this.handleJoinQuickMatch(socket, data);
     });
 
-    // ===== GAME EVENTS =====
 
     socket.on('paddleMove', (data) => {
       this.handlePaddleMove(socket, data);
@@ -110,7 +109,6 @@ class GameHandler {
       this.handleForfeitGame(socket);
     });
 
-    // ===== PAYMENT EVENTS =====
 
     socket.on('createStakedGame', async (data) => {
       await this.handleCreateStakedGame(socket, data);
@@ -120,15 +118,12 @@ class GameHandler {
       await this.handlePlayer2StakeCompleted(socket, data);
     });
 
-    // ===== LEADERBOARD EVENTS =====
 
     socket.on('getLeaderboard', async (data) => {
       const { gameType, limit } = data;
       const leaderboard = await this.leaderboardService.getGameLeaderboard(gameType, limit || 10);
       socket.emit('leaderboardUpdate', { gameType, leaderboard });
     });
-
-    // ===== DISCONNECT =====
 
     socket.on('disconnect', () => {
       this.handleDisconnect(socket);
@@ -162,11 +157,9 @@ class GameHandler {
 
       socket.join(roomCode);
 
-      // Check if this is a staked match
       const gameRecord = await this.gameRepo.findByRoomCode(roomCode);
 
       if (gameRecord?.isStaked && !gameRecord.player2TxHash) {
-        // Waiting for player 2 to stake
         socket.emit('stakedMatchJoined', {
           roomCode,
           stakeAmount: gameRecord.stakeAmount,
@@ -174,8 +167,6 @@ class GameHandler {
         });
         return;
       }
-
-      // Start game
       this.io.to(roomCode).emit('roomReady', { room: result.room });
       this.startGame(roomCode, result.room.gameType);
     } catch (error) {
@@ -187,13 +178,12 @@ class GameHandler {
     const { gameType, player } = data;
 
     try {
-      // Find any waiting room for this game type
       const waitingRooms = Array.from(this.roomService.rooms.values())
         .filter(room =>
           room.gameType === gameType &&
           room.status === 'waiting' &&
           !room.guest &&
-          !room.isStaked // Only join non-staked rooms
+          !room.isStaked 
         );
 
       if (waitingRooms.length > 0) {

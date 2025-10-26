@@ -6,7 +6,7 @@ function setupSocketIO(httpServer) {
   const io = new Server(httpServer, {
     cors: {
       origin: FRONTEND_URL || '*',
-      methods: ['GET', 'POST'],
+      methods: ['GET', 'POST', 'PATCH'],
       credentials: true,
       allowedHeaders: ['*']
     },
@@ -21,9 +21,8 @@ function setupSocketIO(httpServer) {
     perMessageDeflate: false
   });
 
-  // Error handlers
   io.engine.on('connection_error', (err) => {
-    console.error('Connection error:', {
+    console.error('Connection error: ', {
       type: err.type,
       description: err.description,
       context: err.context,
@@ -32,7 +31,7 @@ function setupSocketIO(httpServer) {
   });
 
   io.on('error', (error) => {
-    console.error('Socket.IO error:', error);
+    console.error('Socket.IO error: ', error);
   });
 
   console.log('✓ Socket.IO configured');

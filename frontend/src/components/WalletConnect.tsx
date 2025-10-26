@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Wallet } from "lucide-react";
 import { toast } from "sonner";
@@ -6,18 +6,48 @@ import { useDAppConnector } from "../contexts/clientProviders";
 
 export const WalletConnect = () => {
   const [loading, setLoading] = useState<boolean>(false);
-
   const { dAppConnector, userAccountId, disconnect, refresh } = useDAppConnector() ?? {};
 
+  useEffect(() => {
+    if (!dAppConnector) return;
+
+    const subscription = dAppConnector.events$?.subscribe((event: { name: string; data?: any }) => {
+      if (event.name === 'session_proposal' || event.name === 'session_proposal') {
+        console.log('Pairing proposal started');
+        setLoading(true);
+      }
+      if (event.name === 'accountsChanged' || event.name === 'session_created') {
+        setLoading(false);
+        toast.success('Wallet connected successfully!');
+        if (refresh) refresh();
+      }
+      if ((event.name === 'session_delete' || event.name === 'session_deleted') && !userAccountId) {
+        setLoading(false);
+        toast.warning('Wallet connection cancelled');
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, [dAppConnector, refresh, userAccountId]);
+
   const handleConnectWallet = async () => {
-    setLoading(true)
-    toast.info("Preparing wallet connection pls wait", { duration: 5 })
-    if (dAppConnector) {
+    if (!dAppConnector) {
+      toast.error('Wallet connector not ready');
+      return;
+    }
+    setLoading(true);
+    toast.info('Preparing wallet connection, please wait...', { duration: 2000 });
+    try {
       await dAppConnector.openModal();
-      if (refresh) refresh();
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+      toast.error('Wallet connection failed');
     }
   };
-
+  
   const handleDisconnect = () => {
     if (disconnect) {
       void disconnect();
@@ -26,7 +56,7 @@ export const WalletConnect = () => {
   };
 
   const formatAddress = (address: string) => {
-    return `${address.slice(0,3)}...${address.slice(-3)}`;
+    return `${address.slice(0, 3)}...${address.slice(-3)}`;
   };
 
   if (userAccountId) {

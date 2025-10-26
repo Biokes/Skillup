@@ -11,20 +11,23 @@ import { useNavigate } from "react-router-dom";
 import { GameMatchModal } from "./modals/GameMatchModal";
 import { BASE_URL } from "@/lib/utils";
 import { useGame } from "@/hooks/useGameContext";
+import { toast } from "sonner";
+import { useDAppConnector } from "@/contexts/clientProviders";
 
 export default function Features() {
     const navigate = useNavigate();
     const [isOpenModal, setOpenModal] = useState(false);
     const { gameType, setGameType } = useGame()
     const { createQuickMatch } = useGame()
+    // const { userAccountId } = useDAppConnector ?? {}
 
     const games = [
         { title: "Checkers Arena", description: "Classic checkers...", image: checkersIcon, players: "2 Players", type: "checkers", path: "/checkers", delay: 0.1 },
-        { title: "Cyber Ping Pong", description: "Fast-paced arcade action...", image: pingpongIcon, players: "2 Players", type: "pingpong", path: "/pingpong", delay: 0.2 },
-        { title: "RPS Arena", description: "Classic rock-paper-scissors...", image: rpsIcon, players: "2 Players", type: "rps", path: "/rps", delay: 0.3 },
-        { title: "Pool Arena", description: "3D billiards...", image: poolIcon, players: "2 Players", type: "pool", path: "/pool", delay: 0.4 },
-        { title: "Air Hockey Arena", description: "Lightning-fast air hockey...", image: airHockeyIcon, players: "2 Players", type: "airhockey", path: "/airhockey", delay: 0.5 },
-        { title: "Battle Chess", description: "Strategic warfare...", image: chessIcon, players: "2 Players", type: "chess", path: "/chess", delay: 0.6 },
+        // { title: "Cyber Ping Pong", description: "Fast-paced arcade action...", image: pingpongIcon, players: "2 Players", type: "pingpong", path: "/pingpong", delay: 0.2 },
+        // { title: "RPS Arena", description: "Classic rock-paper-scissors...", image: rpsIcon, players: "2 Players", type: "rps", path: "/rps", delay: 0.3 },
+        // { title: "Pool Arena", description: "3D billiards...", image: poolIcon, players: "2 Players", type: "pool", path: "/pool", delay: 0.4 },
+        // { title: "Air Hockey Arena", description: "Lightning-fast air hockey...", image: airHockeyIcon, players: "2 Players", type: "airhockey", path: "/airhockey", delay: 0.5 },
+        // { title: "Battle Chess", description: "Strategic warfare...", image: chessIcon, players: "2 Players", type: "chess", path: "/chess", delay: 0.6 },
     ];
 
     const openModal = (gameType: string) => {
@@ -90,12 +93,19 @@ export default function Features() {
                                 image={game.image}
                                 players={game.players}
                                 status="available"
-                                onPlay={() => openModal(game.type)}
+                                onPlay={() => {
+                                    // if (userAccountId) {
+                                        openModal(game.type)
+                                    // } else { 
+                                    //     toast.warning("Please connect wallet to play")
+                                    // }
+                                }}
                             />
                         </motion.div>
                     ))}
                 </div>
-                <GameMatchModal isOpen={isOpenModal}
+                <GameMatchModal
+                    isOpen={isOpenModal}
                     onClose={() => setOpenModal(false)}
                     onSelectMatchType={handleSelectMatchType}
                     onCreateQuickMatch={handleCreateQuickMatch}
