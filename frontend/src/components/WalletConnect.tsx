@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Wallet } from "lucide-react";
 import { toast } from "sonner";
-import { useDAppConnector } from "./clientProviders";
+import { useDAppConnector } from "../contexts/clientProviders";
 
 export const WalletConnect = () => {
   const [loading, setLoading] = useState<boolean>(false);

@@ -13,7 +13,7 @@ import { CheckersBoard } from "./components/checkers/CheckersBoard";
 // import { RockPaperScissors } from "./components/rps/RockPaperScissors";
 // import { ChessGame } from "./components/chess/ChessGame";
 import GameProviders from "./contexts/GameContext";
-
+import ClientProviders from "./contexts/clientProviders";
 
 const App = () => (
   <ClientProviders>
@@ -22,7 +22,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<NotFound />}/>
             <Route path="/hub" element={<GameHub />} />
             <Route path="/checkers" element={<CheckersBoard />} />
             {/* <Route path="/chess" element={<ChessGame />} /> */}

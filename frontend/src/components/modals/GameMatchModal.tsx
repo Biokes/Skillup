@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Coins, Zap, Users, Plus, Search, ArrowLeft } from 'lucide-react';
+import { Coins, Zap, Users,
+  // Plus, Search, ArrowLeft
+} from 'lucide-react';
 import { MatchType } from '@/types/game';
-import { useHederaWallet } from '@/contexts/HederaWalletContext';
-import { toast } from 'sonner';
+// import { useHederaWallet } from '@/contexts/HederaWalletContext';
+// import { toast } from 'sonner';
+import { useDAppConnector } from '@/contexts/clientProviders';
 // import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
 
 interface GameMatchModalProps {
@@ -22,7 +25,7 @@ export const GameMatchModal = ({
   onClose,
   isOpen
 }: GameMatchModalProps) => {
-  const { isConnected } = useHederaWallet();
+  const {userAccountId} = useDAppConnector() ?? {};
   const [showQuickMatchOptions, setShowQuickMatchOptions] = useState(false);
 
   return (
@@ -37,7 +40,7 @@ export const GameMatchModal = ({
         {!showQuickMatchOptions ? (
           <div className="flex flex-col gap-3 mt-4">
             <Button
-              variant="outline" onClick={() => onSelectMatchType('staked')} disabled={!isConnected}
+              variant="outline" onClick={() => onSelectMatchType('staked')} disabled={!userAccountId}
               className="h-auto py-6 flex flex-col items-start gap-2 hover:bg-yellow-500/10 hover:border-yellow-500 disabled:opacity-50"
             >
               <div className="flex items-center gap-2 w-full">
@@ -47,16 +50,15 @@ export const GameMatchModal = ({
               <span className="text-sm text-muted-foreground">
                 Random opponent + HBAR stake
               </span>
-              {!isConnected && (
+              {!userAccountId && (
                 <span className="text-xs text-red-500">Connect wallet first</span>
               )}
             </Button>
 
-            <Button variant="outline" className="h-auto py-6 flex flex-col items-start gap-2 hover:bg-blue-500/10 hover:border-blue-500"
-              onClick={() => {
-                onSelectMatchType('quick');
-                setShowQuickMatchOptions(true);
-              }}
+            <Button
+              variant="outline"
+              className="h-auto py-6 flex flex-col items-start gap-2 hover:bg-blue-500/10 hover:border-blue-500"
+              onClick={() => {onSelectMatchType('quick');setShowQuickMatchOptions(true);}}
             >
               <div className="flex items-center gap-2 w-full">
                 <Zap className="h-6 w-6 text-blue-500" />
@@ -67,10 +69,10 @@ export const GameMatchModal = ({
               </span>
             </Button>
 
-            <Button variant="outline" className="h-auto py-6 flex flex-col items-start gap-2 hover:bg-green-500/10 hover:border-green-500"
-              onClick={() => {
-                onSelectMatchType('friendly');
-              }}
+            <Button
+              variant="outline"
+              className="h-auto py-6 flex flex-col items-start gap-2 hover:bg-green-500/10 hover:border-green-500"
+              onClick={() => { onSelectMatchType('friendly');}}
             >
               <div className="flex items-center gap-2 w-full">
                 <Users className="h-6 w-6 text-green-500" />

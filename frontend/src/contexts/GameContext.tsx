@@ -1,13 +1,14 @@
-import { GameContext } from "@/hooks/useGameContext";
 import { ReactNode } from "react";
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { socketService } from '@/services/socketService';
-import { useHederaWallet } from '@/contexts/HederaWalletContext';
+// import { useHederaWallet } from '@/contexts/HederaWalletContext';
 import { toast } from 'sonner';
 import { MatchType, Player, GameState, GameResult, GameType } from '@/types/game';
+import { useDAppConnector } from "./clientProviders";
+import { GameContext } from "@/hooks/useGameContext";
 
 export default function GameProviders({ children }: { children: ReactNode }) {
-    const { accountId, isConnected } = useHederaWallet();
+    const { userAccountId } = useDAppConnector();
     const [gameType, setGameType] = useState<GameType | ''>("");
     const [showMatchModal, setShowMatchModal] = useState(true);
     const [matchType, setMatchType] = useState<MatchType | null>(null);
@@ -21,16 +22,14 @@ export default function GameProviders({ children }: { children: ReactNode }) {
     const [countdown, setCountdown] = useState<number | null>(null);
     const [waitingToastId, setWaitingToastId] = useState<string | number | null>(null);
     const pauseTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const playerName = userAccountId ? userAccountId.slice(0, 3) + '...' + userAccountId.slice(-3) : "Anonymous";
     
-    const playerName = accountId || localStorage.getItem("playerName") || `Player_${Math.random().toString(36).substr(2, 6)}`;
-    const walletAddress = accountId || '0x0000000000000000000000000000000000000000';
-
     useEffect(() => {
-        socketService.connect(playerName, walletAddress);
+        socketService.connect(playerName, userAccountId);
         return () => {
             socketService.disconnect();
         };
-    }, [playerName, walletAddress]);
+    }, [playerName, userAccountId]);
 
     const handleRoomCreated = useCallback((data: { roomCode: string }) => {
         setRoomCode(data.roomCode);
@@ -100,12 +99,12 @@ export default function GameProviders({ children }: { children: ReactNode }) {
     const handleGameResumed = useCallback(() => {
         setIsPaused(false);
         setPauseCountdown(null);
-        
+
         if (pauseTimerRef.current) {
             clearTimeout(pauseTimerRef.current);
             pauseTimerRef.current = null;
         }
-        
+
         toast.info('Game resumed');
     }, []);
 
@@ -115,7 +114,7 @@ export default function GameProviders({ children }: { children: ReactNode }) {
         setGameState(null);
         setIsPaused(false);
         setPauseCountdown(null);
-        
+
         if (pauseTimerRef.current) {
             clearTimeout(pauseTimerRef.current);
             pauseTimerRef.current = null;
@@ -128,7 +127,7 @@ export default function GameProviders({ children }: { children: ReactNode }) {
         setGameState(null);
         setIsPaused(false);
         setPauseCountdown(null);
-        
+
         if (pauseTimerRef.current) {
             clearTimeout(pauseTimerRef.current);
             pauseTimerRef.current = null;
@@ -147,7 +146,7 @@ export default function GameProviders({ children }: { children: ReactNode }) {
         setMatchType(type);
 
         if (type === 'staked') {
-            if (!isConnected) {
+            if (!userAccountId) {
                 toast.error('Please connect your wallet first');
                 return;
             }
@@ -155,45 +154,45 @@ export default function GameProviders({ children }: { children: ReactNode }) {
         } else if (type === 'quick' || type === 'friendly') {
             setShowMatchModal(false);
         }
-    }, [isConnected]);
+    }, [userAccountId]);
 
     const createFriendlyRoom = useCallback(() => {
         const player: Player = {
             name: playerName,
             rating: 1000,
-            walletAddress,
+            walletAddress: userAccountId,
         };
         socketService.createRoom(gameType as GameType, player);
-    }, [gameType, playerName, walletAddress]);
+    }, [gameType, playerName, userAccountId]);
 
     const createQuickMatch = useCallback(() => {
         const player: Player = {
             name: playerName,
             rating: 1000,
-            walletAddress,
+            walletAddress: userAccountId,
         };
         socketService.createQuickMatch(gameType as GameType, player);
         setShowRoomView('waiting');
-    }, [gameType, playerName, walletAddress]);
+    }, [gameType, playerName, userAccountId]);
 
     const joinQuickMatch = useCallback(() => {
         const player: Player = {
             name: playerName,
             rating: 1000,
-            walletAddress,
+            walletAddress: userAccountId,
         };
         socketService.joinQuickMatch(gameType as GameType, player);
         setShowRoomView('waiting');
-    }, [gameType, playerName, walletAddress]);
-    
+    }, [gameType, playerName, userAccountId]);
+
     const joinFriendlyRoom = useCallback((code: string) => {
         const player: Player = {
             name: playerName,
             rating: 1000,
-            walletAddress,
+            walletAddress: userAccountId,
         };
         socketService.joinRoom(code, player);
-    }, [playerName, walletAddress]);
+    }, [playerName, userAccountId]);
 
     const pauseGame = useCallback(() => {
         if (!isPaused && isPlaying) {
@@ -217,12 +216,12 @@ export default function GameProviders({ children }: { children: ReactNode }) {
         setGameState(null);
         setIsPaused(false);
         setPauseCountdown(null);
-        
+
         if (pauseTimerRef.current) {
             clearTimeout(pauseTimerRef.current);
             pauseTimerRef.current = null;
         }
-        
+
         setShowMatchModal(true);
     }, []);
 
@@ -268,7 +267,7 @@ export default function GameProviders({ children }: { children: ReactNode }) {
             socketService.resumeGame();
             setPauseCountdown(null);
             setIsPaused(false);
-            
+
             if (pauseTimerRef.current) {
                 clearTimeout(pauseTimerRef.current);
                 pauseTimerRef.current = null;

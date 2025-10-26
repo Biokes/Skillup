@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Footer from "@/components/footer";
 import { useState } from "react";
-import { useDAppConnector } from "@/components/clientProviders";
+import { useDAppConnector } from "@/contexts/clientProviders";
 // import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,} from "@/components/ui/alert-dialog";
 // import { Input } from "@/components/ui/input";
 // import { toast } from "sonner";
