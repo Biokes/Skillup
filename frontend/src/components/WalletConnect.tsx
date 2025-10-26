@@ -2,69 +2,47 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Wallet } from "lucide-react";
 import { toast } from "sonner";
+import { useDAppConnector } from "./clientProviders";
 
 export const WalletConnect = () => {
-  const [account, setAccount] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    checkConnection();
-  }, []);
+  const { dAppConnector, userAccountId, disconnect, refresh } = useDAppConnector() ?? {};
 
-  const checkConnection = async () => {
-    if (typeof (window as any).ethereum !== "undefined") {
-      try {
-        const provider = new ethers.BrowserProvider((window as any).ethereum);
-        const accounts = await provider.listAccounts();
-        if (accounts.length > 0) {
-          setAccount(accounts[0].address);
-        }
-      } catch (error) {
-        console.error("Error checking connection:", error);
-      }
+  const handleConnectWallet = async () => {
+    setLoading(true)
+    toast.info("Preparing wallet connection pls wait", { duration: 5 })
+    if (dAppConnector) {
+      await dAppConnector.openModal();
+      if (refresh) refresh();
     }
   };
 
-  const connectWallet = async () => {
-    if (typeof (window as any).ethereum === "undefined") {
-      toast.error("Please install MetaMask to play!");
-      window.open("https://metamask.io/download/", "_blank");
-      return;
+  const handleDisconnect = () => {
+    if (disconnect) {
+      void disconnect();
     }
-
-    setLoading(true);
-    try {
-      const provider = new ethers.BrowserProvider((window as any).ethereum);
-      const accounts = await provider.send("eth_requestAccounts", []);
-      
-      if (accounts.length > 0) {
-        setAccount(accounts[0]);
-        toast.success("Wallet connected! Ready to play!");
-      }
-    } catch (error: any) {
-      console.error("Connection error:", error);
-      toast.error(error.message || "Failed to connect wallet");
-    } finally {
-      setLoading(false);
-    }
+    toast.info("wallet disconnected", { duration: 5 })
   };
 
-  const disconnectWallet = () => {
-    setAccount(null);
-    toast.info("Wallet disconnected");
+  const handleNavigateToHub = async () => {
+    await handleConnectWallet()
+    if (userAccountId) {
+      console.log("wallet connected")
+    }
   };
 
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  if (account) {
+  if (userAccountId) {
     return (
       <div className="flex items-center gap-3">
         <div className="glass px-4 py-2 rounded-lg border-2 border-primary/30">
-          <span className="text-primary font-mono text-sm">{formatAddress(account)}</span>
+          <span className="text-primary font-mono text-sm">{formatAddress(userAccountId)}</span>
         </div>
-        <Button variant="outline" size="sm" onClick={disconnectWallet}>
+        <Button variant="outline" size="sm" onClick={handleDisconnect}>
           Disconnect
         </Button>
       </div>
@@ -72,7 +50,7 @@ export const WalletConnect = () => {
   }
 
   return (
-    <Button variant="wallet" size="lg" onClick={connectWallet}disabled={loading}className="animate-pulse">
+    <Button variant="wallet" size="lg" onClick={handleConnectWallet} disabled={loading} className="animate-pulse">
       <Wallet className="mr-2 h-5 w-5" />
       {loading ? "Connecting..." : "Connect Wallet"}
     </Button>
