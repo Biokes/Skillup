@@ -3,23 +3,24 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { HederaWalletProvider } from "@/contexts/HederaWalletContext";
+// import { HederaWalletProvider } from "@/contexts/HederaWalletContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import GameHub from "./pages/GameHub";
-import { CheckersBoard } from "./components/checkers/CheckersBoard";
-import { AirHockeyGame } from "./components/airhockey/AirHockeyGame";
-import { PingPongGame } from "./components/pingpong/PingPongGame";
-// import { PoolGame } from "./components/pool/PoolGame";
-import { RockPaperScissors } from "./components/rps/RockPaperScissors";
-import { ChessGame } from "./components/chess/ChessGame";
+// import { CheckersBoard } from "./components/checkers/CheckersBoard";
+// import { AirHockeyGame } from "./components/airhockey/AirHockeyGame";
+// import { PingPongGame } from "./components/pingpong/PingPongGame";
+// // import { PoolGame } from "./components/pool/PoolGame";
+// import { RockPaperScissors } from "./components/rps/RockPaperScissors";
+// import { ChessGame } from "./components/chess/ChessGame";
 import GameProviders from "./contexts/GameContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <HederaWalletProvider>
+  // <QueryClientProvider client={queryClient}>
+    {/* <HederaWalletProvider> */}
+    <ClientProviders>
       <GameProviders>
         <TooltipProvider>
           <BrowserRouter>
@@ -39,8 +40,10 @@ const App = () => (
           <Sonner />
         </TooltipProvider>
       </GameProviders>
-    </HederaWalletProvider>
-  </QueryClientProvider>
+    </ClientProviders>
+
+    {/* </HederaWalletProvider> */}
+  // </QueryClientProvider>
 );
 
 export default App;

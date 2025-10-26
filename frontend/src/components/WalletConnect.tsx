@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Wallet } from "lucide-react";
 import { toast } from "sonner";
-import { ethers } from "ethers";
 
 export const WalletConnect = () => {
   const [account, setAccount] = useState<string | null>(null);
