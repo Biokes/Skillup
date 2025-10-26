@@ -26,13 +26,13 @@ export const WalletConnect = () => {
   };
 
   const formatAddress = (address: string) => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+    return `${address.slice(0,3)}...${address.slice(-3)}`;
   };
 
   if (userAccountId) {
     return (
       <div className="flex items-center gap-3">
-        <div className="glass px-4 py-2 rounded-lg border-2 border-primary/30">
+        <div className="glass px-3 py-2 rounded-lg border-2 border-primary/30">
           <span className="text-primary font-mono text-sm">{formatAddress(userAccountId)}</span>
         </div>
         <Button variant="outline" size="sm" onClick={handleDisconnect}>
