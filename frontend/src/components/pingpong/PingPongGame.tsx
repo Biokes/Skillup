@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pause, Play, Info } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { useMultiplayerGame } from "@/hooks/useMultiplayerGame";
+// import { useMultiplayerGame } from "@/hooks/useMultiplayerGame";
 import { GameMatchModal } from "@/components/modals/GameMatchModal";
 import { CreateRoomCode } from "@/components/room/CreateRoomCode";
 import { JoinRoomCode } from "@/components/room/JoinRoomCode";

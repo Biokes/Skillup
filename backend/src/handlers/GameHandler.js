@@ -245,8 +245,9 @@ class GameHandler {
         await this.handleJoinRoom(socket, { roomCode: room.code, player });
         console.log(`Player ${player.name} joined quick match ${room.code}`);
       } else {
-        // No games available
-        socket.emit('error', { message: 'No quick match games available. Try creating one!' });
+        // No games available - create one instead
+        console.log(`No quick match available for ${gameType}, creating new game for ${player.name}`);
+        await this.handleCreateQuickMatch(socket, { gameType, player });
       }
     } catch (error) {
       socket.emit('error', { message: error.message });
@@ -447,10 +448,23 @@ class GameHandler {
     if (!room) return;
 
     const gameService = this.gameServices[room.gameType];
-    const result = gameService.pauseGame(room.code, socket.id);
+
+    // Pass auto-resume callback
+    const autoResumeCallback = (roomCode) => {
+      console.log(`Auto-resuming game in room ${roomCode} after 10 seconds`);
+      this.io.to(roomCode).emit('gameResumed', { auto: true });
+    };
+
+    const result = gameService.pauseGame(room.code, socket.id, autoResumeCallback);
 
     if (result.success) {
-      this.io.to(room.code).emit('gamePaused', { pausesRemaining: result.pausesRemaining });
+      this.io.to(room.code).emit('gamePaused', {
+        pausesRemaining: result.pausesRemaining,
+        pausedBy: result.playerName,
+        autoResumeIn: 10 // seconds
+      });
+    } else {
+      socket.emit('error', { message: result.message });
     }
   }
 
@@ -510,6 +524,37 @@ class GameHandler {
 
   handleDisconnect(socket) {
     console.log('Client disconnected:', socket.id);
+
+    const room = this.roomService.getRoomByPlayer(socket.id);
+
+    // If player disconnects during active game, other player wins
+    if (room && room.status === 'playing') {
+      const gameService = this.gameServices[room.gameType];
+      const game = gameService.getGame(room.code);
+
+      if (game && game.status === 'active') {
+        const disconnectedPlayer = game.players.find(p => p.socketId === socket.id);
+        const winner = game.players.find(p => p.socketId !== socket.id);
+
+        if (disconnectedPlayer && winner) {
+          console.log(`Player ${disconnectedPlayer.name} disconnected. ${winner.name} wins by disconnect.`);
+
+          // End game with winner
+          this.handleGameOver(room.code, room.gameType, {
+            gameOver: true,
+            winner: winner,
+            isDraw: false,
+            reason: 'disconnect'
+          });
+
+          // Notify opponent
+          this.io.to(room.code).emit('opponentDisconnected', {
+            disconnectedPlayer: disconnectedPlayer.name,
+            winner: winner.name
+          });
+        }
+      }
+    }
 
     this.connectionService.handleDisconnection(socket.id);
     this.handleLeaveRoom(socket);

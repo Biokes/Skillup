@@ -19,26 +19,26 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-      <HederaWalletProvider>
-    <GameProviders>
-      <TooltipProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="*" element={<NotFound />} />
-            <Route path="/hub" element={<GameHub />} />
-            <Route path="/checkers" element={<CheckersBoard />} />
-            <Route path="/chess" element={<ChessGame />} />
-            <Route path="/airHockey" element={<AirHockeyGame />} />
-            <Route path="/pingpong" element={<PingPongGame />} />
-            {/* <Route path="/pool" element={<PoolGame/>} />  */}
-            <Route path="/rps" element={<RockPaperScissors />} />
-          </Routes>
-        </BrowserRouter>
-        <Toaster />
-        <Sonner />
-      </TooltipProvider>
-    </GameProviders>
+    <HederaWalletProvider>
+      <GameProviders>
+        <TooltipProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="*" element={<NotFound />} />
+              <Route path="/hub" element={<GameHub />} />
+              {/* <Route path="/checkers" element={<CheckersBoard />} />
+              <Route path="/chess" element={<ChessGame />} />
+              <Route path="/airHockey" element={<AirHockeyGame />} />
+              <Route path="/pingpong" element={<PingPongGame />} />
+              {/* <Route path="/pool" element={<PoolGame/>} />  */}
+              {/* <Route path="/rps" element={<RockPaperScissors />} /> */}
+            </Routes>
+          </BrowserRouter>
+          <Toaster />
+          <Sonner />
+        </TooltipProvider>
+      </GameProviders>
     </HederaWalletProvider>
   </QueryClientProvider>
 );

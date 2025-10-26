@@ -52,6 +52,7 @@ export interface GameResult {
   };
 }
 export interface GameContextType {
+  pauseCountdown: number | null;
   gameType: string | GameType;
   setGameType: React.Dispatch<React.SetStateAction<GameType | string>>;
   showMatchModal: boolean;

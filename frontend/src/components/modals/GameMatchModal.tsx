@@ -55,7 +55,7 @@ export const GameMatchModal = ({
             <Button variant="outline" className="h-auto py-6 flex flex-col items-start gap-2 hover:bg-blue-500/10 hover:border-blue-500"
               onClick={() => {
                 onSelectMatchType('quick');
-                toast.loading("Looking for an opponent", {duration: Infinity})
+                setShowQuickMatchOptions(true);
               }}
             >
               <div className="flex items-center gap-2 w-full">
@@ -69,7 +69,6 @@ export const GameMatchModal = ({
 
             <Button variant="outline" className="h-auto py-6 flex flex-col items-start gap-2 hover:bg-green-500/10 hover:border-green-500"
               onClick={() => {
-                setShowQuickMatchOptions(true);
                 onSelectMatchType('friendly');
               }}
             >
@@ -86,48 +85,7 @@ export const GameMatchModal = ({
               Cancel
             </Button>
           </div>
-        ) : (
-          <div className="flex flex-col gap-3 mt-4">
-            <p className="text-center text-muted-foreground mb-2">
-              Create a game or join an available match
-            </p>
-
-            <Button onClick={() => {
-                onCreateQuickMatch?.();
-                // onClose();
-              }}
-              className="h-auto py-3 flex flex-col items-start gap-2"
-            >
-              <div className="flex items-center gap-2 w-full">
-                <Plus className="h-6 w-6" />
-                <span className="font-bold text-lg">Create Game</span>
-              </div>
-              <span className="text-sm opacity-80">
-                Wait for players to join
-              </span>
-            </Button>
-
-              <Button onClick={() => {
-                onJoinQuickMatch?.();
-                // onClose();
-              }}
-              variant="outline" className="h-auto py-3 flex flex-col items-start gap-2"
-            >
-              <div className="flex items-center gap-2 w-full">
-                <Search className="h-6 w-6" />
-                <span className="font-bold text-lg">Join Game</span>
-              </div>
-              <span className="text-sm text-muted-foreground">
-                Find available matches
-              </span>
-            </Button>
-
-            <Button variant="ghost" onClick={() => setShowQuickMatchOptions(false)} className="mt-2">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-          </div>
-        )}
+        ) : null}
       </DialogContent>
     </Dialog>
   );

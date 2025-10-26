@@ -29,13 +29,14 @@ class BaseGameService {
       roomCode,
       gameType: this.gameType,
       players: [
-        { ...player1, index: 0, socketId: player1.socketId },
-        { ...player2, index: 1, socketId: player2.socketId }
+        { ...player1, index: 0, socketId: player1.socketId, pausesUsed: 0 },
+        { ...player2, index: 1, socketId: player2.socketId, pausesUsed: 0 }
       ],
       status: 'active',
       startTime: Date.now(),
       pauseCount: 0,
       isPaused: false,
+      pauseTimerId: null,
       ...this.getInitialGameState()
     };
 
@@ -99,9 +100,10 @@ class BaseGameService {
    * Pause game
    * @param {string} roomCode
    * @param {string} socketId - Player requesting pause
+   * @param {Function} resumeCallback - Callback to auto-resume after 10 seconds
    * @returns {object} { success: boolean, message?: string, pausesRemaining?: number }
    */
-  pauseGame(roomCode, socketId) {
+  pauseGame(roomCode, socketId, resumeCallback) {
     const game = this.activeGames.get(roomCode);
     if (!game) {
       return { success: false, message: 'Game not found' };
@@ -111,17 +113,41 @@ class BaseGameService {
       return { success: false, message: 'Game is already paused' };
     }
 
-    const MAX_PAUSES = 3;
-    if (game.pauseCount >= MAX_PAUSES) {
-      return { success: false, message: 'Maximum pauses reached' };
+    // Find the player who requested pause
+    const player = game.players.find(p => p.socketId === socketId);
+    if (!player) {
+      return { success: false, message: 'Player not found' };
+    }
+
+    // Check player's pause limit (2 per player)
+    const MAX_PAUSES_PER_PLAYER = 2;
+    if (player.pausesUsed >= MAX_PAUSES_PER_PLAYER) {
+      return { success: false, message: 'You have no pauses remaining' };
     }
 
     game.isPaused = true;
+    player.pausesUsed += 1;
     game.pauseCount += 1;
+
+    // Set auto-resume timer for 10 seconds
+    if (game.pauseTimerId) {
+      clearTimeout(game.pauseTimerId);
+    }
+
+    game.pauseTimerId = setTimeout(() => {
+      if (game.isPaused) {
+        game.isPaused = false;
+        game.pauseTimerId = null;
+        if (resumeCallback) {
+          resumeCallback(roomCode);
+        }
+      }
+    }, 10000); // 10 seconds
 
     return {
       success: true,
-      pausesRemaining: MAX_PAUSES - game.pauseCount
+      pausesRemaining: MAX_PAUSES_PER_PLAYER - player.pausesUsed,
+      playerName: player.name
     };
   }
 
@@ -134,6 +160,12 @@ class BaseGameService {
     const game = this.activeGames.get(roomCode);
     if (!game) return false;
 
+    // Clear auto-resume timer if exists
+    if (game.pauseTimerId) {
+      clearTimeout(game.pauseTimerId);
+      game.pauseTimerId = null;
+    }
+
     game.isPaused = false;
     return true;
   }
@@ -144,6 +176,10 @@ class BaseGameService {
    * @returns {boolean} Success
    */
   endGame(roomCode) {
+    const game = this.activeGames.get(roomCode);
+    if (game && game.pauseTimerId) {
+      clearTimeout(game.pauseTimerId);
+    }
     return this.activeGames.delete(roomCode);
   }
 
