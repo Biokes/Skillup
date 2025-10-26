@@ -4,51 +4,54 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Footer from "@/components/footer";
 import { useState } from "react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { useDAppConnector } from "@/components/clientProviders";
+// import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,} from "@/components/ui/alert-dialog";
+// import { Input } from "@/components/ui/input";
+// import { toast } from "sonner";
 
 const Index = () => {
   const navigate = useNavigate();
-  const [showNameDialog, setShowNameDialog] = useState(false);
-  const [playerName, setPlayerName] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleNameSubmit = () => {
-    setIsLoading(true);
-    sessionStorage.setItem("chainSkillsPlayerName", playerName.trim());
-    sessionStorage.setItem("playerName", playerName.trim());
+  // const [showNameDialog, setShowNameDialog] = useState(false);
+  // const [playerName, setPlayerName] = useState("");
+  // const [isLoading, setIsLoading] = useState(false);
+  // const handleNameSubmit = () => {
+  //   setIsLoading(true);
+  //   sessionStorage.setItem("chainSkillsPlayerName", playerName.trim());
+  //   sessionStorage.setItem("playerName", playerName.trim());
     
-    setIsLoading(false);
-    setShowNameDialog(false);
-        navigate("/hub");
-  };
+  //   setIsLoading(false);
+  //   setShowNameDialog(false);
+  //       navigate("/hub");
+  // };
 
-  const handleNavigateToHub = () => {
-    const name = sessionStorage.getItem("chainSkillsPlayerName");
-    
-    if (name) {
-      navigate("/hub");
-    } else {
-      setShowNameDialog(true);
-      setPlayerName("");
+   const { dAppConnector, userAccountId, disconnect, refresh } = useDAppConnector() ?? {};
+
+  const handleLogin = async () => {
+    if (dAppConnector) {
+      await dAppConnector.openModal();
+      if (refresh) refresh();
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleNameSubmit();
+  const handleDisconnect = () => {
+    if (disconnect) {
+      void disconnect();
     }
   };
+
+  const handleNavigateToHub = async () => {
+    
+    await handleLogin()
+    if (userAccountId) { 
+      console.log("wallet connected")
+    }
+  };
+
+  // const handleKeyPress = (e: React.KeyboardEvent) => {
+  //   if (e.key === "Enter") {
+  //     handleNameSubmit();
+  //   }
+  // };
 
   const Hero = () => {
     return (
@@ -175,7 +178,7 @@ const Index = () => {
       <Hero />
       <FAQ />
       <Footer />
-      <AlertDialog open={showNameDialog} onOpenChange={setShowNameDialog}>
+      {/* <AlertDialog open={showNameDialog} onOpenChange={setShowNameDialog}>
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="ribeye text-gradient text-xl text-center">Welcome to Chainskills Arena!</AlertDialogTitle>
@@ -210,7 +213,7 @@ const Index = () => {
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>
+      </AlertDialog> */}
     </div>
   );
 };
