@@ -6,11 +6,21 @@ class SocketService {
   private listeners: Map<string, Function[]> = new Map();
 
   connect(username: string, walletAddress: string) {
-    const backendUrl =
-      import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+    if (this.socket && this.socket.connected) {
+      console.log("⚠️ Socket already connected. Skipping new connection.");
+      return;
+    }
+
+    if (this.socket) {
+      console.log("🧹 Cleaning up old socket before reconnecting...");
+      this.socket.removeAllListeners();
+      this.socket.disconnect();
+      this.socket = null;
+    }
 
     this.socket = io(backendUrl, {
-      query: { username, walletAddress, deviceId: `${Date.now()}` },
+      query: { username, walletAddress},
       transports: ["websocket"],
       reconnection: true,
       reconnectionAttempts: 5,
@@ -21,18 +31,26 @@ class SocketService {
       console.log("✅ Connected to backend");
     });
 
-    this.socket.on("disconnect", () => {
-      console.log("❌ Disconnected from backend");
+    this.socket.on("disconnect", (reason) => {
+      console.log("❌ Disconnected from backend:", reason);
     });
 
     this.socket.on("error", (data: { message: string }) => {
-      console.error("Socket error:", data.message);
+      console.log("⚠️ Socket error:", data);
       this.emit("error", data.message);
     });
 
     this.setupGameEventListeners();
   }
 
+  private ensureConnected() {
+    if (!this.socket || !this.socket.connected) {
+      console.error("Socket is not connected. Reconnecting...");
+      const backendUrl =
+        import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+      this.socket = io(backendUrl, { transports: ["websocket"] });
+    }
+  }
   private setupGameEventListeners() {
     if (!this.socket) return;
 
@@ -93,14 +111,17 @@ class SocketService {
   }
 
   findQuickMatch(gameType: GameType, player: Player) {
+    this.ensureConnected();
     this.socket?.emit("findQuickMatch", { gameType, player });
   }
 
   createQuickMatch(gameType: GameType, player: Player) {
+    this.ensureConnected();
     this.socket?.emit("createQuickMatch", { gameType, player });
   }
 
   joinQuickMatch(gameType: GameType, player: Player) {
+    this.ensureConnected();
     this.socket?.emit("joinQuickMatch", { gameType, player });
   }
 

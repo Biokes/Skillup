@@ -22,9 +22,15 @@ export default function GameProviders({ children }: { children: ReactNode }) {
     const [waitingToastId, setWaitingToastId] = useState<string | number | null>(null);
     const pauseTimerRef = useRef<NodeJS.Timeout | null>(null);
     const playerName = userAccountId ? userAccountId.slice(0, 3) + '...' + userAccountId.slice(-3) : "Anonymous";
-    
+
     useEffect(() => {
-        socketService.connect(playerName, userAccountId);
+        let storedName = localStorage.getItem("chainSkillsName");
+        if (!storedName) {
+            storedName = "player" + Math.floor(Math.random() * 100000);
+            localStorage.setItem("chainSkillsName", storedName);
+        }
+        console.log("about to connect with name: ", storedName)
+        socketService.connect(playerName, storedName);
         return () => {
             socketService.disconnect();
         };
@@ -34,17 +40,14 @@ export default function GameProviders({ children }: { children: ReactNode }) {
         setRoomCode(data.roomCode);
         setShowRoomView('create');
         setShowMatchModal(false);
-        const toastId = toast.loading('Waiting for Player 2 to join...', {
-            duration: Infinity,
-        });
+        const toastId = toast.info('Waiting for Player 2 to join...');
         setWaitingToastId(toastId);
     }, []);
 
     const handleWaitingForOpponent = useCallback((data: { roomCode: string }) => {
         setRoomCode(data.roomCode);
         setShowRoomView('waiting');
-        const toastId = toast.loading('Waiting for opponent to join...', { duration: Infinity });
-        setWaitingToastId(toastId);
+        toast.info('Waiting for opponent to join...');
     }, []);
 
     const handleRoomReady = useCallback(() => {
@@ -165,21 +168,28 @@ export default function GameProviders({ children }: { children: ReactNode }) {
     }, [gameType, playerName, userAccountId]);
 
     const createQuickMatch = useCallback(() => {
-        const player: Player = {
-            name: playerName,
-            rating: 1000,
-            walletAddress: userAccountId,
-        };
-        socketService.createQuickMatch(gameType as GameType, player);
+        let storedName = localStorage.getItem("chainSkillsName");
+        if (!storedName) {
+            storedName = "player" + Math.floor(Math.random() * 100000);
+            localStorage.setItem("chainSkillsName", storedName);
+        }
+        socketService.createQuickMatch(gameType as GameType, storedName);
         setShowRoomView('waiting');
-    }, [gameType, playerName, userAccountId]);
+    }, [gameType]);
 
     const joinQuickMatch = useCallback(() => {
+        let storedName = localStorage.getItem("chainSkillsName");
+        if (!storedName) {
+            storedName = "player" + Math.floor(Math.random() * 100000);
+            localStorage.setItem("chainSkillsName", storedName);
+        }
+
         const player: Player = {
-            name: playerName,
+            name: userAccountId ? playerName : storedName,
             rating: 1000,
-            walletAddress: userAccountId,
+            walletAddress: userAccountId || "guest",
         };
+
         socketService.joinQuickMatch(gameType as GameType, player);
         setShowRoomView('waiting');
     }, [gameType, playerName, userAccountId]);
@@ -215,12 +225,10 @@ export default function GameProviders({ children }: { children: ReactNode }) {
         setGameState(null);
         setIsPaused(false);
         setPauseCountdown(null);
-
         if (pauseTimerRef.current) {
             clearTimeout(pauseTimerRef.current);
             pauseTimerRef.current = null;
         }
-
         setShowMatchModal(true);
     }, []);
 
@@ -339,6 +347,7 @@ export default function GameProviders({ children }: { children: ReactNode }) {
                 gameResult,
                 playerName,
                 countdown,
+                gameType,
                 selectMatchType,
                 createFriendlyRoom,
                 joinFriendlyRoom,
@@ -350,7 +359,6 @@ export default function GameProviders({ children }: { children: ReactNode }) {
                 leaveGame,
                 playAgain,
                 setShowRoomView,
-                gameType,
                 setGameType
             }}
         >

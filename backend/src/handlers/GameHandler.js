@@ -223,16 +223,14 @@ class GameHandler {
           room.gameType === gameType &&
           room.status === 'waiting' &&
           !room.guest &&
-          !room.isStaked // Only join non-staked rooms
+          !room.isStaked
         );
 
       if (waitingRooms.length > 0) {
-        // Join first available room
         const room = waitingRooms[0];
         await this.handleJoinRoom(socket, { roomCode: room.code, player });
         console.log(`Player ${player.name} joined quick match ${room.code}`);
       } else {
-        // No games available - create one instead
         console.log(`No quick match available for ${gameType}, creating new game for ${player.name}`);
         await this.handleCreateQuickMatch(socket, { gameType, player });
       }

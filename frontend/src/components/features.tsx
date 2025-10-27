@@ -17,7 +17,7 @@ import { useDAppConnector } from "@/contexts/clientProviders";
 export default function Features() {
     const navigate = useNavigate();
     const [isOpenModal, setOpenModal] = useState(false);
-    const { gameType, setGameType } = useGame()
+    const { gameType, setGameType, joinQuickMatch } = useGame()
     const { createQuickMatch } = useGame()
     // const { userAccountId } = useDAppConnector ?? {}
 
@@ -44,17 +44,6 @@ export default function Features() {
         // }
     };
 
-    const joinQuickMatch = async () => {
-        try {
-            const activeGames = await fetch(`${BASE_URL}/games/activeGames/${gameType}`)
-            const games = activeGames.json()
-            console.log("found games: ", games);
-            setOpenModal(false);
-            navigate(`/${gameType}?mode=quick-join`);
-        } catch (error) {
-            console.error("error during finding games: ", error?.message)
-        }
-    }
 
     const handleCreateQuickMatch = () => {
         createQuickMatch()
@@ -108,8 +97,8 @@ export default function Features() {
                     isOpen={isOpenModal}
                     onClose={() => setOpenModal(false)}
                     onSelectMatchType={handleSelectMatchType}
-                    onCreateQuickMatch={handleCreateQuickMatch}
-                    onJoinQuickMatch={joinQuickMatch}
+                    onCreateMatch={handleCreateQuickMatch}
+                    onJoinQuickMatch={() => { console.log("joining quick match");joinQuickMatch() }}
                 />
             </div>
         </section>

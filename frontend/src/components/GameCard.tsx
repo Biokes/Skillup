@@ -41,7 +41,7 @@ export const GameCard = ({ title, description, image, players, status, onPlay }:
           </div>
           <div className="flex items-center gap-2">
             <Trophy className="h-4 w-4 text-secondary" />
-            <span>Win ETH</span>
+            <span>Win HBAR</span>
           </div>
         </div>
 
