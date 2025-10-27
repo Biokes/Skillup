@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState, createContext, useContext } from 'react';
+import { ReactNode, useEffect, useState, createContext, useContext } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HederaSessionEvent, HederaJsonRpcMethod, DAppConnector, HederaChainId } from '@hashgraph/hedera-wallet-connect';
 import { LedgerId } from '@hashgraph/sdk';

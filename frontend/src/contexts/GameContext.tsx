@@ -30,11 +30,12 @@ export default function GameProviders({ children }: { children: ReactNode }) {
             localStorage.setItem("chainSkillsName", storedName);
         }
         console.log("about to connect with name: ", storedName)
-        socketService.connect(playerName, storedName);
+        // Fix: Pass username first, then walletAddress
+        socketService.connect(storedName, userAccountId || "guest");
         return () => {
             socketService.disconnect();
         };
-    }, [playerName, userAccountId]);
+    }, [userAccountId]);
 
     const handleRoomCreated = useCallback((data: { roomCode: string }) => {
         setRoomCode(data.roomCode);
@@ -173,9 +174,14 @@ export default function GameProviders({ children }: { children: ReactNode }) {
             storedName = "player" + Math.floor(Math.random() * 100000);
             localStorage.setItem("chainSkillsName", storedName);
         }
-        socketService.createQuickMatch(gameType as GameType, storedName);
+          const player: Player = {
+            name: userAccountId ? playerName : storedName,
+            rating: 1000,
+            walletAddress: userAccountId || "guest",
+        };
+        socketService.createQuickMatch(gameType as GameType, player);
         setShowRoomView('waiting');
-    }, [gameType]);
+    }, [gameType, playerName, userAccountId]);
 
     const joinQuickMatch = useCallback(() => {
         let storedName = localStorage.getItem("chainSkillsName");
@@ -191,6 +197,23 @@ export default function GameProviders({ children }: { children: ReactNode }) {
         };
 
         socketService.joinQuickMatch(gameType as GameType, player);
+        setShowRoomView('waiting');
+    }, [gameType, playerName, userAccountId]);
+
+    const findQuickMatch = useCallback(() => {
+        let storedName = localStorage.getItem("chainSkillsName");
+        if (!storedName) {
+            storedName = "player" + Math.floor(Math.random() * 100000);
+            localStorage.setItem("chainSkillsName", storedName);
+        }
+
+        const player: Player = {
+            name: userAccountId ? playerName : storedName,
+            rating: 1000,
+            walletAddress: userAccountId || "guest",
+        };
+
+        socketService.findQuickMatch(gameType as GameType, player);
         setShowRoomView('waiting');
     }, [gameType, playerName, userAccountId]);
 
@@ -237,59 +260,60 @@ export default function GameProviders({ children }: { children: ReactNode }) {
         setShowMatchModal(true);
     }, []);
 
-    useEffect(() => {
-        if (countdown === null) return;
+    // useEffect(() => {
+    //     if (countdown === null) return;
 
-        if (countdown > 0) {
-            const timer = setTimeout(() => {
-                setCountdown(countdown - 1);
-                toast.info(`${countdown}`, {
-                    duration: 1000,
-                    position: 'top-center',
-                });
-            }, 1000);
+    //     if (countdown > 0) {
+    //         const timer = setTimeout(() => {
+    //             setCountdown(countdown - 1);
+    //             toast.info(`${countdown}`, {
+    //                 duration: 1000,
+    //                 position: 'top-center',
+    //             });
+    //         }, 1000);
 
-            return () => clearTimeout(timer);
-        } else {
-            setCountdown(null);
-            setShowRoomView(null);
-        }
-    }, [countdown]);
+    //         return () => clearTimeout(timer);
+    //     } else {
+    //         setCountdown(null);
+    //         setShowRoomView(null);
+    //     }
+    // }, [countdown]);
 
-    useEffect(() => {
-        if (pauseCountdown === null) return;
-        if (!isPaused) return;
+    // useEffect(() => {
+    //     if (pauseCountdown === null) return;
+    //     if (!isPaused) return;
 
-        if (pauseCountdown > 0) {
-            pauseTimerRef.current = setTimeout(() => {
-                setPauseCountdown(pauseCountdown - 1);
-            }, 1000);
+    //     if (pauseCountdown > 0) {
+    //         pauseTimerRef.current = setTimeout(() => {
+    //             setPauseCountdown(pauseCountdown - 1);
+    //         }, 1000);
 
-            return () => {
-                if (pauseTimerRef.current) {
-                    clearTimeout(pauseTimerRef.current);
-                }
-            };
-        } else {
-            socketService.resumeGame();
-            setPauseCountdown(null);
-            setIsPaused(false);
+    //         return () => {
+    //             if (pauseTimerRef.current) {
+    //                 clearTimeout(pauseTimerRef.current);
+    //             }
+    //         };
+    //     } else {
+    //         socketService.resumeGame();
+    //         setPauseCountdown(null);
+    //         setIsPaused(false);
 
-            if (pauseTimerRef.current) {
-                clearTimeout(pauseTimerRef.current);
-                pauseTimerRef.current = null;
-            }
-        }
-    }, [pauseCountdown, isPaused]);
+    //         if (pauseTimerRef.current) {
+    //             clearTimeout(pauseTimerRef.current);
+    //             pauseTimerRef.current = null;
+    //         }
+    //     }
+    // }, [pauseCountdown, isPaused]);
 
-    useEffect(() => {
-        return () => {
-            if (pauseTimerRef.current) {
-                clearTimeout(pauseTimerRef.current);
-            }
-        };
-    }, []);
+    // useEffect(() => {
+    //     return () => {
+    //         if (pauseTimerRef.current) {
+    //             clearTimeout(pauseTimerRef.current);
+    //         }
+    //     };
+    // }, []);
 
+    
     useEffect(() => {
         socketService.on('roomCreated', handleRoomCreated);
         socketService.on('waitingForOpponent', handleWaitingForOpponent);
@@ -353,6 +377,7 @@ export default function GameProviders({ children }: { children: ReactNode }) {
                 joinFriendlyRoom,
                 createQuickMatch,
                 joinQuickMatch,
+                findQuickMatch,
                 pauseGame,
                 resumeGame,
                 forfeitGame,

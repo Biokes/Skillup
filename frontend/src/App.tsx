@@ -15,6 +15,8 @@ import { CheckersBoard } from "./components/checkers/CheckersBoard";
 import GameProviders from "./contexts/GameContext";
 import ClientProviders from "./contexts/clientProviders";
 
+
+
 const App = () => (
   <ClientProviders>
     <GameProviders>

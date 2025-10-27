@@ -17,8 +17,7 @@ import { useDAppConnector } from "@/contexts/clientProviders";
 export default function Features() {
     const navigate = useNavigate();
     const [isOpenModal, setOpenModal] = useState(false);
-    const { gameType, setGameType, joinQuickMatch } = useGame()
-    const { createQuickMatch } = useGame()
+    const { gameType, setGameType, findQuickMatch, createFriendlyRoom } = useGame()
     // const { userAccountId } = useDAppConnector ?? {}
 
     const games = [
@@ -46,7 +45,7 @@ export default function Features() {
 
 
     const handleCreateQuickMatch = () => {
-        createQuickMatch()
+        findQuickMatch()
         setOpenModal(false);
         navigate(`/${gameType}`);
     }
@@ -98,7 +97,10 @@ export default function Features() {
                     onClose={() => setOpenModal(false)}
                     onSelectMatchType={handleSelectMatchType}
                     onCreateMatch={handleCreateQuickMatch}
-                    onJoinQuickMatch={() => { console.log("joining quick match");joinQuickMatch() }}
+                    onJoinQuickMatch={() => {
+                        console.log("joining quick match");
+                        findQuickMatch()
+                    }}
                 />
             </div>
         </section>

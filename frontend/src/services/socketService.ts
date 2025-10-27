@@ -156,6 +156,10 @@ class SocketService {
     this.socket?.emit("poolShoot", { angle, power });
   }
 
+  checkersMove(moveData: { from: { row: number; col: number }; to: { row: number; col: number } }) {
+    this.socket?.emit("checkersMove", moveData);
+  }
+
   pauseGame() {
     this.socket?.emit("pauseGame");
   }

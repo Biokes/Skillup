@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Coins, Zap, Users } from 'lucide-react';
 import { MatchType } from '@/types/game';
@@ -11,18 +11,22 @@ interface GameMatchModalProps {
   onSelectMatchType: (matchType: MatchType) => void;
   onClose: () => void;
   isOpen: boolean;
+  onCreateMatch?: () => void;
+  onJoinQuickMatch?: () => void;
 }
 
 export const GameMatchModal = ({
   onSelectMatchType,
   onClose,
   isOpen,
+  onCreateMatch,
+  onJoinQuickMatch,
 }: GameMatchModalProps) => {
   const { userAccountId } = useDAppConnector() ?? {};
   const [showQuickMatchOptions, setShowQuickMatchOptions] = useState(false);
   const [isFriendly, setFriendly] = useState(false);
 
-  const { joinQuickMatch, createFriendlyRoom, leaveGame } = useGame();
+  const { createFriendlyRoom, leaveGame, gameType } = useGame();
 
   return (
     <Dialog
@@ -42,6 +46,11 @@ export const GameMatchModal = ({
                 : 'Friendly Match'
               : 'Choose Match Type'}
           </DialogTitle>
+          <DialogDescription className="text-gray-300">
+            {showQuickMatchOptions
+              ? 'Finding you an opponent...'
+              : 'Select a game mode to start playing'}
+          </DialogDescription>
         </DialogHeader>
 
         {!showQuickMatchOptions ? (
@@ -69,10 +78,14 @@ export const GameMatchModal = ({
             <Button variant="outline"
               className="h-auto py-6 flex flex-col items-start gap-2 hover:bg-blue-500/10 hover:border-blue-500"
               onClick={() => {
+                if (!gameType) {
+                  toast.error('Please select a game first');
+                  return;
+                }
                 onSelectMatchType('quick');
                 setShowQuickMatchOptions(true);
                 setFriendly(false);
-                joinQuickMatch();
+                onJoinQuickMatch?.();
               }}
             >
               <div className="flex items-center gap-2 w-full">
@@ -88,10 +101,14 @@ export const GameMatchModal = ({
               variant="outline"
               className="h-auto py-6 flex flex-col items-start gap-2 hover:bg-green-500/10 hover:border-green-500"
               onClick={() => {
+                if (!gameType) {
+                  toast.error('Please select a game first');
+                  return;
+                }
                 onSelectMatchType('friendly');
                 setFriendly(true);
                 setShowQuickMatchOptions(true);
-                createFriendlyRoom();
+                onCreateMatch?.();
               }}
             >
               <div className="flex items-center gap-2 w-full">
