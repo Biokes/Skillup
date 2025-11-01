@@ -1,0 +1,17 @@
+{
+  "name": "gameBackend",
+  "version": "1.0.0",
+  "description": "A backend for a gaming server that hhas multiple games and the",
+  "main": "server.ts",
+  "scripts": {
+    "test": "",
+    "dev": "ts-node src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.6.5",
+  "type": "module"
+}
