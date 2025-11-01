@@ -1,6 +1,6 @@
 const PORT = process.env.PORT || 3000;
 
-async function selfPing() {
+export async function selfPing() {
     try {
         const response = await fetch(`http://localhost:${PORT}/health`);
         if (response.ok) {

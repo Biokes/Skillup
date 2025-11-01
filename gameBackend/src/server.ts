@@ -1,17 +1,33 @@
-import express, { Request, Response, Application } from 'express';
+import express, { Application } from 'express';
 import dotenv from "dotenv"
-
+import { selfPing } from './utils';
+import { Routes } from './routers/index,';
+import cors from "cors"
 
 dotenv.config()
 const PORT = process.env.PORT || 3000;
 const app: Application = express();
 app.use(express.json())
 
-app.get('/health', (req: Request, res: Response) => {
-    res.status(200).json({ status: 'OK', message: 'Server is running and healthy.' });
-});
+app.use('/api/v1/', Routes)
+const corsOptions = {
+    origin:
+    //     [
+    // 'http://localhost:5173', 
+    // 'https://your-production-site.com'
+    //     ]
+   "*" ,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
 
 app.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
-    selfPing();
+    setTimeout(async () => {
+        await selfPing()
+     },50000)
 });
+
