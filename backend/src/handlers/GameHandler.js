@@ -9,6 +9,7 @@ const PingPongService = require('../services/games/PingPongService');
 const AirHockeyService = require('../services/games/AirHockeyService');
 const ChessService = require('../services/games/ChessService');
 const PoolService = require('../services/games/PoolService');
+const CheckersService = require('../services/games/CheckersService');
 
 class GameHandler {
   constructor(io) {
@@ -24,7 +25,8 @@ class GameHandler {
       pingpong: new PingPongService(),
       airhockey: new AirHockeyService(),
       chess: new ChessService(),
-      pool: new PoolService()
+      pool: new PoolService(),
+      checkers: new CheckersService()
     };
 
     this.gameLoops = new Map();
@@ -92,6 +94,10 @@ class GameHandler {
 
     socket.on('poolShoot', (data) => {
       this.handlePoolShoot(socket, data);
+    });
+
+    socket.on('checkersMove', (data) => {
+      this.handleCheckersMove(socket, data);
     });
 
     socket.on('pauseGame', () => {
@@ -253,7 +259,17 @@ class GameHandler {
 
   startGame(roomCode, gameType) {
     const room = this.roomService.getRoom(roomCode);
-    if (!room || !room.guest) return;
+    if (!room || !room.guest) {
+      console.error(`Cannot start game: room ${roomCode} not found or no guest`);
+      return;
+    }
+
+    // Validate gameType and gameService
+    if (!gameType || !this.gameServices[gameType]) {
+      console.error(`Cannot start game: invalid gameType "${gameType}" for room ${roomCode}`);
+      this.io.to(roomCode).emit('error', { message: 'Invalid game type' });
+      return;
+    }
 
     this.roomService.startGame(roomCode);
 
@@ -272,6 +288,10 @@ class GameHandler {
     }
 
     const gameService = this.gameServices[gameType];
+    if (!gameService) {
+      console.error(`Cannot start game loop: invalid gameType "${gameType}" for room ${roomCode}`);
+      return;
+    }
 
     const interval = setInterval(() => {
       const result = gameService.updateGameState(roomCode);
@@ -300,6 +320,11 @@ class GameHandler {
   async handleGameOver(roomCode, gameType, gameOverData) {
     const { winner, isDraw } = gameOverData;
     const gameService = this.gameServices[gameType];
+    if (!gameService) {
+      console.error(`Cannot handle game over: invalid gameType "${gameType}" for room ${roomCode}`);
+      return;
+    }
+
     const game = gameService.getGame(roomCode);
 
     if (!game) return;
@@ -409,6 +434,25 @@ class GameHandler {
 
     if (result.success) {
       this.io.to(room.code).emit('gameUpdate', result.game);
+    } else {
+      socket.emit('error', { message: result.error });
+    }
+  }
+
+  handleCheckersMove(socket, moveData) {
+    const room = this.roomService.getRoomByPlayer(socket.id);
+    if (!room) return;
+
+    const gameService = this.gameServices.checkers;
+    const result = gameService.makeMove?.(room.code, socket.id, moveData);
+
+    if (result.success) {
+      this.io.to(room.code).emit('gameUpdate', result.game);
+
+      // If continueJump is true, notify the player
+      if (result.continueJump) {
+        socket.emit('continueJump', { message: result.message });
+      }
     } else {
       socket.emit('error', { message: result.error });
     }

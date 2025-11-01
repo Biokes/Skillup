@@ -441,7 +441,6 @@ export const CheckersBoard = () => {
               </div>
             </div>
 
-            {/* Winner */}
             {winner && (
               <motion.div
                 initial={{ scale: 0 }}

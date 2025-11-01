@@ -7,11 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import GameHub from "./pages/GameHub";
 import { CheckersBoard } from "./components/checkers/CheckersBoard";
-// import { AirHockeyGame } from "./components/airhockey/AirHockeyGame";
-// import { PingPongGame } from "./components/pingpong/PingPongGame";
-// // import { PoolGame } from "./components/pool/PoolGame";
-// import { RockPaperScissors } from "./components/rps/RockPaperScissors";
-// import { ChessGame } from "./components/chess/ChessGame";
+
 import GameProviders from "./contexts/GameContext";
 import ClientProviders from "./contexts/clientProviders";
 

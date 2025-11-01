@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const GAME_TYPES = ['pingpong', 'airhockey', 'chess', 'pool'];
+const GAME_TYPES = ['pingpong', 'airhockey', 'chess', 'pool', 'checkers'];
 
 const playerGameStatsSchema = new mongoose.Schema({
   playerId: {
