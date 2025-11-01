@@ -1,15 +1,15 @@
 import express, { Application } from 'express';
-import dotenv from "dotenv"
-import { selfPing } from './utils';
-import { Routes } from './routers/index,';
-import cors from "cors"
+import dotenv from "dotenv";
+import cors from "cors";
+import router from './routers/index.js';
+import { selfPing } from './utils/index.js';
 
 dotenv.config()
 const PORT = process.env.PORT || 3000;
 const app: Application = express();
 app.use(express.json())
 
-app.use('/api/v1/', Routes)
+app.use('/api/v1/', router);
 const corsOptions = {
     origin:
     //     [
@@ -21,6 +21,7 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 };
+
 app.use(cors(corsOptions));
 
 
