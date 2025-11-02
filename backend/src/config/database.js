@@ -18,7 +18,6 @@ class Database {
 
       console.log('✓ Connected to MongoDB');
       console.log(`  Database: ${mongoose.connection.name}`);
-
       this.setupEventHandlers();
     } catch (error) {
       console.error('✗ MongoDB connection error:', error);
