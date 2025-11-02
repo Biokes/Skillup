@@ -1,7 +1,7 @@
 import express, { Application } from 'express';
 import dotenv from "dotenv";
 import cors from "cors";
-import router from './routers/index.js';
+import { Routes } from './routers/index.js';
 import { selfPing } from './utils/index.js';
 
 dotenv.config()
@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 const app: Application = express();
 app.use(express.json())
 
-app.use('/api/v1/', router);
+app.use('/api/v1/', Routes)
 const corsOptions = {
     origin:
     //     [
