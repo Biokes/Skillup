@@ -15,6 +15,7 @@ export class BaseRepository<T extends Document> {
         throw new Error(`Error creating document: ${(error as Error).message}, at baseRepostory.ts:14`);
         }
     }
+    
     async findById(id: string | Types.ObjectId): Promise<T | null> {
         try {
         return await this.model.findById(id).lean<T>();
