@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { IPlayerStats } from "./types.js";
+import { IPlayerStats, GAME_TYPES_ARRAY } from "./types.js";
 
 
 const playerGameStatsSchema = new mongoose.Schema<IPlayerStats>(

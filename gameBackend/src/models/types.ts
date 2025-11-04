@@ -76,3 +76,16 @@ export interface IGame extends Document {
   bothPlayersStaked(): boolean;
   getPrizeAmount(): string;
 }
+
+export const GAME_TYPES_ARRAY = ['pingpong', 'airhockey', 'chess', 'pool', 'checkers'] as const;
+
+export interface ISession { 
+    playerID: Types.ObjectId;
+    playerName: string;
+    deviceId: string;
+    socketId: string;
+    currentRoom: string;
+    currectGame: string;
+    isActive: boolean;
+    
+}
