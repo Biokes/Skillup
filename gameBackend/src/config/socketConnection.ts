@@ -1,6 +1,7 @@
-const { Server } = require('socket.io');
+import { Server } from "socket.io";
+import { Server as HttpServer } from "http";
 
-function setupSocketIO(httpServer) {
+function setupSocketIO(httpServer: HttpServer) {
   const FRONTEND_URL = process.env.FRONTEND_URL?.replace(/\/$/, '');
 
   const io = new Server(httpServer, {

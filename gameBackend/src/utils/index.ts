@@ -13,3 +13,4 @@ export async function selfPing() {
         console.error(`[Ping] ERROR during self-ping:`, (error as Error).message);
     }
 }
+
