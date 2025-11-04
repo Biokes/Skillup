@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { IGame } from "./types.js";
+import { GAME_STATUS, IGame } from "./types.js";
 
 const gameSchema = new mongoose.Schema<IGame>(
   {
@@ -16,12 +16,12 @@ const gameSchema = new mongoose.Schema<IGame>(
       index: true
     },
     player1: {
-      name: { type: String, required: true },
+      name: { type: String, required: false },
       rating: { type: Number, required: true },
       walletAddress: { type: String, lowercase: true }
     },
     player2: {
-      name: { type: String },
+      name: { type: String , required:false},
       rating: { type: Number },
       walletAddress: { type: String, lowercase: true }
     },
@@ -76,7 +76,7 @@ const gameSchema = new mongoose.Schema<IGame>(
     },
     status: {
       type: String,
-      enum: ['waiting', 'playing', 'finished'],
+      enum: GAME_STATUS,
       default: 'waiting'
     },
     endedAt: {

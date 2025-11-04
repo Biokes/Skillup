@@ -77,21 +77,28 @@ export interface IGame extends Document {
   getPrizeAmount(): string;
 }
 
-export const GAME_TYPES_ARRAY = ['pingpong', 'airhockey', 'chess', 'pool', 'checkers'] as const;
-
-export interface ISession { 
-    playerID: Types.ObjectId;
-    playerName: string;
-    deviceId: string;
-    socketId: string;
-    currentRoom: string;
-    currectGame: string;
-    isActive: boolean;   
+export const GAME_TYPES_ARRAY = [
+  "pingpong",
+  "airhockey",
+  "chess",
+  "pool",
+  "checkers",
+] as const;
+export const GAME_STATUS = ["waiting", "playing", "finished"] as const;
+export interface ISession {
+  playerID: Types.ObjectId;
+  playerName: string;
+  deviceId: string;
+  socketId: string;
+  currentRoom: string;
+  currectGame: string;
+  isActive: boolean;
 }
 export interface FindOptions {
-  sort?: Record<string, 1 | -1 | 'asc' | 'desc'>;
+  sort?: Record<string, 1 | -1 | "asc" | "desc">;
   limit?: number;
   skip?: number;
   select?: string | Record<string, 0 | 1>;
   populate?: string | Record<string, any>;
 }
+export type GAME_STATUS = "waiting" | "playing" | "finished";
