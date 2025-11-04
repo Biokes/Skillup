@@ -1,9 +1,19 @@
-export type GAME_TYPES = 'pingpong'|'airhockey'| 'chess'| 'pool'|'checkers';
+export type GAME_TYPES =
+  | "pingpong"
+  | "airhockey"
+  | "chess"
+  | "pool"
+  | "checkers";
 
 export interface IPlayer {
   name: string;
   rating: number;
   walletAddress?: string;
+  totalWins: number;
+    totalLosses: number;
+    avatar: string | null;
+    updateActivity(): Promise<IPlayer>;
+    
 }
 
 export interface IGame extends Document {
@@ -11,8 +21,8 @@ export interface IGame extends Document {
   gameType: GAME_TYPES;
   player1: IPlayer;
   player2?: IPlayer;
-  winner: 'player1' | 'player2' | null;
-  score: Record<string, any>;
+  winner: "player1" | "player2" | null;
+  score: Record<string, number>;
   isStaked: boolean;
   stakeAmount: string | null;
   player1Address?: string;
@@ -23,7 +33,7 @@ export interface IGame extends Document {
   claimed: boolean;
   claimTxHash?: string;
   claimedAt?: Date;
-  status: 'waiting' | 'playing' | 'finished';
+  status: "waiting" | "playing" | "finished";
   endedAt?: Date;
   createdAt: Date;
   updatedAt: Date;

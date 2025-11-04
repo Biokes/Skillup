@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { IGame, IPlayer } from "./types.js";
+import { IGame } from "./types.js";
 
 const gameSchema = new mongoose.Schema<IGame>(
   {
