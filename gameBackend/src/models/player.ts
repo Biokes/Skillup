@@ -22,18 +22,6 @@ const playerSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-    rating: {
-      type: Number,
-      default: 0,
-    },
-    totalLosses: {
-      type: Number,
-      default: 0,
-    },
-    totalWins: {
-      type: Number,
-      default: 0,
-    },
     lastActive: {
       type: Date,
       default: Date.now,

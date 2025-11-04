@@ -1,3 +1,5 @@
+import { Document, Types } from "mongoose";
+
 export type GAME_TYPES =
   | "pingpong"
   | "airhockey"
@@ -5,22 +7,55 @@ export type GAME_TYPES =
   | "pool"
   | "checkers";
 
-export interface IPlayer {
+export interface IPlayerBase {
+  name: string;
+  walletAddress: string;
+  avatar: string | null;
+  lastActive: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IPlayer extends IPlayerBase, Document {
+  updateActivity(): Promise<IPlayer>;
+}
+
+export interface IPlayerStatsBase {
+  playerId: Types.ObjectId;
+  playerName: string;
+  gameType: GAME_TYPES;
+  rating: number;
+  gamesPlayed: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  winStreak: number;
+  bestWinStreak: number;
+  totalEarnings: string;
+  lastPlayedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IPlayerStats extends IPlayerStatsBase, Document {
+  winRate: number;
+  updateGameResult(
+    result: "win" | "loss" | "draw",
+    earnings?: string
+  ): Promise<IPlayerStats>;
+}
+
+export interface IGamePlayer {
   name: string;
   rating: number;
   walletAddress?: string;
-  totalWins: number;
-    totalLosses: number;
-    avatar: string | null;
-    updateActivity(): Promise<IPlayer>;
-    
 }
 
 export interface IGame extends Document {
   roomCode: string;
   gameType: GAME_TYPES;
-  player1: IPlayer;
-  player2?: IPlayer;
+  player1: IGamePlayer;
+  player2?: IGamePlayer;
   winner: "player1" | "player2" | null;
   score: Record<string, number>;
   isStaked: boolean;

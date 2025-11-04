@@ -65,18 +65,15 @@ const playerGameStatsSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Compound index for unique constraint and efficient lookups
 playerGameStatsSchema.index({ playerId: 1, gameType: 1 }, { unique: true });
 playerGameStatsSchema.index({ playerName: 1, gameType: 1 });
-playerGameStatsSchema.index({ gameType: 1, rating: -1 }); // For leaderboards
+playerGameStatsSchema.index({ gameType: 1, rating: -1 });
 
-// Virtual for win rate
 playerGameStatsSchema.virtual('winRate').get(function() {
   if (this.gamesPlayed === 0) return 0;
   return ((this.wins / this.gamesPlayed) * 100).toFixed(1);
 });
 
-// Method to update stats after a game
 playerGameStatsSchema.methods.updateGameResult = function(result, newRating, earnings = '0') {
   this.gamesPlayed += 1;
   this.rating = newRating;
