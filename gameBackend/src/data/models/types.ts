@@ -86,6 +86,12 @@ export interface ISession {
     socketId: string;
     currentRoom: string;
     currectGame: string;
-    isActive: boolean;
-    
+    isActive: boolean;   
+}
+export interface FindOptions {
+  sort?: Record<string, 1 | -1 | 'asc' | 'desc'>;
+  limit?: number;
+  skip?: number;
+  select?: string | Record<string, 0 | 1>;
+  populate?: string | Record<string, any>;
 }
