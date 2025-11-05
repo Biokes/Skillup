@@ -42,4 +42,4 @@ playerSchema.methods.updateActivity = function (): Promise<IPlayer> {
 
 const Player = mongoose.model<IPlayer>("Player", playerSchema);
 
-module.exports = Player;
+export default Player;
