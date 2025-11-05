@@ -56,4 +56,4 @@ sessionSchema.methods.deactivate = function() {
 
 const Session = mongoose.model<ISession>('Session', sessionSchema);
 
-module.exports = Session;
+export default Session;

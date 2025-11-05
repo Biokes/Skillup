@@ -85,9 +85,9 @@ export const GAME_TYPES_ARRAY = [
   "checkers",
 ] as const;
 export const GAME_STATUS = ["waiting", "playing", "finished"] as const;
-export interface ISession {
+export interface ISession extends Document{
   playerID: Types.ObjectId;
-  playerName: string;
+  playerWalletAddress : string;
   deviceId: string;
   socketId: string;
   currentRoom: string;
