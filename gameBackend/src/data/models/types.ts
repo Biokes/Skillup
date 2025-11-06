@@ -57,7 +57,7 @@ export interface IGame extends Document {
   winner: "player1" | "player2" | null;
   score: Record<string, number>;
   stakeAmount: number;
-  player1Addres: string;
+  player1Address: string;
   player2Address:string;
   player1TxHash?: string;
   player2TxHash?: string;

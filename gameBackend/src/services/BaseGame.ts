@@ -8,18 +8,16 @@ import { ChainSkillsException } from "../exceptions/index.js";
 export abstract class BaseGame {
     
     protected gameType: GAME_TYPES;
-    protected activeGames: IGame[];
-    protected readonly gameRepository: GameRepository;
+\    protected readonly gameRepository: GameRepository;
     protected readonly playerRepository: PlayerRepository;
 
     constructor(gameType: GAME_TYPES, gameRepository: GameRepository, playerRepository: PlayerRepository) {
       this.gameType = gameType;
-      this.activeGames = [];
       this.gameRepository = gameRepository;
       this.playerRepository = playerRepository;
     }
 
-    async createGame(roomCode: string, player1Address: string, stakeAmount: number, player1TxHash?: string): Promise<IGame>{ 
+    async createGame(roomCode: string, player1Address: string, stakeAmount: number, player1TxHash: string): Promise<IGame>{ 
       const player1 = await this.playerRepository.findByWalletAddress(player1Address);
       if (!player1) throw new ChainSkillsException("Player with provided wallet Adddress does not exist \nBaseGame.ts:24");
       return await this.gameRepository.create({
@@ -27,10 +25,7 @@ export abstract class BaseGame {
         stakeAmount: stakeAmount,
         gameType: this.gameType,
         player1TxHash: stakeAmount > 0 ? player1TxHash as string : '',
-        player1: {
-          name: player1.name ?? player1.walletAddress,
-          walletAddress: player1.walletAddress,
-        },
+        player1Address: player1Address,
         winner: null,
         score: {
           "player1": 0,
@@ -42,44 +37,16 @@ export abstract class BaseGame {
         updatedAt: new Date()
       });
     }
-  // createGame(roomCode:string, player1Address:string, stakeAmount:number): IGame {
-  //   const game: IGame = {
-  //     roomCode:roomCode,
-  //     gameType: this.gameType,
-  //     player1:,
-  //     status: 'active',
-  //       player1: IGamePlayer;
-  //       winner: null;
-  //       score: Record<string, number>,
-  //       isStaked: isStaked,
-  //       stakeAmount: null,
-  //       claimed: false,
-  //       status: "waiting",
-  //       createdAt:new Date(),
-  //       updatedAt:new Date(),
-  //       startTime: Date.now(),
-  //     pauseCount: 0,
-  //     isPaused: false,
-  //     pauseTimerId: null,
-  //   };
-
-  //   this.activeGames.set(roomCode, gameState);
-  //   return gameState;
-  // }
-
+  
 //   // protected getInitialGameState();
 
-//   updateGameState(roomCode) {
-//     throw new Error('updateGameState() must be implemented by child class');
-//   }
+    abstract async updateGameState(roomCode: string): Promise<IGame>;
 
-//   checkGameOver(gameState) {
-//     throw new Error('checkGameOver() must be implemented by child class');
-//   }
+   abstract async checkGameOver(roomCode: string): Promise<boolean>;
 
-//   getGame(roomCode) {
-//     return this.activeGames.get(roomCode) || null;
-//   }
+   getGame(roomCode:string) {
+    return this.activeGames.get(roomCode) || null;
+  }
 
 //   getGameByPlayer(socketId) {
 //     for (const game of this.activeGames.values()) {
@@ -90,6 +57,7 @@ export abstract class BaseGame {
 //     return null;
 //   }
 
+  
 //   pauseGame(roomCode, socketId, resumeCallback) {
 //     const game = this.activeGames.get(roomCode);
 //     if (!game) {
