@@ -39,14 +39,15 @@ export abstract class BaseGame {
     }
   
     
-    abstract async updateGameState(roomCode: string): Promise<IGame>;
-    
-   abstract async checkGameOver(roomCode: string): Promise<boolean>;
+    abstract  updateGameState(roomCode: string): Promise<IGame>;
+      
+    abstract checkGameOver(roomCode: string): Promise<boolean>;
 
-  async getGameByRoomCode(roomCode: string):Promise<IGame>{
-    const gameFound = await this.gameRepository.findByRoomCode(roomCode);
-    !!gameFound ? return gameFound as IGame : throw new ChainSkillsException("Game with ${roomCode} not found");
-  }
+    async getGameByRoomCode(roomCode: string):Promise<IGame>{
+      const gameFound = await this.gameRepository.findByRoomCode(roomCode);
+      if (gameFound) return gameFound;
+      throw new ChainSkillsException(`Game with ${roomCode} not found`);
+    }
 
     //   // protected getInitialGameState();
 //   getGameByPlayer(socketId) {
