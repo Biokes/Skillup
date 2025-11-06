@@ -54,13 +54,11 @@ export interface IGamePlayer {
 export interface IGame extends Document {
   roomCode: string;
   gameType: GAME_TYPES;
-  player1: IGamePlayer;
-  player2?: IGamePlayer;
   winner: "player1" | "player2" | null;
   score: Record<string, number>;
   stakeAmount: number;
-  player1Address?: string;
-  player2Address?: string;
+  player1Addres: string;
+  player2Address:string;
   player1TxHash?: string;
   player2TxHash?: string;
   winnerAddress?: string;

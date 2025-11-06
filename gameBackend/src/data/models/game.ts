@@ -15,16 +15,6 @@ const gameSchema = new mongoose.Schema<IGame>(
       enum: ['pingpong', 'airhockey', 'chess', 'pool', 'checkers'],
       index: true
     },
-    player1: {
-      name: { type: String, required: false },
-      rating: { type: Number, required: true },
-      walletAddress: { type: String, lowercase: true }
-    },
-    player2: {
-      name: { type: String , required:false},
-      rating: { type: Number },
-      walletAddress: { type: String, lowercase: true }
-    },
     winner: {
       type: String,
       enum: ['player1', 'player2', null],
