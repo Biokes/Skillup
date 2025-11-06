@@ -8,7 +8,7 @@ const sessionSchema = new mongoose.Schema<ISession>({
     required: true,
     index: true
   },
-  playerName: {
+  playerWalletAddress: {
     type: String,
     required: true,
     index: true

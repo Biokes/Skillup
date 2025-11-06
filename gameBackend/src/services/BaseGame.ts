@@ -19,15 +19,16 @@ export abstract class BaseGame {
       this.playerRepository = playerRepository;
     }
 
-  async createGame(roomCode: string, player1Address: string, stakeAmount: number, player1TxHash?: string) { 
-    const player1 = await this.playerRepository.findByWalletAddress(player1Address);
-    if (!player1)
-      throw new ChainSkillsException("Player with provided wallet Adddress does not exist");
-    const game: IGame = {
-        roomCode,
+    async createGame(roomCode: string, player1Address: string, stakeAmount: number, player1TxHash?: string) { 
+      const player1 = await this.playerRepository.findByWalletAddress(player1Address);
+      if (!player1) throw new ChainSkillsException("Player with provided wallet Adddress does not exist \nBaseGame.ts:24");
+      return await this.gameRepository.create({
+        roomCode: roomCode,
+        stakeAmount: stakeAmount,
         gameType: this.gameType,
+        player1TxHash: stakeAmount > 0 ? player1TxHash as string : '',
         player1: {
-          name: player1?.name,
+          name: player1.name ?? player1.walletAddress,
           walletAddress: player1.walletAddress,
         },
         winner: null,
@@ -35,14 +36,11 @@ export abstract class BaseGame {
           "player1": 0,
           "player2":0
         },
-        stakeAmount: stakeAmount,
-        player1TxHash: player1TxHash,
         claimed: false,
         status: "waiting",
         createdAt: new Date(),
         updatedAt: new Date()
-    };
-      this.gameRepository.create(game)
+      });
     }
   // createGame(roomCode:string, player1Address:string, stakeAmount:number): IGame {
   //   const game: IGame = {
