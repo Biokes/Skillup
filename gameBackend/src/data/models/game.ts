@@ -34,14 +34,9 @@ const gameSchema = new mongoose.Schema<IGame>(
       type: mongoose.Schema.Types.Mixed,
       default: {}
     },
-    isStaked: {
-      type: Boolean,
-      default: false,
-      index: true
-    },
     stakeAmount: {
-      type: String,
-      default: null
+      type: Number,
+      default: 0
     },
     player1Address: {
       type: String,

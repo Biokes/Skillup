@@ -1,19 +1,49 @@
 // const { calculateRatingChanges } = require('../../utils/eloCalculator');
 
-import { IGame } from "../data/models/types.js";
+import { GAME_TYPES, IGame } from "../data/models/types.js";
 import { GameRepository } from "../data/repositories/GameRepository.js";
+import { PlayerRepository } from "../data/repositories/PlayerRepository.js";
+import { ChainSkillsException } from "../exceptions/index.js";
 
-  export abstract class BaseGame<T> {
-    protected gameType: T;
+export abstract class BaseGame {
+    
+    protected gameType: GAME_TYPES;
     protected activeGames: IGame[];
     protected readonly gameRepository: GameRepository;
-    constructor(gameType: T, gameRepository: GameRepository) {
+    protected readonly playerRepository: PlayerRepository;
+
+    constructor(gameType: GAME_TYPES, gameRepository: GameRepository, playerRepository: PlayerRepository) {
       this.gameType = gameType;
       this.activeGames = [];
       this.gameRepository = gameRepository;
+      this.playerRepository = playerRepository;
     }
 
-
+  async createGame(roomCode: string, player1Address: string, stakeAmount: number, player1TxHash?: string) { 
+    const player1 = await this.playerRepository.findByWalletAddress(player1Address);
+    if (!player1)
+      throw new ChainSkillsException("Player with provided wallet Adddress does not exist");
+    const game: IGame = {
+        roomCode,
+        gameType: this.gameType,
+        player1: {
+          name: player1?.name,
+          walletAddress: player1.walletAddress,
+        },
+        winner: null,
+        score: {
+          "player1": 0,
+          "player2":0
+        },
+        stakeAmount: stakeAmount,
+        player1TxHash: player1TxHash,
+        claimed: false,
+        status: "waiting",
+        createdAt: new Date(),
+        updatedAt: new Date()
+    };
+      this.gameRepository.create(game)
+    }
   // createGame(roomCode:string, player1Address:string, stakeAmount:number): IGame {
   //   const game: IGame = {
   //     roomCode:roomCode,

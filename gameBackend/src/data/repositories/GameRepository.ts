@@ -2,6 +2,7 @@ import { FilterQuery } from "mongoose";
 import { BaseRepository } from "./BaseRepository.js";
 import Game from "../models/game.js";
 import { IGame, GAME_TYPES, GAME_STATUS } from "../models/types.js";
+import { ChainSkillsException } from "../../exceptions/index.js";
 
 export class GameRepository extends BaseRepository<IGame> {
   constructor() {
@@ -124,9 +125,7 @@ export class GameRepository extends BaseRepository<IGame> {
         },
       ]);
     } catch (error: any) {
-      throw new Error(
-        `Error getting game stats: ${error.message}, GameRpository.ts:128`
-      );
+      throw new ChainSkillsException( `Error getting game stats: ${error.message}, GameRpository.ts:128`);
     }
   }
 }

@@ -47,7 +47,7 @@ export interface IPlayerStats extends IPlayerStatsBase, Document {
 
 export interface IGamePlayer {
   name: string;
-  rating: number;
+  // rating: number;
   walletAddress?: string;
 }
 
@@ -58,7 +58,6 @@ export interface IGame extends Document {
   player2?: IGamePlayer;
   winner: "player1" | "player2" | null;
   score: Record<string, number>;
-  isStaked: boolean;
   stakeAmount: number;
   player1Address?: string;
   player2Address?: string;
@@ -72,9 +71,9 @@ export interface IGame extends Document {
   endedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
-  markAsClaimed(txHash: string): Promise<IGame>;
-  bothPlayersStaked(): boolean;
-  getPrizeAmount(): string;
+  // markAsClaimed(txHash: string): Promise<IGame>;
+  // bothPlayersStaked(): boolean;
+  // getPrizeAmount(): string;
 }
 
 export const GAME_TYPES_ARRAY = [

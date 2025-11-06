@@ -1,5 +1,6 @@
 import { Model, Document, FilterQuery, UpdateQuery, Types } from 'mongoose';
 import { FindOptions } from '../models/types.js';
+import { ChainSkillsException } from '../../exceptions/index.js';
 
 export class BaseRepository<T extends Document> { 
     protected readonly model: Model<T>;
@@ -12,7 +13,7 @@ export class BaseRepository<T extends Document> {
         const document = new this.model(data);
         return await document.save();
         } catch (error) {
-        throw new Error(`Error creating document: ${(error as Error).message}, at baseRepostory.ts:14`);
+        throw new Error(`Error creating document: ${(error as Error).message}, at baseRepostory.ts:16`);
         }
     }
     
@@ -36,7 +37,7 @@ export class BaseRepository<T extends Document> {
         try {
             const { sort, limit, skip, select,
                 // populate
-            } = options;
+                } = options;
         let queryBuilder = this.model.find(query);
         if (sort) queryBuilder = queryBuilder.sort(sort);
         if (limit) queryBuilder = queryBuilder.limit(limit);
@@ -46,7 +47,7 @@ export class BaseRepository<T extends Document> {
 
         return await queryBuilder.lean<T[]>();
         } catch (error) {
-        throw new Error(`Error finding documents: ${(error as Error).message},\n  at baseRepostory.ts:48`);
+        throw new Error(`Error finding documents: ${(error as Error).message},\n  at baseRepostory.ts:49`);
         }
     }
 
@@ -58,7 +59,7 @@ export class BaseRepository<T extends Document> {
             { new: true, runValidators: true }
         ).lean<T>();
         } catch (error) {
-        throw new Error(`Error updating document: ${(error as Error).message},\n  at baseRepostory.ts:60`);
+        throw new ChainSkillsException(`Error updating document: ${(error as Error).message},\n  at baseRepostory.ts:60`);
         }
     }
 
@@ -70,7 +71,7 @@ export class BaseRepository<T extends Document> {
             { new: true, runValidators: true }
         ).lean<T>();
         } catch (error) {
-        throw new Error(`Error updating document by ID: ${(error as Error).message},\n  at baseRepostory.ts:72`);
+        throw new ChainSkillsException(`Error updating document by ID: ${(error as Error).message},\n  at baseRepostory.ts:72`);
         }
     }
 
@@ -78,7 +79,7 @@ export class BaseRepository<T extends Document> {
         try {
         return await this.model.deleteOne(query);
         } catch (error) {
-        throw new Error(`Error deleting document: ${(error as Error).message},\n  at baseRepostory.ts:80`);
+        throw new ChainSkillsException(`Error deleting document: ${(error as Error).message},\n  at baseRepostory.ts:80`);
         }
     }
 
@@ -86,7 +87,7 @@ export class BaseRepository<T extends Document> {
         try {
         return await this.model.findByIdAndDelete(id);
         } catch (error) {
-        throw new Error(`Error deleting document by ID: ${(error as Error).message},\n  at baseRepostory.ts:88`);
+        throw new ChainSkillsException(`Error deleting document by ID: ${(error as Error).message},\n  at baseRepostory.ts:88`);
         }
     }
 
@@ -94,6 +95,7 @@ export class BaseRepository<T extends Document> {
         try {
         return await this.model.countDocuments(query);
         } catch (error) {
+
         throw new Error(`Error counting documents: ${(error as Error).message},\n  at baseRepostory.ts:96`);
         }
     }
@@ -103,7 +105,7 @@ export class BaseRepository<T extends Document> {
         const result = await this.model.exists(query);
         return result !== null;
         } catch (error) {
-        throw new Error(`Error checking existence: ${(error as Error).message},\n  at baseRepostory.ts:105`);
+        throw new ChainSkillsException(`Error checking existence: ${(error as Error).message},\n  at baseRepostory.ts:105`);
         }
     }
 

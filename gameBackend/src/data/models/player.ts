@@ -34,7 +34,6 @@ const playerSchema = new mongoose.Schema(
 
 playerSchema.index({ name: 1 });
 playerSchema.index({ walletAddress: 1 });
-
 playerSchema.methods.updateActivity = function (): Promise<IPlayer> {
   this.lastActive = new Date();
   return this.save();
