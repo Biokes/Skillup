@@ -37,7 +37,6 @@ export abstract class BaseGame {
         updatedAt: new Date()
       });
     }
-  
     
     abstract  updateGameState(roomCode: string): Promise<IGame>;
       
@@ -48,7 +47,15 @@ export abstract class BaseGame {
       if (gameFound) return gameFound;
       throw new ChainSkillsException(`Game with ${roomCode} not found`);
     }
-
+  
+    async endGame(gameId: string) {
+      const game = this.activeGames.get(roomCode);
+      if (game && game.pauseTimerId) {
+        clearTimeout(game.pauseTimerId);
+      }
+      return this.activeGames.delete(roomCode);
+    }
+  
     //   // protected getInitialGameState();
 //   getGameByPlayer(socketId) {
 //     for (const game of this.activeGames.values()) {
@@ -119,13 +126,7 @@ export abstract class BaseGame {
 //     return true;
 //   }
 
-//   endGame(roomCode) {
-//     const game = this.activeGames.get(roomCode);
-//     if (game && game.pauseTimerId) {
-//       clearTimeout(game.pauseTimerId);
-//     }
-//     return this.activeGames.delete(roomCode);
-//   }
+
 
 //   calculateRatings(winner, loser, isDraw = false) {
 //     return calculateRatingChanges(winner.rating, loser.rating, isDraw);
