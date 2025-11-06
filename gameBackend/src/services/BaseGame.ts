@@ -8,7 +8,7 @@ import { ChainSkillsException } from "../exceptions/index.js";
 export abstract class BaseGame {
     
     protected gameType: GAME_TYPES;
-\    protected readonly gameRepository: GameRepository;
+    protected readonly gameRepository: GameRepository;
     protected readonly playerRepository: PlayerRepository;
 
     constructor(gameType: GAME_TYPES, gameRepository: GameRepository, playerRepository: PlayerRepository) {
@@ -38,16 +38,17 @@ export abstract class BaseGame {
       });
     }
   
-//   // protected getInitialGameState();
-
+    
     abstract async updateGameState(roomCode: string): Promise<IGame>;
-
+    
    abstract async checkGameOver(roomCode: string): Promise<boolean>;
 
-   getGame(roomCode:string) {
-    return this.activeGames.get(roomCode) || null;
+  async getGameByRoomCode(roomCode: string):Promise<IGame>{
+    const gameFound = await this.gameRepository.findByRoomCode(roomCode);
+    !!gameFound ? return gameFound as IGame : throw new ChainSkillsException("Game with ${roomCode} not found");
   }
 
+    //   // protected getInitialGameState();
 //   getGameByPlayer(socketId) {
 //     for (const game of this.activeGames.values()) {
 //       if (game.players.some(p => p.socketId === socketId)) {
