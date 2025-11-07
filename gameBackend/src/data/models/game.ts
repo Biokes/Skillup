@@ -26,9 +26,14 @@ const gameSchema = new mongoose.Schema<IGame>(
       enum: ['player1', 'player2', null],
       default: null
     },
-    score: {
+    scoreAndPauses: {
       type: mongoose.Schema.Types.Mixed,
-      default: {}
+      default: {
+        "player1Score": 0,
+        "player2Score": 0,
+        "player1Pauses": 0,
+        "player2Pauses":0
+      }
     },
     stakeAmount: {
       type: Number,

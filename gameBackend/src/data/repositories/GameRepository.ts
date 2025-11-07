@@ -56,7 +56,7 @@ export class GameRepository extends BaseRepository<IGame> {
   }
 
   async getPlayerGameHistory(playerAddress: string,gameType:GAME_TYPES,filters:{result?:"win"|"loss"|"draw";staked?:boolean|null;limit?:number;offset?:number;}={}): Promise<IGame[]> {
-    const { result = "all", staked = null, limit = 50, offset = 0 } = filters;
+    const { result = "all", staked = 0, limit = 50, offset = 0 } = filters;
     const query: FilterQuery<IGame> = {
       gameType,
       status: "finished",

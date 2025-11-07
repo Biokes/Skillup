@@ -26,9 +26,11 @@ export abstract class BaseGameService {
         player1TxHash: stakeAmount > 0 ? player1TxHash as string : '',
         player1Address: player1Address,
         winner: null,
-        score: {
-          "player1": 0,
-          "player2":0
+        scoreAndPauses: {
+          "player1Score": 0,
+          "player2Score": 0,
+          "player1Pauses": 0,
+          "player2Pauses":0
         },
         claimed: false,
         status: "waiting",
@@ -36,11 +38,7 @@ export abstract class BaseGameService {
         updatedAt: new Date()
       });
     }
-    
-    abstract  updateGameState(roomCode: string): Promise<IGame>;
-      
-    abstract checkGameOver(roomCode: string): Promise<boolean>;
-
+  
     async getGameByRoomCode(roomCode: string):Promise<IGame>{
       const gameFound = await this.gameRepository.findByRoomCode(roomCode);
       if (gameFound) return gameFound;
@@ -56,65 +54,63 @@ export abstract class BaseGameService {
       if (winnerAddress) {
         updateData.winnerAddress = winnerAddress.toLowerCase();
       }
-      return await this.gameRepository.update({ roomCode }, updateData)}
+      return await this.gameRepository.update({ roomCode }, updateData)
     }
   
-    //   // protected getInitialGameState();
-//   getGameByPlayer(socketId) {
-//     for (const game of this.activeGames.values()) {
-//       if (game.players.some(p => p.socketId === socketId)) {
-//         return game;
-//       }
-//     }
-//     return null;
-//   }
-
+    async getGamesByPlayerWalletAddress(playerWalletAddress: string): Promise<IGame[]>{
+      return await this.gameRepository.findPlayerGames(playerWalletAddress, this.gameType, null);
+    }
   
-//   pauseGame(roomCode, socketId, resumeCallback) {
-//     const game = this.activeGames.get(roomCode);
-//     if (!game) {
-//       return { success: false, message: 'Game not found' };
-//     }
+    abstract updateGameState(roomCode: string): Promise<IGame>;
+  
+    abstract checkGameOver(roomCode: string): Promise<boolean>;
+  
+    abstract pauseGame(roomCode: string, socketID: string): Promise<void>;
+    abstract resumeGame(roomCode: string): Promise<void>;
+  // pauseGame(roomCode, socketId, resumeCallback) {
+  //   const game = this.activeGames.get(roomCode);
+  //   if (!game) {
+  //     return { success: false, message: 'Game not found' };
+  //   }
 
-//     if (game.isPaused) {
-//       return { success: false, message: 'Game is already paused' };
-//     }
+  //   if (game.isPaused) {
+  //     return { success: false, message: 'Game is already paused' };
+  //   }
 
-//     const player = game.players.find(p => p.socketId === socketId);
-//     if (!player) {
-//       return { success: false, message: 'Player not found' };
-//     }
+  //   const player = game.players.find(p => p.socketId === socketId);
+  //   if (!player) {
+  //     return { success: false, message: 'Player not found' };
+  //   }
 
-//     // Check player's pause limit (2 per player)
-//     const MAX_PAUSES_PER_PLAYER = 2;
-//     if (player.pausesUsed >= MAX_PAUSES_PER_PLAYER) {
-//       return { success: false, message: 'You have no pauses remaining' };
-//     }
+  //   const MAX_PAUSES_PER_PLAYER = 2;
+  //   if (player.pausesUsed >= MAX_PAUSES_PER_PLAYER) {
+  //     return { success: false, message: 'You have no pauses remaining' };
+  //   }
 
-//     game.isPaused = true;
-//     player.pausesUsed += 1;
-//     game.pauseCount += 1;
+  //   game.isPaused = true;
+  //   player.pausesUsed += 1;
+  //   game.pauseCount += 1;
 
-//     if (game.pauseTimerId) {
-//       clearTimeout(game.pauseTimerId);
-//     }
+  //   if (game.pauseTimerId) {
+  //     clearTimeout(game.pauseTimerId);
+  //   }
 
-//     game.pauseTimerId = setTimeout(() => {
-//       if (game.isPaused) {
-//         game.isPaused = false;
-//         game.pauseTimerId = null;
-//         if (resumeCallback) {
-//           resumeCallback(roomCode);
-//         }
-//       }
-//     }, 10000);
+  //   game.pauseTimerId = setTimeout(() => {
+  //     if (game.isPaused) {
+  //       game.isPaused = false;
+  //       game.pauseTimerId = null;
+  //       if (resumeCallback) {
+  //         resumeCallback(roomCode);
+  //       }
+  //     }
+  //   }, 10000);
 
-//     return {
-//       success: true,
-//       pausesRemaining: MAX_PAUSES_PER_PLAYER - player.pausesUsed,
-//       playerName: player.name
-//     };
-//   }
+  //   return {
+  //     success: true,
+  //     pausesRemaining: MAX_PAUSES_PER_PLAYER - player.pausesUsed,
+  //     playerName: player.name
+  //   };
+  // }
 
 //   resumeGame(roomCode) {
 //     const game = this.activeGames.get(roomCode);

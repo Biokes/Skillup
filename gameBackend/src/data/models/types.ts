@@ -55,7 +55,7 @@ export interface IGame extends Document {
   roomCode: string;
   gameType: GAME_TYPES;
   winner: "player1" | "player2" | null;
-  score: Record<string, number>;
+  scoreAndPauses: Record<string, number>;
   stakeAmount: number;
   player1Address: string;
   player2Address:string;
@@ -69,6 +69,7 @@ export interface IGame extends Document {
   endedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+  isPaused: boolean;
   // markAsClaimed(txHash: string): Promise<IGame>;
   // bothPlayersStaked(): boolean;
   // getPrizeAmount(): string;
