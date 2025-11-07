@@ -1,11 +1,10 @@
 // const { calculateRatingChanges } = require('../../utils/eloCalculator');
-
 import { GAME_TYPES, IGame } from "../data/models/types.js";
 import { GameRepository } from "../data/repositories/GameRepository.js";
 import { PlayerRepository } from "../data/repositories/PlayerRepository.js";
 import { ChainSkillsException } from "../exceptions/index.js";
 
-export abstract class BaseGame {
+export abstract class BaseGameService {
     
     protected gameType: GAME_TYPES;
     protected readonly gameRepository: GameRepository;
@@ -48,12 +47,16 @@ export abstract class BaseGame {
       throw new ChainSkillsException(`Game with ${roomCode} not found`);
     }
   
-    async endGame(gameId: string) {
-      const game = this.activeGames.get(roomCode);
-      if (game && game.pauseTimerId) {
-        clearTimeout(game.pauseTimerId);
+    async endGame(roomCode:string, winner: "player1" | "player2" | null,  winnerAddress?: string): Promise<IGame| null>{
+      const updateData: any = { 
+          status: "finished",
+          winner,
+          endedAt: new Date()
+        };
+      if (winnerAddress) {
+        updateData.winnerAddress = winnerAddress.toLowerCase();
       }
-      return this.activeGames.delete(roomCode);
+      return await this.gameRepository.update({ roomCode }, updateData)}
     }
   
     //   // protected getInitialGameState();

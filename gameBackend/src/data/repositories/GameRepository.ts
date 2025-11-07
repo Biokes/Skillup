@@ -13,11 +13,11 @@ export class GameRepository extends BaseRepository<IGame> {
     return await this.findOne({ roomCode });
   }
 
-  async findActiveGames(gameType: GAME_TYPES | null = null): Promise<IGame[]> {
+  async findActiveGames(gameType: GAME_TYPES): Promise<IGame[]> {
     const query: FilterQuery<IGame> = {
       status: { $in: ["waiting", "playing"] },
+      gameType : gameType
     };
-    if (gameType) query.gameType = gameType;
     return await this.find(query, { sort: { createdAt: -1 } });
   }
 
@@ -26,19 +26,12 @@ export class GameRepository extends BaseRepository<IGame> {
     return await this.find(query, { sort: { createdAt: -1 } });
   }
 
-  async findFinishedGames(
-    gameType: GAME_TYPES,
-    limit: number = 50
-  ): Promise<IGame[]> {
+  async findFinishedGames(gameType: GAME_TYPES,limit: number = 50): Promise<IGame[]> {
     const query: FilterQuery<IGame> = { status: "finished", gameType };
     return await this.find(query, { sort: { endedAt: -1 }, limit });
   }
 
-  async findPlayerGames(
-    playerAddress: string,
-    gameType: GAME_TYPES | null = null,
-    status: GAME_STATUS | null = null
-  ): Promise<IGame[]> {
+  async findPlayerGames(playerAddress: string,gameType: GAME_TYPES | null = null,status: GAME_STATUS | null = null): Promise<IGame[]> {
     const query: FilterQuery<IGame> = {
       $or: [
         { "player1.walletAddress": playerAddress },
@@ -62,18 +55,8 @@ export class GameRepository extends BaseRepository<IGame> {
     );
   }
 
-  async getPlayerGameHistory(
-    playerAddress: string,
-    gameType: GAME_TYPES,
-    filters: {
-      result?: "win" | "loss" | "draw";
-      staked?: boolean | null;
-      limit?: number;
-      offset?: number;
-    } = {}
-  ): Promise<IGame[]> {
+  async getPlayerGameHistory(playerAddress: string,gameType:GAME_TYPES,filters:{result?:"win"|"loss"|"draw";staked?:boolean|null;limit?:number;offset?:number;}={}): Promise<IGame[]> {
     const { result = "all", staked = null, limit = 50, offset = 0 } = filters;
-
     const query: FilterQuery<IGame> = {
       gameType,
       status: "finished",
@@ -82,9 +65,7 @@ export class GameRepository extends BaseRepository<IGame> {
         { "player2.name": playerAddress },
       ],
     };
-
     if (staked !== null) query.isStaked = staked;
-
     if (result === "win") {
       query.$or = [
         { "player1.walletAddress": playerAddress, winner: "player1" },
@@ -98,7 +79,6 @@ export class GameRepository extends BaseRepository<IGame> {
     } else {
       query.winner = null;
     }
-
     return await this.find(query, {
       sort: { endedAt: -1 },
       limit,
@@ -125,7 +105,7 @@ export class GameRepository extends BaseRepository<IGame> {
         },
       ]);
     } catch (error: any) {
-      throw new ChainSkillsException( `Error getting game stats: ${error.message}, GameRpository.ts:128`);
+      throw new ChainSkillsException( `Error getting game stats: ${error.message}, GameRpository.ts:108`);
     }
   }
 }

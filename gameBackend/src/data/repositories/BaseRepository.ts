@@ -21,7 +21,7 @@ export class BaseRepository<T extends Document> {
         try {
         return await this.model.findById(id).lean<T>();
         } catch (error) {
-        throw new Error(`Error finding document by ID: ${(error as Error).message} \n  at baseRepostory.ts:22`);
+        throw new Error(`Error finding document by ID: ${(error as Error).message} \n  at baseRepostory.ts:24`);
         }
     }
 
@@ -47,7 +47,7 @@ export class BaseRepository<T extends Document> {
 
         return await queryBuilder.lean<T[]>();
         } catch (error) {
-        throw new Error(`Error finding documents: ${(error as Error).message},\n  at baseRepostory.ts:49`);
+        throw new Error(`Error finding documents: ${(error as Error).message},\n  at baseRepostory.ts:50`);
         }
     }
 
@@ -59,7 +59,7 @@ export class BaseRepository<T extends Document> {
             { new: true, runValidators: true }
         ).lean<T>();
         } catch (error) {
-        throw new ChainSkillsException(`Error updating document: ${(error as Error).message},\n  at baseRepostory.ts:60`);
+        throw new ChainSkillsException(`Error updating document: ${(error as Error).message},\n  at baseRepostory.ts:62`);
         }
     }
 
@@ -71,7 +71,7 @@ export class BaseRepository<T extends Document> {
             { new: true, runValidators: true }
         ).lean<T>();
         } catch (error) {
-        throw new ChainSkillsException(`Error updating document by ID: ${(error as Error).message},\n  at baseRepostory.ts:72`);
+        throw new ChainSkillsException(`Error updating document by ID: ${(error as Error).message},\n  at baseRepostory.ts:74`);
         }
     }
 
@@ -79,7 +79,7 @@ export class BaseRepository<T extends Document> {
         try {
         return await this.model.deleteOne(query);
         } catch (error) {
-        throw new ChainSkillsException(`Error deleting document: ${(error as Error).message},\n  at baseRepostory.ts:80`);
+        throw new ChainSkillsException(`Error deleting document: ${(error as Error).message},\n  at baseRepostory.ts:82`);
         }
     }
 
@@ -87,7 +87,7 @@ export class BaseRepository<T extends Document> {
         try {
         return await this.model.findByIdAndDelete(id);
         } catch (error) {
-        throw new ChainSkillsException(`Error deleting document by ID: ${(error as Error).message},\n  at baseRepostory.ts:88`);
+        throw new ChainSkillsException(`Error deleting document by ID: ${(error as Error).message},\n  at baseRepostory.ts:90`);
         }
     }
 
@@ -96,7 +96,7 @@ export class BaseRepository<T extends Document> {
         return await this.model.countDocuments(query);
         } catch (error) {
 
-        throw new Error(`Error counting documents: ${(error as Error).message},\n  at baseRepostory.ts:96`);
+        throw new Error(`Error counting documents: ${(error as Error).message},\n  at baseRepostory.ts:90`);
         }
     }
 
@@ -105,7 +105,7 @@ export class BaseRepository<T extends Document> {
         const result = await this.model.exists(query);
         return result !== null;
         } catch (error) {
-        throw new ChainSkillsException(`Error checking existence: ${(error as Error).message},\n  at baseRepostory.ts:105`);
+        throw new ChainSkillsException(`Error checking existence: ${(error as Error).message},\n  at baseRepostory.ts:108`);
         }
     }
 
