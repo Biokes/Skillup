@@ -1,8 +1,3 @@
-/**
- * Room Service
- * Manages game rooms for all game types
- */
-
 class RoomService {
   constructor() {
     this.rooms = new Map(); // roomCode -> room data
