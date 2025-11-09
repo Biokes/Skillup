@@ -12,5 +12,5 @@ export const DataBaseSource: DataSource = new DataSource({
   password: process.env.DB_PASSWORD as string,
   database: process.env.DB_DATABASE as string,
   synchronize: true,
-  logging: true,
+  logging: false,
 });
