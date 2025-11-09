@@ -1,5 +1,5 @@
 {
-  "name": "gameBackend",
+  "name": "game-backend",
   "version": "1.0.0",
   "description": "A backend for a gaming server that has multiple games",
   "main": "./src/server.ts",
