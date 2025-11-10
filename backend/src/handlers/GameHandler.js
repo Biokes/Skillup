@@ -34,12 +34,6 @@ class GameHandler {
 
   handleConnection(socket) {
     const { username, walletAddress, deviceId } = socket.handshake.query;
-    console.log('New connection:', {
-      socketId: socket.id,
-      username,
-      walletAddress,
-      transport: socket.conn.transport.name
-    });
 
     if (username && walletAddress) {
       this.connectionService.handleConnection(socket, {

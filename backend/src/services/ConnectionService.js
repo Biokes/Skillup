@@ -18,10 +18,8 @@ class ConnectionService {
     try {
       // Get or create player
       const player = await this.playerRepo.findOrCreate(playerName, walletAddress);
-
       // Deactivate old sessions for this socket (in case of reconnection)
       await this.sessionRepo.deactivateSession(socket.id);
-
       // Create new session
       const session = await this.sessionRepo.createSession(
         player._id,
@@ -38,7 +36,7 @@ class ConnectionService {
       // Get all active sessions for this player (multi-device)
       const activeSessions = await this.sessionRepo.findActiveSessions(player._id);
 
-      console.log(`✅ Player connected: ${player.name} (${activeSessions.length} active device(s))`);
+      // console.log(`✅ Player connected: ${player.name} (${activeSessions.length} active device(s))`);
 
       // Notify other devices
       this.notifyOtherDevices(player._id, socket.id, 'device_connected', {
