@@ -4,18 +4,20 @@ import cors from "cors";
 import { Routes } from './routers';
 import { selfPing } from './utils';
 import { DataBaseSource } from './config/dbSource';
+import { WebSocket } from './websocket';
 
 dotenv.config()
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT!;
 const app: Application = express();
 app.use(express.json())
 
 app.use(cors({
-    origin: ['http://localhost:5173'],
+    origin: [process.env.FRONTEND_URL!],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
 }));
+
 app.use('/api/v1/', Routes)
 
 async function startServer() { 
@@ -24,10 +26,11 @@ async function startServer() {
         console.log("db connected")
         app.listen(PORT, () => {
             console.log(`Server started on port ${PORT}`);
-            setTimeout(async () => {
-                await selfPing()
-            },50000)
+            setInterval(async () => { await selfPing()},50_000*6)
         });
+        const webSocket = new WebSocket(app);
+        const webSocketServer = webSocket.getSocketServerSetup()
+        webSocketServer.on('connection', (socket) => webSocket.handleConnection(socket) )
     } catch (error) {
         console.error("Database conection failed.\n error message: " + (error instanceof Error ? error.message : String(error)));
         process.exit(1);
