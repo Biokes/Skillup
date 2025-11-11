@@ -16,9 +16,9 @@ describe("player service test", () => {
 
   it("tests tests player profile creations", () => {
     test("Invalid Address creations failures", async () => {
-      expect(await playerService.craeteProfileWithAddress("")).toThrow(ChainSkillsException);
-      expect(await playerService.craeteProfileWithAddress("0x123456789012345678")).toThrow(ChainSkillsException);
-      expect(await playerService.craeteProfileWithAddress("0x12345678901234567890")).toThrow(ChainSkillsException);
+      expect(await playerService.findOrCreateProfile("")).toThrow(ChainSkillsException);
+      expect(await playerService.findOrCreateProfile("0x123456789012345678")).toThrow(ChainSkillsException);
+      expect(await playerService.findOrCreateProfile("0x12345678901234567890")).toThrow(ChainSkillsException);
     });
     test("valid address profile creations", async () => {
       const player:Player = await playerService.createPlayerWithAddress("0x1234567890123456789012345678901234567890");
