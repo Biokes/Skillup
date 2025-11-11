@@ -3,9 +3,10 @@ import dotenv from "dotenv";
 import { Application } from "express";
 import { createServer } from "http";
 import { DefaultEventsMap, Server, Socket } from "socket.io";
-import PlayerService from "../services/playerService";
-import SessionService from "../services/SessionService";
-
+import PlayerService from "@/src/services/playerService";
+import SessionService from "@/src/services/SessionService";
+import { CreateGameDTO } from "@/src/data/entities/DTO/CreateGame"
+import { JoinRoomDTO } from "@/src/data/entities/DTO/joinRoom";
 dotenv.config();
 
 export class WebSocket {
@@ -39,7 +40,7 @@ export class WebSocket {
     this.socketConnection.on("error", (error) => this.logErrorOnConsole("Socket on failed with error: ", error) );
     this.sessionService = new SessionService();
   }
-    
+      
   getSocketServerSetup() {
     return this.socketConnection;
   }
@@ -51,7 +52,8 @@ export class WebSocket {
       await this.listenToGameEvents(socket);
   }
   async listenToGameEvents(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) {
-      socket.on('createRoom', async (createRoomDto:CreateRoomDto)=> await this.sessionService.createGameRoom(createRoomDto))
+      socket.on('createRoom', async (createRoomDto: CreateGameDTO) => await this.sessionService.createGameRoom(createRoomDto));
+      socket.on('joinRoom', async (joinRoomDTO: JoinRoomDTO)=> await this.sessionService.joinRoom(joinRoomDTO))
   }
   private logErrorOnConsole(message: string, error: any) {
     console.error(message, error);
