@@ -4,6 +4,7 @@ import { Application } from "express";
 import { createServer } from "http";
 import { DefaultEventsMap, Server, Socket } from "socket.io";
 import PlayerService from "../services/playerService";
+import SessionService from "../services/SessionService";
 
 dotenv.config();
 
@@ -11,7 +12,9 @@ export class WebSocket {
   private FRONTEND_URL = process.env.FRONTEND_URL?.replace(/\/$/, "");
   private readonly socketServer;
   private readonly socketConnection;
+  private readonly sessionService: SessionService;
   private readonly playerService: PlayerService; 
+    
   constructor(app: Application) {
     this.playerService= new PlayerService()  
     this.socketServer = createServer(app);
@@ -34,19 +37,23 @@ export class WebSocket {
     });
     this.socketConnection.engine.on("connection_error", (err) => this.logErrorOnConsole("Socket engine on failed with error: ", err));
     this.socketConnection.on("error", (error) => this.logErrorOnConsole("Socket on failed with error: ", error) );
+    this.sessionService = new SessionService();
   }
     
   getSocketServerSetup() {
     return this.socketConnection;
   }
-    
+      
+  async handleConnection(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) {
+    const { walletAddress } = socket.handshake.query;
+    if (walletAddress) await this.playerService.findOrCreateProfile(walletAddress as string);
+    // await this.sessionService.deActivateOlderSessions(socket);
+      await this.listenToGameEvents(socket);
+  }
+  async listenToGameEvents(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) {
+      socket.on('createRoom', async (createRoomDto:CreateRoomDto)=> await this.sessionService.createGameRoom(createRoomDto))
+  }
   private logErrorOnConsole(message: string, error: any) {
     console.error(message, error);
-  }
-    
-  handleConnection(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) {
-      const { walletAddress } = socket.handshake.query;
-      this.playerService.findOrCreateProfile(walletAddress)
-      
   }
 }

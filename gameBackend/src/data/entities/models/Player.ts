@@ -4,14 +4,14 @@ import { Stats } from './Stats';
 @Entity()
 export class Player {
   @PrimaryGeneratedColumn("uuid")
-  id: string;
-  @Column({ default: "", nullable: true })
-  username: string;
+  id!: string;
+  @Column({ default: "", nullable: false })
+  username!: string;
   @Column({ unique: true, nullable: false })
-  walletAddress: string;
-  @Column({ nullable: true })
-  avatarURL: string;
+  walletAddress!: string;
+  @Column({ nullable: false, default:'' })
+  avatarURL!: string;
   @OneToOne(() => Stats, { cascade: true, eager: true })
   @JoinColumn()
-  stats: Stats;
+  stats!: Stats;
 }
