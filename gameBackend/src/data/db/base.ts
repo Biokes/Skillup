@@ -1,7 +1,7 @@
-import { Repository, DeepPartial, FindManyOptions, FindOneOptions } from "typeorm";
-import { ChainSkillsException } from "../../exceptions/index.js";
+import { Repository, DeepPartial, FindManyOptions, FindOneOptions, ObjectLiteral } from "typeorm";
+import { ChainSkillsException } from "@/src/exceptions";
 
-export default abstract class BaseRepository<T> {
+export default abstract class BaseRepository<T extends ObjectLiteral> {
   protected readonly repository: Repository<T>;
 
   constructor(repo: Repository<T>) {
@@ -21,7 +21,7 @@ export default abstract class BaseRepository<T> {
     try {
       return await this.repository.findOne({ where: { id } as any });
     } catch (error) {
-      throw new ChainSkillsException( `Error finding entity by ID: ${(error as Error).message}, at baseRepository.ts:findById`);
+      throw new ChainSkillsException(`Error finding entity by ID: ${(error as Error).message}, at baseRepository.ts:findById`);
     }
   }
 
@@ -41,7 +41,14 @@ export default abstract class BaseRepository<T> {
     }
   }
 
-  abstract update(id: string, data: DeepPartial<T>): Promise<T | null>;
+  async update(id: string, data: DeepPartial<T>): Promise<T | null> {
+    try {
+      await this.repository.update(id, data as any);
+      return await this.findById(id);
+    } catch (error) {
+      throw new ChainSkillsException(`Error updating entity: ${(error as Error).message}, at baseRepository.ts:update`);
+    }
+  }
 
   async delete(id: string): Promise<void> {
     try {
@@ -51,11 +58,11 @@ export default abstract class BaseRepository<T> {
     }
   }
 
-  async count(): Promise<number> {
+  async count(options: FindManyOptions<T> = {}): Promise<number> {
     try {
-      return await this.repository.count();
+      return await this.repository.count(options);
     } catch (error) {
-      throw new ChainSkillsException( `Error counting entities: ${(error as Error).message}, at baseRepository.ts:count`);
+      throw new ChainSkillsException(`Error counting entities: ${(error as Error).message}, at baseRepository.ts:count`);
     }
   }
 
