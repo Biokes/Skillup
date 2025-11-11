@@ -129,11 +129,9 @@ class GameHandler {
 
   async handleCreateRoom(socket, data) {
     const { gameType, player, roomCode } = data;
-
     try {
       const room = this.roomService.createRoom(gameType, player, socket.id, roomCode);
       socket.join(room.code);
-
       socket.emit('roomCreated', { roomCode: room.code, room });
       console.log(`Room created: ${room.code} (${gameType})`);
     } catch (error) {
