@@ -5,11 +5,12 @@ import { useNavigate } from "react-router-dom";
 import Footer from "@/components/footer";
 
 
-export default function Index (){
+export default function Index() {
   const navigate = useNavigate()
+
   const Hero = () => {
     return (
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative h-[90dvh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
             src={"/background3.jpeg"}
@@ -42,7 +43,7 @@ export default function Index (){
             transition={{ duration: 0.8, delay: 0.3 }}
           >
             <Button
-              onClick={()=>navigate('/hub')}
+              onClick={() => navigate('/hub')}
               className="animate-pulse ribeye hover:scale-[1.07] transition transform-all"
             >
               Take me to the Hub
@@ -53,6 +54,7 @@ export default function Index (){
       </section>
     );
   };
+
   const FAQ = () => (
     <section className="py-20 px-4 bg-gradient-to-b from-transparent to-card/50">
       <div className="max-w-7xl mx-auto">
@@ -121,10 +123,30 @@ export default function Index (){
       </div>
     </section>
   );
+  // const GameSections = () => (
+  //   <div className="flex justify-center items-center">
+  //     <main className="flex flex-col md:flex-row gap-1 max-w-[1000px] w-full justify-center items-center">
+  //       <section className="w-full h-full md:max-h-[500px] overflow-hidden cursor-pointer overflow-hidden md:max-w-[600px]">
+  //         <img src="/background1.jpeg" alt="i" className="object-center object-cover hover:scale-[1.05] transition-all transform duration-200" />
+  //       </section>
 
+  //       <div className="flex flex-col w-full md:max-h-[500px] gap-1 px-1">
+  //         <section className="w-full h-full overflow-hidden cursor-pointer overflow-hidden rounded">
+  //           <img src="/background2.jpeg" alt="i" className="object-center object-cover hover:scale-[1.05] transition-all transform duration-200" />
+  //         </section>
+  //         <section className="w-full h-full overflow-hidden cursor-pointer overflow-hidden">
+  //           <img src="/background3.jpeg" alt="i" className="object-center object-cover hover:scale-[1.05] transition-all transform duration-200" />
+  //         </section>
+  //         {/* <img src="/background1.jpeg" alt="i" className="w-full " /> */}
+  //       </div>
+  //     </main>
+  //   </div>
+
+  // )
   return (
     <div className="min-h-screen bg-background">
       <Hero />
+      {/* <GameSections /> */}
       <FAQ />
       <Footer />
     </div>
