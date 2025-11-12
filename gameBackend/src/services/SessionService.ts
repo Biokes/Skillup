@@ -1,9 +1,12 @@
 import { DefaultEventsMap, Socket } from "socket.io";
-import { CreateGameDTO } from "../data/entities/DTO/CreateGame";
+import { CreateGameDTO } from "@/src/data/entities/DTO/CreateGame";
+import { JoinRoomDTO } from "@/src/data/entities/DTO/joinRoom";
+import { QuickMatchDTO } from "@/src/data/entities/DTO/QuickMatch";
 
 export default class SessionService {
     async createGameRoom(createDTO: CreateGameDTO) { }
-    async joinRoom(joinRoomDTO: JoinRoomDTO){}
+    async joinRoom(joinRoomDTO: JoinRoomDTO) { }
+    async findQuickMatch(quickMatchDTO: QuickMatchDTO) { }
     async deActivateOlderSessions(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) { }
 //       async handleCreateRoom(socket, data) {
 //     const { gameType, player, roomCode } = data;

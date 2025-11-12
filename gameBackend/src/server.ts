@@ -32,7 +32,7 @@ async function startServer() {
         const webSocketServer = webSocket.getSocketServerSetup()
         webSocketServer.on('connection', async (socket) => await webSocket.handleConnection(socket) )
     } catch (error) {
-        console.error("Database conection failed.\n error message: " + (error instanceof Error ? error.message : String(error)));
+        console.error("error encountered while starting app : " + (error instanceof Error ? error.message : String(error)));
         process.exit(1);
     }
 } 

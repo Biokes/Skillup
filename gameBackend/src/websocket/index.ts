@@ -7,6 +7,7 @@ import PlayerService from "@/src/services/playerService";
 import SessionService from "@/src/services/SessionService";
 import { CreateGameDTO } from "@/src/data/entities/DTO/CreateGame"
 import { JoinRoomDTO } from "@/src/data/entities/DTO/joinRoom";
+import { QuickMatchDTO } from "@/src/data/entities/DTO/QuickMatch";
 dotenv.config();
 
 export class WebSocket {
@@ -53,7 +54,8 @@ export class WebSocket {
   }
   async listenToGameEvents(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) {
       socket.on('createRoom', async (createRoomDto: CreateGameDTO) => await this.sessionService.createGameRoom(createRoomDto));
-      socket.on('joinRoom', async (joinRoomDTO: JoinRoomDTO)=> await this.sessionService.joinRoom(joinRoomDTO))
+    socket.on('joinRoom', async (joinRoomDTO: JoinRoomDTO) => await this.sessionService.joinRoom(joinRoomDTO))
+    socket.on('findQuickMatch', async (quickMatchDto:QuickMatchDTO)=> await this.sessionService.findQuickMatch(quickMatchDto))
   }
   private logErrorOnConsole(message: string, error: any) {
     console.error(message, error);
