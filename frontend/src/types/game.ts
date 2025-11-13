@@ -71,6 +71,7 @@ export interface GameContextType {
   joinFriendlyRoom: (code: string) => void;
   createQuickMatch: () => void;
   joinQuickMatch: () => void;
+  findQuickMatch: () => void;
   pauseGame: () => void;
   resumeGame: () => void;
   forfeitGame: () => void;

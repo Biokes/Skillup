@@ -7,19 +7,20 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import GameHub from "./pages/GameHub";
 import { CheckersBoard } from "./components/checkers/CheckersBoard";
-
+import LandingPage from "./pages/landingPage";
 import GameProviders from "./contexts/GameContext";
-import ClientProviders from "./contexts/clientProviders";
+// import ClientProviders from "./contexts/clientProviders";
 
 
 
 const App = () => (
-  <ClientProviders>
+  // <ClientProviders>
     <GameProviders>
       <TooltipProvider>
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
+        <Routes>
+          <Route path="/" element={LandingPage} />
+            <Route path="/home" element={<Index />} />
             <Route path="*" element={<NotFound />}/>
             <Route path="/hub" element={<GameHub />} />
             <Route path="/checkers" element={<CheckersBoard />} />
@@ -35,7 +36,7 @@ const App = () => (
         <Sonner />
       </TooltipProvider>
     </GameProviders>
-  </ClientProviders>
+  // </ClientProviders>
 
 );
 

@@ -50,10 +50,10 @@ export class WebSocket {
     const { walletAddress } = socket.handshake.query;
     if (walletAddress) await this.playerService.findOrCreateProfile(walletAddress as string);
     // await this.sessionService.deActivateOlderSessions(socket);
-      await this.listenToGameEvents(socket);
+    await this.listenToGameEvents(socket);
   }
   async listenToGameEvents(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) {
-      socket.on('createRoom', async (createRoomDto: CreateGameDTO) => await this.sessionService.createGameRoom(createRoomDto));
+    socket.on('createRoom', async (createRoomDto: CreateGameDTO) => await this.sessionService.createGameRoom(createRoomDto));
     socket.on('joinRoom', async (joinRoomDTO: JoinRoomDTO) => await this.sessionService.joinRoom(joinRoomDTO))
     socket.on('findQuickMatch', async (quickMatchDto:QuickMatchDTO)=> await this.sessionService.findQuickMatch(quickMatchDto))
   }

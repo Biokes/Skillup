@@ -3,11 +3,11 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { socketService } from '@/services/socketService';
 import { toast } from 'sonner';
 import { MatchType, Player, GameState, GameResult, GameType } from '@/types/game';
-import { useDAppConnector } from "./clientProviders";
+// import { useDAppConnector } from "./clientProviders";
 import { GameContext } from "@/hooks/useGameContext";
 
 export default function GameProviders({ children }: { children: ReactNode }) {
-    const { userAccountId } = useDAppConnector();
+    // const { userAccountId } = useDAppConnector();
     const [gameType, setGameType] = useState<GameType | ''>("");
     const [showMatchModal, setShowMatchModal] = useState(true);
     const [matchType, setMatchType] = useState<MatchType | null>(null);
@@ -21,7 +21,7 @@ export default function GameProviders({ children }: { children: ReactNode }) {
     const [countdown, setCountdown] = useState<number | null>(null);
     const [waitingToastId, setWaitingToastId] = useState<string | number | null>(null);
     const pauseTimerRef = useRef<NodeJS.Timeout | null>(null);
-    const playerName = userAccountId ? userAccountId.slice(0, 3) + '...' + userAccountId.slice(-3) : "Anonymous";
+    const playerName = "Anonymous";
 
     useEffect(() => {
         let storedName = localStorage.getItem("chainSkillsName");
@@ -30,12 +30,11 @@ export default function GameProviders({ children }: { children: ReactNode }) {
             localStorage.setItem("chainSkillsName", storedName);
         }
         console.log("about to connect with name: ", storedName)
-        // Fix: Pass username first, then walletAddress
-        socketService.connect(storedName, userAccountId || "guest");
+        socketService.connect(storedName, "guest");
         return () => {
             socketService.disconnect();
         };
-    }, [userAccountId]);
+    }, []);
 
     const handleRoomCreated = useCallback((data: { roomCode: string }) => {
         setRoomCode(data.roomCode);
@@ -149,24 +148,28 @@ export default function GameProviders({ children }: { children: ReactNode }) {
         setMatchType(type);
 
         if (type === 'staked') {
-            if (!userAccountId) {
-                toast.error('Please connect your wallet first');
-                return;
-            }
+            // if (!userAccountId) {
+            //     toast.error('Please connect your wallet first');
+            //     return;
+            // }
             setShowMatchModal(false);
         } else if (type === 'quick' || type === 'friendly') {
             setShowMatchModal(false);
         }
-    }, [userAccountId]);
+    }, [
+        // userAccountId
+    ]);
 
     const createFriendlyRoom = useCallback(() => {
         const player: Player = {
             name: playerName,
             rating: 1000,
-            walletAddress: userAccountId,
+            walletAddress: "userAccountId",
         };
         socketService.createRoom(gameType as GameType, player);
-    }, [gameType, playerName, userAccountId]);
+    }, [gameType, playerName,
+        // userAccountId
+    ]);
 
     const createQuickMatch = useCallback(() => {
         let storedName = localStorage.getItem("chainSkillsName");
@@ -175,13 +178,15 @@ export default function GameProviders({ children }: { children: ReactNode }) {
             localStorage.setItem("chainSkillsName", storedName);
         }
           const player: Player = {
-            name: userAccountId ? playerName : storedName,
+            name: storedName,
             rating: 1000,
-            walletAddress: userAccountId || "guest",
+            walletAddress: "guest",
         };
         socketService.createQuickMatch(gameType as GameType, player);
         setShowRoomView('waiting');
-    }, [gameType, playerName, userAccountId]);
+    }, [gameType, playerName,
+        // userAccountId
+    ]);
 
     const joinQuickMatch = useCallback(() => {
         let storedName = localStorage.getItem("chainSkillsName");
@@ -191,14 +196,14 @@ export default function GameProviders({ children }: { children: ReactNode }) {
         }
 
         const player: Player = {
-            name: userAccountId ? playerName : storedName,
+            name: storedName,
             rating: 1000,
-            walletAddress: userAccountId || "guest",
+            walletAddress: "guest",
         };
 
         socketService.joinQuickMatch(gameType as GameType, player);
         setShowRoomView('waiting');
-    }, [gameType, playerName, userAccountId]);
+    }, [gameType, playerName]);
 
     const findQuickMatch = useCallback(() => {
         let storedName = localStorage.getItem("chainSkillsName");
@@ -208,23 +213,27 @@ export default function GameProviders({ children }: { children: ReactNode }) {
         }
 
         const player: Player = {
-            name: userAccountId ? playerName : storedName,
+            name: storedName,
             rating: 1000,
-            walletAddress: userAccountId || "guest",
+            walletAddress: "guest",
         };
 
         socketService.findQuickMatch(gameType as GameType, player);
         setShowRoomView('waiting');
-    }, [gameType, playerName, userAccountId]);
+    }, [gameType, playerName,
+        // userAccountId
+    ]);
 
     const joinFriendlyRoom = useCallback((code: string) => {
         const player: Player = {
             name: playerName,
             rating: 1000,
-            walletAddress: userAccountId,
+            walletAddress: "",
         };
         socketService.joinRoom(code, player);
-    }, [playerName, userAccountId]);
+    }, [playerName,
+        // userAccountId
+    ]);
 
     const pauseGame = useCallback(() => {
         if (!isPaused && isPlaying) {

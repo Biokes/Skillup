@@ -51,6 +51,7 @@ class SocketService {
       this.socket = io(backendUrl, { transports: ["websocket"] });
     }
   }
+
   private setupGameEventListeners() {
     if (!this.socket) return;
 
@@ -94,9 +95,7 @@ class SocketService {
       this.emit("opponentDisconnected");
     });
 
-    this.socket.on(
-      "leaderboardUpdate",
-      (data: { gameType: GameType; leaderboard: any[] }) => {
+    this.socket.on("leaderboardUpdate", (data: { gameType: GameType; leaderboard: any[] }) => {
         this.emit("leaderboardUpdate", data);
       }
     );

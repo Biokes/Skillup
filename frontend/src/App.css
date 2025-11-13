@@ -43,3 +43,11 @@
   pointer-events: none;
   z-index: 0;
 }
+.hero{
+  /* opsition: relative; */
+  background-image: url('/background3.jpeg'), linear-gradient(top, rgba(0, 0, 0, 0.34) 10%, rgba(162, 162, 162, 0.34) 90%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  @apply min-h-[300px] max-[400px] md:h-[70vh] w-full flex flex-col justify-center items-center;
+}
