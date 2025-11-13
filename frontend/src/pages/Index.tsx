@@ -125,10 +125,10 @@ export default function Index() {
   );
   // const GameSections = () => (
   //   <div className="flex justify-center items-center">
-  //     <main className="flex flex-col md:flex-row gap-1 max-w-[1000px] w-full justify-center items-center">
-  //       <section className="w-full h-full md:max-h-[500px] overflow-hidden cursor-pointer overflow-hidden md:max-w-[600px]">
-  //         <img src="/background1.jpeg" alt="i" className="object-center object-cover hover:scale-[1.05] transition-all transform duration-200" />
-  //       </section>
+      // <main className="flex flex-col md:flex-row gap-1 max-w-[1000px] w-full justify-center items-center">
+      //   <section className="w-full h-full md:max-h-[500px] overflow-hidden cursor-pointer overflow-hidden md:max-w-[600px]">
+      //     <img src="/background1.jpeg" alt="i" className="object-center object-cover hover:scale-[1.05] transition-all transform duration-200" />
+      //   </section>
 
   //       <div className="flex flex-col w-full md:max-h-[500px] gap-1 px-1">
   //         <section className="w-full h-full overflow-hidden cursor-pointer overflow-hidden rounded">

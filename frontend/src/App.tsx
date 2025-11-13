@@ -5,8 +5,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 // import { HederaWalletProvider } from "@/contexts/HederaWalletContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import GameHub from "./pages/GameHub";
-import { CheckersBoard } from "./components/checkers/CheckersBoard";
+// import GameHub from "./pages/GameHub";
+// import { CheckersBoard } from "./components/checkers/CheckersBoard";
 import LandingPage from "./pages/landingPage";
 import GameProviders from "./contexts/GameContext";
 // import ClientProviders from "./contexts/clientProviders";
@@ -19,11 +19,11 @@ const App = () => (
       <TooltipProvider>
         <BrowserRouter>
         <Routes>
-          <Route path="/" element={LandingPage} />
+          <Route path="/" element={<LandingPage/>} />
             <Route path="/home" element={<Index />} />
             <Route path="*" element={<NotFound />}/>
-            <Route path="/hub" element={<GameHub />} />
-            <Route path="/checkers" element={<CheckersBoard />} />
+            {/* <Route path="/hub" element={<GameHub />} /> */}
+            {/* <Route path="/checkers" element={<CheckersBoard />} /> */}
             {/* <Route path="/chess" element={<ChessGame />} /> */}
             {/* 
               <Route path="/airHockey" element={<AirHockeyGame />} />
