@@ -52,3 +52,6 @@
   background-repeat: no-repeat;
   @apply min-h-[300px] max-h-[500px] md:h-[70vh] w-full flex flex-col justify-center items-center;
 }
+button {
+  @apply transition-all transform hover:scale-[1.05];
+}
