@@ -55,3 +55,13 @@
 button {
   @apply transition-all transform hover:scale-[1.05];
 }
+.pong_actions{
+  @apply flex flex-wrap md:flex-row justify-around items-center gap-3 py-4 px-2 w-full md:px-12;
+}
+.pong_actions > article{
+  @apply flex flex-col justify-center items-center h-[90px] text-primary w-[50%] sm:w-[22%] 
+  transform transition-all duration-300 max-w-[160px] sm:max-w-[350px] bg-[#212937] md:max-w-[450px] rounded sm:px-5 group-hover:scale-[1.05];
+  border: 1px solid #F8B141;
+  cursor:pointer;
+  font-family: 'ribeye';
+}

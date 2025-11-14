@@ -10,32 +10,34 @@ import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/landingPage";
 import GameProviders from "./contexts/GameContext";
 // import ClientProviders from "./contexts/clientProviders";
-
+import Pong from "./pages/pong"
 
 
 const App = () => (
   // <ClientProviders>
-    <GameProviders>
-      <TooltipProvider>
-        <BrowserRouter>
+  <GameProviders>
+    <TooltipProvider>
+      <BrowserRouter>
         <Routes>
-          <Route path="/" element={<LandingPage/>} />
-            <Route path="/home" element={<Index />} />
-            <Route path="*" element={<NotFound />}/>
-            {/* <Route path="/hub" element={<GameHub />} /> */}
-            {/* <Route path="/checkers" element={<CheckersBoard />} /> */}
-            {/* <Route path="/chess" element={<ChessGame />} /> */}
-            {/* 
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/home" element={<Index />} />
+          <Route path="*" element={<NotFound />} />
+          <Route path='/pong' element={<Pong/>} />
+          {/* <Route path="/pingpong" element={<PingPongGame />} /> */}
+
+          {/* <Route path="/hub" element={<GameHub />} /> */}
+          {/* <Route path="/checkers" element={<CheckersBoard />} /> */}
+          {/* <Route path="/chess" element={<ChessGame />} /> */}
+          {/* 
               <Route path="/airHockey" element={<AirHockeyGame />} />
-              <Route path="/pingpong" element={<PingPongGame />} />
               <Route path="/pool" element={<PoolGame/>} />  
              <Route path="/rps" element={<RockPaperScissors />} /> */}
-          </Routes>
-        </BrowserRouter>
-        <Toaster />
-        <Sonner />
-      </TooltipProvider>
-    </GameProviders>
+        </Routes>
+      </BrowserRouter>
+      <Toaster />
+      <Sonner />
+    </TooltipProvider>
+  </GameProviders>
   // </ClientProviders>
 
 );
