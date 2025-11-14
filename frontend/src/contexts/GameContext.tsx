@@ -3,11 +3,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { socketService } from '@/services/socketService';
 import { toast } from 'sonner';
 import { MatchType, Player, GameState, GameResult, GameType } from '@/types/game';
-// import { useDAppConnector } from "./clientProviders";
 import { GameContext } from "@/hooks/useGameContext";
 
 export default function GameProviders({ children }: { children: ReactNode }) {
-    // const { userAccountId } = useDAppConnector();
     const [gameType, setGameType] = useState<GameType | ''>("");
     const [showMatchModal, setShowMatchModal] = useState(true);
     const [matchType, setMatchType] = useState<MatchType | null>(null);

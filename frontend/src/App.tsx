@@ -28,8 +28,8 @@ const App = () => (
             {/* 
               <Route path="/airHockey" element={<AirHockeyGame />} />
               <Route path="/pingpong" element={<PingPongGame />} />
-              {/* <Route path="/pool" element={<PoolGame/>} />  */}
-            {/* <Route path="/rps" element={<RockPaperScissors />} /> */}
+              <Route path="/pool" element={<PoolGame/>} />  
+             <Route path="/rps" element={<RockPaperScissors />} /> */}
           </Routes>
         </BrowserRouter>
         <Toaster />

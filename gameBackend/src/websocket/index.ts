@@ -3,11 +3,11 @@ import dotenv from "dotenv";
 import { Application } from "express";
 import { createServer } from "http";
 import { DefaultEventsMap, Server, Socket } from "socket.io";
-import PlayerService from "@/src/services/playerService";
-import SessionService from "@/src/services/SessionService";
-import { CreateGameDTO } from "@/src/data/entities/DTO/CreateGame"
-import { JoinRoomDTO } from "@/src/data/entities/DTO/joinRoom";
-import { QuickMatchDTO } from "@/src/data/entities/DTO/QuickMatch";
+import PlayerService from "../services/playerService";
+import SessionService from "../services/SessionService";
+import { CreateGameDTO } from "../data/entities/DTO/CreateGame"
+import { JoinRoomDTO } from "../data/entities/DTO/joinRoom";
+import { QuickMatchDTO } from "../data/entities/DTO/QuickMatch";
 dotenv.config();
 
 export class WebSocket {
