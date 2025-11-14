@@ -51,7 +51,7 @@ export default function Pong() {
             owned: 0,
         }
     ]
-    // const Livegames = []
+    const livegames = []
     const PongHero = () => (
         <div className='pong_hero'>
             <section>
@@ -63,7 +63,7 @@ export default function Pong() {
                             transition={{ duration: 0.2, ease: "easeInOut", repeat: Infinity }}
                         >
                             {game.icon}
-                            <h6>{game.texts} <br /> ({game.gameType})</h6>
+                            <h6 className={'text-gradient'}>{game.texts} <br /> ({game.gameType})</h6>
                         </motion.article>
                     ))
                 }
@@ -71,28 +71,28 @@ export default function Pong() {
         </div>
 
     )
-
     const LiveGames = () => (
-        <section>
+        <section className='livegames'>
+            <header>Live Games</header>
             {
-                LiveGames.length == 0 ?
-                    <h3>
-                        No Live Game currently
-                    </h3>
+                livegames.length == 0 ?
+                    <span className="">
+                        <h3>
+                            No Live Game currently
+                        </h3>
+                    </span>
                     :
-                    <div className="flex flex-wrap justify-between items-center gap-1">
+                    <div className="">
 
                     </div>
             }
         </section>
     )
-
     const LeadersBoard = () => (
         <>
             leader board
         </>
     )
-
     const HowToPlay = () => (
         <>
             How to play
@@ -121,12 +121,21 @@ export default function Pong() {
             <Button className={cn("w-[160px] h-[35px] rounded ribeye text-[1rem]")}>Open Daily crate</Button>
         </section>
     )
+    const BottomCard = () => (
+        <div className='bottomCard'>
+            <LiveGames />
+            <aside className=''>
+                <LeadersBoard />
+                <HowToPlay/>
+            </aside>
+        </div>
+    )
     return (
         <>
             <Navbar />
             <PongHero />
             <BoostPack />
-
+            <BottomCard />
         </>
     )
 }

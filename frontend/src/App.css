@@ -4,7 +4,6 @@
   text-align: center;
 }
 
-
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -20,9 +19,9 @@
   }
 }
 
-.gameHub{
+.gameHub {
   position: relative;
-  background-image: url('/background3.jpeg');
+  background-image: url("/background3.jpeg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -38,12 +37,17 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0, 0, 0, 0.55);
   pointer-events: none;
   z-index: 0;
 }
-.hero{
-  background-image: linear-gradient( rgba(255, 4, 4, 0.189) 5%,rgba(22, 80, 196, 0.189) 20%, rgba(0, 0, 0, 0.4) 40%), url('/background3.jpeg');
+.hero {
+  background-image: linear-gradient(
+      rgba(255, 4, 4, 0.189) 5%,
+      rgba(22, 80, 196, 0.189) 20%,
+      rgba(0, 0, 0, 0.4) 40%
+    ),
+    url("/background3.jpeg");
   background-size: cover;
   background-position: bottom;
   background: fill;
@@ -53,47 +57,68 @@
 button {
   @apply transition-all transform hover:scale-[1.05];
 }
-.pong_hero> section {
-  @apply flex flex-wrap md:flex-row justify-around items-center gap-3 py-4 px-2 w-full md:px-12 ;
+.pong_hero > section {
+  @apply flex flex-wrap md:flex-row justify-around items-center gap-3 py-4 px-2 w-full md:px-12;
 }
-.pong_hero> section > article{
+.pong_hero > section > article {
   @apply flex flex-col justify-center items-center h-[90px] sm:h-[120px] sm:text-[1rem] text-primary w-[50%] sm:w-[22%] 
-  transform transition-all duration-300 max-w-[160px] sm:max-w-[350px] bg-[#212937] md:max-w-[450px] rounded sm:px-5 group-hover:scale-[1.2];
-  border: 1px solid #F8B141;
-  cursor:pointer;
-  font-family: 'ribeye';
+  transform transition-all duration-300 max-w-[160px] sm:max-w-[350px] bg-[#0B0B0E] md:max-w-[450px] rounded-sm sm:px-5
+  group-hover:scale-[1.2];
+  border: 1px solid #ffc05b;
+  cursor: pointer;
+  font-family: "ribeye";
 }
-.pong_hero{
+.pong_hero {
   @apply w-full min-h-[220px] flex justify-center items-center;
-  background-image: linear-gradient( rgba(0, 0, 0, 0.5) 60%,rgba(16, 16, 17, 0.802) 80%), url('/background3.jpeg');
+  background-image: linear-gradient(
+      rgba(0, 0, 0, 0.5) 60%,
+      rgba(16, 16, 17, 0.802) 80%
+    ),
+    url("/background3.jpeg");
 }
-.boostpack{
-  @apply  flex flex-col sm:flex-col rounded-lg border-primary border-[2px] mx-2 p-5;
+.boostpack {
+  @apply flex flex-col sm:flex-col rounded-lg border-primary border-[2px] mx-5 p-5 mt-3;
 }
-.boostpack> div{
+.boostpack > div {
   @apply flex flex-col sm:flex-row justify-between items-center gap-3 py-3;
 }
-.boostpack > div > article{
+.boostpack > div > article {
   @apply flex flex-col items-start justify-between rounded-sm p-2 w-full h-[100px];
-  border: 1px solid #F8B141;
-  & h5{
+  border: 1px solid #f8b141;
+  cursor: pointer;
+  & h5 {
     @apply text-[1.3rem] text-gradient text-nowrap;
-      font-family: 'ribeye';
+    font-family: "ribeye";
   }
-  & p{
+  & p {
     @apply text-xs lg:text-[0.9rem] text-start;
   }
   & span {
     @apply text-2xl font-thin;
   }
-  & h6{
+  & h6 {
     @appply font-thin text-sm;
   }
 }
-.boostpack> nav{
+.boostpack > nav {
   @apply flex justify-between items-center pt-3 pb-5;
 }
-.boostpack> nav > h5{
+.boostpack > nav > h5 {
   @apply capitalize text-gradient text-2xl;
-  font-family: 'ribeye';
+  font-family: "ribeye";
+}
+.livegames {
+  @apply min-h-[300px] flex w-full max-h-[400px] p-2 overflow-y-auto flex-col border-[2px] border-primary rounded-lg
+  sm:max-w-[450px] lg:max-w-[500px];
+}
+.livegames > header {
+  @apply text-gradient text-4xl font-bold text-start rounded p-2;
+  font-family: "ribeye";
+}
+.livegames > :nth-child(2){
+  @apply flex flex-grow text-center justify-center items-center rounded-b-lg;
+  border: 1px solid #F8B141;
+}
+.bottomCard {
+  @apply flex flex-col sm:flex-row p-2 mx-3 justify-between items-center;
 }
