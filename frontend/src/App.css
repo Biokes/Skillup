@@ -43,8 +43,6 @@
   z-index: 0;
 }
 .hero{
-  /* opsition: relative; */
-  /* background-image: url('/background3.jpeg'), linear-gradient(top, rgba(0, 0, 0, 0.34) 10%, rgba(162, 162, 162, 0.34) 90%); */
   background-image: linear-gradient( rgba(255, 4, 4, 0.189) 5%,rgba(22, 80, 196, 0.189) 20%, rgba(0, 0, 0, 0.4) 40%), url('/background3.jpeg');
   background-size: cover;
   background-position: bottom;
@@ -68,5 +66,34 @@ button {
 .pong_hero{
   @apply w-full min-h-[220px] flex justify-center items-center;
   background-image: linear-gradient( rgba(0, 0, 0, 0.5) 60%,rgba(16, 16, 17, 0.802) 80%), url('/background3.jpeg');
-
+}
+.boostpack{
+  @apply  flex flex-col sm:flex-col rounded-lg border-primary border-[2px] mx-2 p-5;
+}
+.boostpack> div{
+  @apply flex flex-col sm:flex-row justify-between items-center gap-3 py-3;
+}
+.boostpack > div > article{
+  @apply flex flex-col items-start justify-between rounded-sm p-2 w-full h-[100px];
+  border: 1px solid #F8B141;
+  & h5{
+    @apply text-[1.3rem] text-gradient text-nowrap;
+      font-family: 'ribeye';
+  }
+  & p{
+    @apply text-xs lg:text-[0.9rem] text-start;
+  }
+  & span {
+    @apply text-2xl font-thin;
+  }
+  & h6{
+    @appply font-thin text-sm;
+  }
+}
+.boostpack> nav{
+  @apply flex justify-between items-center pt-3 pb-5;
+}
+.boostpack> nav > h5{
+  @apply capitalize text-gradient text-2xl;
+  font-family: 'ribeye';
 }
