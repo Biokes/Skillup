@@ -3,29 +3,51 @@ import { Zap } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Pong() {
+    const games = [
+        {
+            texts: 'Quick match',
+            gameType: 'free',
+            icon: <Zap className='h-5 w-5' />,
+            action: () => { }
+        },
+        {
+            texts: 'Create/join room',
+            gameType: 'free',
+            icon: <Zap className='h-5 w-5' />,
+            action: () => { }
+        },
+        {
+            texts: 'Frendly Stake',
+            gameType: 'Stake',
+            icon: <Zap className='h-5 w-5' />,
+            action: () => { }
+        },
+        {
+            texts: 'Compete',
+            gameType: 'Stake',
+            icon: <Zap className='h-5 w-5' />,
+            action: () => { }
+        },
+    ]
     const Livegames = []
     const PongHero = () => (
-        <section className="pong_actions">
-            <motion.article
-                animate={{ scale: [1, 1.1, 1], rotate: [0, 1, -1, 0] }}
-                transition={{ duration: 3, ease: "easeInOut", repeat: Infinity }}
-            >
-                <Zap className='h-5 w-5' />
-                <h6>Quick Match <br /> (Free)</h6>
-            </motion.article>
-            <article>
-                <Zap className='h-5 w-5' />
-                <h6>Create Room<br /> (Free)</h6>
-            </article>
-            <article>
-                <Zap className='h-5 w-5' />
-                <h6>Joing Room <br /> (Free)</h6>
-            </article>
-            <article>
-                <Zap className='h-5 w-5' />
-                <h6>Compete <br /> (Stake)</h6>
-            </article>
-        </section>
+        <div className='pong_hero'>
+            <section>
+                {
+                    games.map((game, index) => (
+                        <motion.article key={index}
+                            animate={{ scale: [1, 1.05, 1], rotate: [0, 1, -1, 0] }}
+                            whileHover={{scale: 1.2,  rotate: [0, 2, -2, 0] }}
+                            transition={{ duration: 0.2, ease: "easeInOut", repeat: Infinity }}
+                        >
+                            {game.icon}
+                            <h6>{game.texts} <br /> ({game.gameType})</h6>
+                        </motion.article>
+                    ))
+                }
+            </section>
+        </div>
+
     )
 
     const LiveGames = () => (
