@@ -57,6 +57,9 @@
 button {
   @apply transition-all transform hover:scale-[1.05];
 }
+.refresh {
+  @apply w-[100px] h-[35px] rounded text-[1rem] capitalize;
+}
 .pong_hero > section {
   @apply flex flex-wrap md:flex-row justify-around items-center gap-3 py-4 px-2 w-full md:px-12;
 }
@@ -107,18 +110,40 @@ button {
   @apply capitalize text-gradient text-2xl;
   font-family: "ribeye";
 }
+.bottomCard {
+  @apply flex flex-col md:flex-row gap-2 py-2 px-4 justify-between items-center w-full;
+}
+.bottomCard > aside {
+  @apply flex flex-col md:flex-row w-full md:gap-2 sm:max-w-[65%];
+}
 .livegames {
-  @apply min-h-[300px] flex w-full max-h-[400px] p-2 overflow-y-auto flex-col border-[2px] border-primary rounded-lg
-  sm:max-w-[450px] lg:max-w-[500px];
+  @apply min-h-[350px] flex w-full max-h-[450px] p-2 overflow-y-auto flex-col border-[2px] border-primary rounded-lg
+  sm:max-w-[450px] lg:max-w-[550px] w-full;
 }
 .livegames > header {
-  @apply text-gradient text-4xl font-bold text-start rounded p-2;
+  @apply text-gradient text-3xl font-bold text-start rounded p-2 text-nowrap;
   font-family: "ribeye";
 }
-.livegames > :nth-child(2){
+.livegames > :nth-child(2), .leadersBoard > :nth-child(2) {
   @apply flex flex-grow text-center justify-center items-center rounded-b-lg;
-  border: 1px solid #F8B141;
+  border: 1px solid #f8b141;
 }
-.bottomCard {
-  @apply flex flex-col sm:flex-row p-2 mx-3 justify-between items-center;
+.leadersBoard {
+  @apply min-h-[350px] flex w-full max-h-[450px] p-2 overflow-y-auto flex-col border-[2px] border-primary rounded-lg
+  sm:max-w-[350px] lg:max-w-[400px];
+}
+.leadersBoard > header {
+  @apply text-gradient lg:text-xl text-xl font-bold text-start rounded p-2 text-nowrap;
+  font-family: "ribeye";
+}
+.howToPlay{
+    @apply min-h-[350px] flex w-full max-h-[450px] p-2 overflow-y-auto flex-col border-[2px] border-primary rounded-lg
+  sm:max-w-[350px] lg:max-w-[400px] w-full;
+}
+.howToPlay > header{
+    @apply text-gradient text-2xl font-bold text-start rounded p-2 text-nowrap;
+  font-family: "ribeye";
+}
+.howToPlay> p{
+  @apply border-[1px] border-[#f8b141] rounded-lg h-full text-lg text-center flex p-2 items-center;
 }

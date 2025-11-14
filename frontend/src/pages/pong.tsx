@@ -52,6 +52,7 @@ export default function Pong() {
         }
     ]
     const livegames = []
+    const players = []
     const PongHero = () => (
         <div className='pong_hero'>
             <section>
@@ -71,38 +72,11 @@ export default function Pong() {
         </div>
 
     )
-    const LiveGames = () => (
-        <section className='livegames'>
-            <header>Live Games</header>
-            {
-                livegames.length == 0 ?
-                    <span className="">
-                        <h3>
-                            No Live Game currently
-                        </h3>
-                    </span>
-                    :
-                    <div className="">
-
-                    </div>
-            }
-        </section>
-    )
-    const LeadersBoard = () => (
-        <>
-            leader board
-        </>
-    )
-    const HowToPlay = () => (
-        <>
-            How to play
-        </>
-    )
     const BoostPack = () => (
         <section className="boostpack ">
             <nav>
                 <h5>Inventory</h5>
-                <Button className={cn("w-[100px] h-[35px] rounded ribeye text-[1rem]")}>refresh</Button>
+                <Button className={cn("refresh ribeye")}>refresh</Button>
             </nav>
             <div>
                 {
@@ -121,12 +95,63 @@ export default function Pong() {
             <Button className={cn("w-[160px] h-[35px] rounded ribeye text-[1rem]")}>Open Daily crate</Button>
         </section>
     )
+    const LiveGames = () => (
+        <section className='livegames'>
+            <header>Live Games</header>
+            {
+                livegames.length == 0 ?
+                    <span className="">
+                        <h3>
+                            No Live Game currently
+                        </h3>
+                    </span>
+                    :
+                    <div className="">
+                        {
+                            livegames.map((game, index) => (
+                                <article key={index}>
+                                    {game}
+                                </article>
+                            ))
+                        }
+                    </div>
+            }
+        </section>
+    )
+    const LeadersBoard = () => (
+        <div className="leadersBoard">
+            <header>Live LeaderBoard</header>
+            {
+                players.length == 0 ?
+                    <span className="">
+                        <h3>
+                            No Records currently
+                        </h3>
+                    </span>
+                    :
+                    <div>
+                    </div>
+            }
+        </div>
+    )
+    const HowToPlay = () => (
+        <article className="howToPlay">
+            <header>
+                How to play
+            </header>
+            <p>
+                this is how to play or what is the text of the cow becoming a cook when the rator doesnt
+                find the set Pause Count down at the top of the roof.
+            </p>
+        </article>
+    )
+
     const BottomCard = () => (
         <div className='bottomCard'>
             <LiveGames />
-            <aside className=''>
+            <aside>
                 <LeadersBoard />
-                <HowToPlay/>
+                <HowToPlay />
             </aside>
         </div>
     )
