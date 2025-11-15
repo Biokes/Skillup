@@ -92,7 +92,7 @@ export default function Pong() {
                     ))
                 }
             </div>
-            <Button className={cn("w-[160px] h-[35px] rounded ribeye text-[1rem]")}>Open Daily crate</Button>
+            <Button className={cn("w-[160px] h-[35px] rounded ribeye text-[1rem]")}>Loot Daily crate</Button>
         </section>
     )
     const LiveGames = () => (
@@ -147,7 +147,7 @@ export default function Pong() {
     )
 
     const BottomCard = () => (
-        <div className='bottomCard'>
+        <div className='bottomCard'>    
             <LiveGames />
             <aside>
                 <LeadersBoard />
