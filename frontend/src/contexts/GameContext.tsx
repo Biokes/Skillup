@@ -178,7 +178,7 @@ export default function GameProviders({ children }: { children: ReactNode }) {
           const player: Player = {
             name: storedName,
             rating: 1000,
-            walletAddress: "guest",
+            walletAddress: "",
         };
         socketService.createQuickMatch(gameType as GameType, player);
         setShowRoomView('waiting');
@@ -204,23 +204,9 @@ export default function GameProviders({ children }: { children: ReactNode }) {
     }, [gameType, playerName]);
 
     const findQuickMatch = useCallback(() => {
-        let storedName = localStorage.getItem("chainSkillsName");
-        if (!storedName) {
-            storedName = "player" + Math.floor(Math.random() * 100000);
-            localStorage.setItem("chainSkillsName", storedName);
-        }
-
-        const player: Player = {
-            name: storedName,
-            rating: 1000,
-            walletAddress: "guest",
-        };
-
-        socketService.findQuickMatch(gameType as GameType, player);
-        setShowRoomView('waiting');
-    }, [gameType, playerName,
-        // userAccountId
-    ]);
+        const walletAddress = ''
+       socketService.findQuickMatch(walletAddress,'pingpong',false);
+    }, []);
 
     const joinFriendlyRoom = useCallback((code: string) => {
         const player: Player = {

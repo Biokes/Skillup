@@ -74,4 +74,5 @@ export default abstract class BaseRepository<T extends ObjectLiteral> {
       throw new ChainSkillsException(`Error checking existence: ${(error as Error).message}, at baseRepository.ts:exists`);
     }
   }
+ 
 }

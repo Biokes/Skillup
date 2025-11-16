@@ -39,7 +39,6 @@ export default function Pong() {
             headerText: 'Quick Match (Free)',
             description: 'Connecting to play a quick free match',
         })
-
     }
     const games = [
         {

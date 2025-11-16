@@ -14,3 +14,4 @@ export async function selfPing() {
     }
 }
 
+export const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'

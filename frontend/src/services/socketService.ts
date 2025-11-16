@@ -109,9 +109,9 @@ class SocketService {
     this.socket?.emit("joinRoom", { roomCode, player });
   }
 
-  findQuickMatch(gameType: GameType, player: Player) {
+  findQuickMatch(walletAddress:string, gameType: GameType, isStaked:boolean) {
     this.ensureConnected();
-    this.socket?.emit("findQuickMatch", { gameType, player });
+    this.socket?.emit("findQuickMatch", {walletAddress, gameType, isStaked});
   }
 
   createQuickMatch(gameType: GameType, player: Player) {
@@ -143,21 +143,21 @@ class SocketService {
     this.socket?.emit("paddleMove", data);
   }
 
-  strikerMove(position: { x: number; y: number }) {
-    this.socket?.emit("strikerMove", { position });
-  }
+  // strikerMove(position: { x: number; y: number }) {
+  //   this.socket?.emit("strikerMove", { position });
+  // }
 
-  chessMove(moveData: { from: string; to: string; promotion?: string }) {
-    this.socket?.emit("chessMove", moveData);
-  }
+  // chessMove(moveData: { from: string; to: string; promotion?: string }) {
+  //   this.socket?.emit("chessMove", moveData);
+  // }
 
-  poolShoot(angle: number, power: number) {
-    this.socket?.emit("poolShoot", { angle, power });
-  }
+  // poolShoot(angle: number, power: number) {
+  //   this.socket?.emit("poolShoot", { angle, power });
+  // }
 
-  checkersMove(moveData: { from: { row: number; col: number }; to: { row: number; col: number } }) {
-    this.socket?.emit("checkersMove", moveData);
-  }
+  // checkersMove(moveData: { from: { row: number; col: number }; to: { row: number; col: number } }) {
+  //   this.socket?.emit("checkersMove", moveData);
+  // }
 
   pauseGame() {
     this.socket?.emit("pauseGame");
