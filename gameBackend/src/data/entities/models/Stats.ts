@@ -16,6 +16,6 @@ export class Stats {
   bestStreak: number;
   @Column({ default: 0 })
   rating: number;
-  @Column
+  @Column({ type: "simple-array", default: "" })
   recentForm: string[];
 }

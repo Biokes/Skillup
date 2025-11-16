@@ -1,7 +1,7 @@
-import { ChainSkillsException } from "../../exceptions/index.js";
+import { ChainSkillsException } from "../../exceptions/index";
 import Session from "../models/session.js";
-import { GAME_TYPES, ISession } from "../models/types.js";
-import { BaseRepository } from "./BaseRepository.js";
+import { GAME_TYPES, ISession } from "../models/types";
+import { BaseRepository } from "./BaseRepository";
 import { Types } from "mongoose";
 
 export class SessionRepository extends BaseRepository<ISession> {
