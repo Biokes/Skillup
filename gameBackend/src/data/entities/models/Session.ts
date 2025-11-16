@@ -27,7 +27,6 @@ export class Session {
             .map((char) => CHARS[parseInt(char, 16) % CHARS.length])
             .join('')
             .toUpperCase()
-
     }
   }
 }

@@ -51,11 +51,19 @@ export class WebSocket {
     if (walletAddress) await this.playerService.findOrCreateProfile(walletAddress as string);
     await this.listenToGameEvents(socket);
   }
+
+
   async listenToGameEvents(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) {
     socket.on('createRoom', async (createRoomDto: CreateGameDTO) => await this.sessionService.createGameRoom(createRoomDto));
     socket.on('joinRoom', async (joinRoomDTO: JoinRoomDTO) => await this.sessionService.joinRoom(joinRoomDTO))
-    socket.on('quickMatch', async (quickMatchDto:QuickMatchDTO)=> await this.sessionService.findQuickMatch(quickMatchDto))
+    socket.on('quickMatch', async (quickMatchDto:QuickMatchDTO)=> await this.handleQuickMatch(quickMatchDto, socket))
   }
+
+  async handleQuickMatch(quickMatchDTO: QuickMatchDTO, socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) { 
+    const session = await this.sessionService.findQuickMatch(quickMatchDTO);
+    socket.emit('')
+  }
+
   private logErrorOnConsole(message: string, error: any) {
     console.error(message, error);
   }

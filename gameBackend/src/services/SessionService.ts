@@ -4,42 +4,35 @@ import { JoinRoomDTO } from "@/src/data/entities/DTO/joinRoom";
 import { QuickMatchDTO } from "@/src/data/entities/DTO/QuickMatch";
 import { SessionRepository } from "../data/db/sessionRepository";
 import { Session } from "../data/entities/models/Session";
+import { ChainSkillsException } from "../exceptions";
 
 export default class SessionService {
+
   private readonly sessionRepository: SessionRepository;
   constructor() {
     this.sessionRepository = new SessionRepository();
   }
-  async createGameRoom(createDTO: CreateGameDTO) {}
-  async joinRoom(joinRoomDTO: JoinRoomDTO) {}
-  async findQuickMatch(quickMatchDTO: QuickMatchDTO) {
-    const foundSessions: Session[] = await this.sessionRepository.find({
-      where: {
-        status: "WAITING",
-        isStaked: quickMatchDTO.isStaked,
-      },
-    });
-      
-    if (foundSessions.length > 0) {
-      const session: Session = foundSessions[0] as Session;
-      this.sessionRepository.update(session.id, {
-        player2 :quickMatchDTO.walletAddress,
-        status : "READY",
-      });
-        return session;
-    }
-      const session: Session = this.sessionRepository.create({
-          player1: quickMatchDTO.walletAddress,
-          amount: quickMatchDTO.amount,
-          isStaked: quickMatchDTO.isStaked,
-      }) 
+    
+  async createGameRoom(createDTO: CreateGameDTO) { }
+    
+  async joinRoom(joinRoomDTO: JoinRoomDTO) { }
+    
+  async findQuickMatch(quickMatchDTO: QuickMatchDTO): Promise<Session> {
+      try {
+          const foundSessions: Session[] = await this.sessionRepository.find({ where: { status: "WAITING", isStaked: quickMatchDTO.isStaked }, });
+          let session: Session;
+          if (foundSessions.length > 0) {
+              session = foundSessions.filter(entity => entity.status === "WAITING")[0] as Session;
+              return await this.sessionRepository.update(session.id, { player2: quickMatchDTO.walletAddress, status: "READY" }) as Session;
+          }
+          return await this.sessionRepository.create({ player1: quickMatchDTO.walletAddress, amount: quickMatchDTO.amount, isStaked: quickMatchDTO.isStaked, status: "WAITING" });
+      } catch (error) {
+          throw new ChainSkillsException(`Error finding quickMatch: ${(error as Error).message}, at SessionService.ts:findQuickMatch`)
+      }
   }
-  async deActivateOlderSessions(
-    socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
-    ) { }
-    private generateRoomCode(): string { 
-        return "";
-    }
+    
+  async deActivateOlderSessions(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> ) { }
+ 
   //       async handleCreateRoom(socket, data) {
   //     const { gameType, player, roomCode } = data;
   //     try {

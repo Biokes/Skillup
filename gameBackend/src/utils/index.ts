@@ -6,12 +6,12 @@ export async function selfPing() {
         if (response.ok) {
             const result = await response.json();
             console.log(`[Ping] SUCCESS! Response: ${result.message}`);
-        } else {
-            console.error(`[Ping] FAILED! Status: ${response.status} ${response.statusText}`);
-        }
+            return;
+        } 
+        console.error(`[Ping] FAILED! Status: ${response.status} ${response.statusText}`);
     } catch (error) {
         console.error(`[Ping] ERROR during self-ping:`, (error as Error).message);
     }
 }
 
-export const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+export const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
