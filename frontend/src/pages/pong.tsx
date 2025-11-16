@@ -3,14 +3,50 @@ import { Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { PopupProps } from "@/types/game";
+import { Loader2 } from 'lucide-react';
+
 
 export default function Pong() {
+    const [modalProps, setMmodalProps] = useState<PopupProps>({
+        isOpen: false,
+        headerText: '',
+        description: '',
+        body: <></>
+    })
+    function cancelConnection() { 
+        setMmodalProps((prev)=>({...prev, isOpen:false}))
+    }
+    const Connecting = () => (
+        <section className='connecting'>
+            <Loader2 className="loading" />
+            <motion.h5
+                className="ribeye text-gradient"
+                animate={{ scale: [1, 1.05, 1], rotate: [0, 1, -1, 0] }}
+                transition={{ duration: 2, ease: "easeInOut", repeat: Infinity }}
+            >Connecting to game server</motion.h5>
+            <Button className={cn('cancelButton')} onClick={cancelConnection}>
+                Cancel
+            </Button>
+        </section>
+    )
+    function createQuickMatch() {
+        setMmodalProps({
+            body: <Connecting />,
+            isOpen: true,
+            headerText: 'Quick Match (Free)',
+            description: 'Connecting to play a quick free match',
+        })
+
+    }
     const games = [
         {
             texts: 'Quick match',
             gameType: 'free',
             icon: <Zap className='h-5 w-5' />,
-            action: () => { }
+            action: createQuickMatch
         },
         {
             texts: 'Create/join room',
@@ -53,6 +89,23 @@ export default function Pong() {
     ]
     const livegames = []
     const players = []
+    const MenuDialog = ({ modalProps, setMmodalProps }: { modalProps: PopupProps, setMmodalProps: React.Dispatch<React.SetStateAction<PopupProps>> }) => (
+        <Dialog open={modalProps.isOpen} onOpenChange={() => setMmodalProps(prev => ({ ...prev, isOpen: false }))}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle className={'text-start text-gradient ribeye'}>
+                        {modalProps.headerText}
+                    </DialogTitle>
+                    <DialogDescription>
+                        {modalProps.description}
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="dialogBody">
+                    {modalProps.body}
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
     const PongHero = () => (
         <div className='pong_hero'>
             <section>
@@ -60,8 +113,9 @@ export default function Pong() {
                     games.map((game, index) => (
                         <motion.article key={index}
                             animate={{ scale: [1, 1.05, 1], rotate: [0, 1, -1, 0] }}
-                            whileHover={{ scale: 1.2, rotate: [0, 2, -2, 0] }}
                             transition={{ duration: 0.2, ease: "easeInOut", repeat: Infinity }}
+                            whileHover={{ scale: [1.1, 1.3, 1.1], rotate: [0, 2, -2, 0] }}
+                            onClick={game.action}
                         >
                             {game.icon}
                             <h6 className={'text-gradient'}>{game.texts} <br /> ({game.gameType})</h6>
@@ -70,7 +124,6 @@ export default function Pong() {
                 }
             </section>
         </div>
-
     )
     const BoostPack = () => (
         <section className="boostpack ">
@@ -147,7 +200,7 @@ export default function Pong() {
     )
 
     const BottomCard = () => (
-        <div className='bottomCard'>    
+        <div className='bottomCard'>
             <LiveGames />
             <aside>
                 <LeadersBoard />
@@ -161,6 +214,7 @@ export default function Pong() {
             <PongHero />
             <BoostPack />
             <BottomCard />
+            <MenuDialog modalProps={modalProps} setMmodalProps={setMmodalProps} />
         </>
     )
 }

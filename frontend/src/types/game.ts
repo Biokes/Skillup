@@ -1,4 +1,4 @@
-import React from "React";
+import React, { ReactNode } from "React";
 
 export type GameType =
   | "pingpong"
@@ -77,4 +77,11 @@ export interface GameContextType {
   forfeitGame: () => void;
   leaveGame: () => void;
   playAgain: () => void;
+}
+
+export interface PopupProps {
+    isOpen: boolean,
+    headerText: string,
+    description: string,
+    body: ReactNode
 }

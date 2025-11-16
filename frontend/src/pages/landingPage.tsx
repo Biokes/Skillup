@@ -3,39 +3,9 @@ import { Trophy, Users, Zap } from "lucide-react";
 import Footer from "../components/commons/footer";
 import Navbar from "../components/commons/navbar";
 import { useNavigate } from "react-router-dom";
-import { ReactNode, useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-
-interface PopupProps {
-  isOpen: boolean,
-  headerText: string,
-  description: string,
-  body: ReactNode
-}
 export default function LandingPage() {
   const navigate = useNavigate()
-  const [modalProps, setMmodalProps] = useState<PopupProps>({
-    isOpen: false,
-    headerText: 'string',
-    description: 'string',
-    body: <></>
-  })
-  const MenuDialog = () => (
-    <Dialog open={modalProps.isOpen} onOpenChange={() => setMmodalProps(prev=> ({...prev, isOpen:false}))}>
-      <DialogHeader>
-        <DialogTitle>
-          {modalProps.headerText}
-        </DialogTitle>
-        <DialogDescription>
-          {modalProps.description}
-        </DialogDescription>
-      </DialogHeader>
-      <DialogContent>
-        {modalProps.body}
-      </DialogContent>
-    </Dialog>
-  )
   const Hero = () => (
     <main className='hero'>
       <motion.article
