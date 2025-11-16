@@ -19,10 +19,10 @@ export default class SessionService {
     
   async findQuickMatch(quickMatchDTO: QuickMatchDTO): Promise<Session> {
       try {
-          const foundSessions: Session[] = await this.sessionRepository.find({ where: { status: "WAITING", isStaked: quickMatchDTO.isStaked }, });
+          const foundSessions: Session[] = await this.sessionRepository.find({ where: { status: "WAITING", isStaked: quickMatchDTO.isStaked }});
           let session: Session;
           if (foundSessions.length > 0) {
-              session = foundSessions.filter(entity => entity.status === "WAITING")[0] as Session;
+              session = foundSessions.filter(entity => entity.status === "WAITING" && entity.player1 != quickMatchDTO.walletAddress )[0] as Session;
               return await this.sessionRepository.update(session.id, { player2: quickMatchDTO.walletAddress, status: "READY" }) as Session;
           }
           return await this.sessionRepository.create({ player1: quickMatchDTO.walletAddress, amount: quickMatchDTO.amount, isStaked: quickMatchDTO.isStaked, status: "WAITING" });

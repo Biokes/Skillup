@@ -8,6 +8,7 @@ import SessionService from "../services/SessionService";
 import { CreateGameDTO } from "../data/entities/DTO/CreateGame"
 import { JoinRoomDTO } from "../data/entities/DTO/joinRoom";
 import { QuickMatchDTO } from "../data/entities/DTO/QuickMatch";
+import { Session } from "../data/entities/models/Session";
 dotenv.config();
 
 export class WebSocket {
@@ -60,8 +61,24 @@ export class WebSocket {
   }
 
   async handleQuickMatch(quickMatchDTO: QuickMatchDTO, socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) { 
-    const session = await this.sessionService.findQuickMatch(quickMatchDTO);
-    socket.emit('')
+    const session:Session = await this.sessionService.findQuickMatch(quickMatchDTO);
+    !!session.player2 ?
+      socket.emit('joined', {
+        roomCode: session.roomCode,
+        status: session.status,
+        isStaked: session.isStaked,
+        player1: session.player1,
+        player2: session.player2,
+        amount: session.amount
+      })
+      :
+      socket.emit('waiting', {
+        roomCode: session.roomCode,
+        status: session.status,
+        isStaked: session.isStaked,
+        player1: session.player1,
+        amount: session.amount
+      })
   }
 
   private logErrorOnConsole(message: string, error: any) {
