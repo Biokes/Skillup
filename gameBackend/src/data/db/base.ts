@@ -1,5 +1,5 @@
 import { Repository, DeepPartial, FindManyOptions, FindOneOptions, ObjectLiteral } from "typeorm";
-import { ChainSkillsException } from "@/src/exceptions";
+import { ChainSkillsException } from "../../exceptions";
 
 export default abstract class BaseRepository<T extends ObjectLiteral> {
   protected readonly repository: Repository<T>;

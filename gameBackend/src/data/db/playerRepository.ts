@@ -1,4 +1,4 @@
-import { DataBaseSource } from "@/src/config/dbSource";
+import { DataBaseSource } from '../../config/dbSource';
 import { Player } from "../entities/models/Player";
 import BaseRepository from "./base";
 import { Repository } from "typeorm";

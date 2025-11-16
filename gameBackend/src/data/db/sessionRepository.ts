@@ -1,4 +1,4 @@
-import { DataBaseSource } from "@/src/config/dbSource";
+import { DataBaseSource } from "../../config/dbSource";
 import { Session } from "../entities/models/Session";
 import BaseRepository from "./base";
 

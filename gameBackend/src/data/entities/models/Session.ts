@@ -1,5 +1,5 @@
 import { AfterLoad, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { CHARS } from "@/src/utils";
+import { CHARS } from "../../../utils";
 
 
 @Entity()
