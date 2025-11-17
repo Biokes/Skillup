@@ -87,5 +87,6 @@ export interface PopupProps {
     body: ReactNode
 }
 export interface OneChainGameType { 
-  
+  errorMessage: string;
+  setErrorMessage: React.Dispatch<React.SetStateAction<string>>;
 }
