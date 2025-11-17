@@ -38,9 +38,7 @@ export class WebSocket {
       allowUpgrades: false,
       perMessageDeflate: false,
     });
-    this.socketConnection.on("connection", (socket: Socket) => {
-      this.handleConnection(socket);
-    });
+    this.socketConnection.on("connection", (socket: Socket) => {this.handleConnection(socket)});
     this.socketConnection.engine.on("connection_error", (err) => this.logErrorOnConsole("Socket engine on failed with error: ", err));
     this.socketConnection.on("error", (error) => this.logErrorOnConsole("Socket on failed with error: ", error));
     this.sessionService = new SessionService();
@@ -49,6 +47,7 @@ export class WebSocket {
   getSocketServerSetup() {
     return this.socketConnection;
   }
+  
   getServer() { 
     return this.socketServer;
   }
@@ -59,7 +58,7 @@ export class WebSocket {
 
 
   async listenToGameEvents(socket: Socket) {
-    socket.on('createRoom', async (createRoomDto: CreateGameDTO) => await this.sessionService.createGameRoom(createRoomDto));
+    socket.on('createQuickMatch', async (createRoomDto: CreateGameDTO) => await this.sessionService.createGameRoom(createRoomDto));
     socket.on('joinRoom', async (joinRoomDTO: JoinRoomDTO) => await this.sessionService.joinRoom(joinRoomDTO));
     socket.on('quickMatch', async (quickMatchDto: QuickMatchDTO) => await this.handleQuickMatch(quickMatchDto, socket));
   }

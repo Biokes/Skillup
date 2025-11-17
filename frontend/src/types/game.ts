@@ -1,3 +1,4 @@
+import { OneChainGameType } from '@/';
 import React, { ReactNode } from "React";
 
 export type GameType =
@@ -56,7 +57,7 @@ export interface GameContextType {
   gameType: string | GameType;
   showMatchModal: boolean;
   matchType: MatchType | null;
-  roomCode: string;
+  errorMessage: string;
   showRoomView: "create" | "join" | "waiting" | null;
   gameState: GameState | null;
   isPlaying: boolean;
@@ -67,11 +68,11 @@ export interface GameContextType {
   selectMatchType: (type: MatchType) => void;
   setGameType: React.Dispatch<React.SetStateAction<GameType | string>>;
   setShowRoomView: React.Dispatch<React.SetStateAction<"create" | "join" | "waiting" | null>>;
-  createFriendlyRoom: () => void;
-  joinFriendlyRoom: (code: string) => void;
-  createQuickMatch: () => void;
-  joinQuickMatch: () => void;
-  findQuickMatch: () => void;
+  // createFriendlyRoom: () => void;
+  // joinFriendlyRoom: (code: string) => void;
+  createQuickMatch: (walletAddress: string, code: string) => void;
+  joinQuickMatch: (walletAddress: string, code:string) => void;
+  quickMatch: (walletAddress: string) => void;
   pauseGame: () => void;
   resumeGame: () => void;
   forfeitGame: () => void;
@@ -84,4 +85,7 @@ export interface PopupProps {
     headerText: string,
     description: string,
     body: ReactNode
+}
+export interface OneChainGameType { 
+  
 }

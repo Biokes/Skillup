@@ -8,16 +8,20 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { PopupProps } from "@/types/game";
 import { Loader2 } from 'lucide-react';
 import { useGame } from "@/hooks/useGameContext";
-
+import { toast } from "sonner";
+import {useCurrentAccount} from "@mysten/dapp-kit"
 
 export default function Pong() {
-    const { findQuickMatch} = useGame()
+    const { quickMatch } = useGame()
     const [modalProps, setMmodalProps] = useState<PopupProps>({
         isOpen: false,
         headerText: '',
         description: '',
         body: <></>
     })
+    const [roomCode, setRoomCode] = useState<string>('');
+    const account = useCurrentAccount();
+    const address = account?.address;
     function cancelConnection() { 
         setMmodalProps((prev)=>({...prev, isOpen:false}))
     }
@@ -34,8 +38,12 @@ export default function Pong() {
             </Button>
         </section>
     )
-    function createQuickMatch() {
-        findQuickMatch()
+    function findQuickMatch() {
+        if (!address) { 
+            toast.info("please connect wallet")
+            return;
+        }
+        quickMatch(address);
         setMmodalProps({
             body: <Connecting />,
             isOpen: true,
@@ -43,18 +51,31 @@ export default function Pong() {
             description: 'Connecting to play a quick free match',
         })
     }
+    function createFreeRoom() { 
+        if (!address) { 
+            toast.info("please connect wallet")
+            return;
+        }
+        setMmodalProps({
+            body: <></>,
+            isOpen: true,
+            headerText: 'Create Room(Free)',
+            description:'Create game connection room with friends'
+        })
+    }
+
     const games = [
         {
             texts: 'Quick match',
             gameType: 'free',
             icon: <Zap className='h-5 w-5' />,
-            action: createQuickMatch
+            action: findQuickMatch
         },
         {
             texts: 'Create/join room',
             gameType: 'free',
             icon: <Zap className='h-5 w-5' />,
-            action: () => { }
+            action: createFreeRoom
         },
         {
             texts: 'Frendly Stake',

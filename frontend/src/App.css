@@ -74,7 +74,7 @@ button {
   font-family: "ribeye";
 }
 .pong_hero {
-  @apply w-full min-h-[220px] flex justify-center items-center;
+  @apply w-full min-h-[300px] min-h-[220px] flex justify-center items-center;
   background-image: linear-gradient(
       rgba(0, 0, 0, 0.5) 60%,
       rgba(16, 16, 17, 0.802) 80%
@@ -162,4 +162,8 @@ button {
 .cancelButton{
   @apply h-[30px] w-[100px] rounded-sm bg-[#0B0B0E] hover:bg-[#0B0B0E] border-[#f8b141] border-[1px] text-primary hover:text-red-400 hover:cursor-not-allowed;
   font-family: 'ribeye';
+}
+.connectButton {
+  @apply !bg-primary !px-3 !py-1 !shadow-none hover:!shadow-none transition-none !text-[0.9rem] !duration-300 transition-all transform;
+  font-family: 'ribeye' !important;
 }

@@ -14,9 +14,7 @@ export default function OneChainProviders({ children }: { children: ReactNode })
         <QueryClientProvider client={queryClient}>
             <SuiClientProvider networks={networkConfig} defaultNetwork="onechainTestnet" >
                 <WalletProvider autoConnect>
-                     {/* <DappKitProvider> */}
                         {children}
-                    {/* </DappKitProvider> */}
                 </WalletProvider>
             </SuiClientProvider>
         </QueryClientProvider>
