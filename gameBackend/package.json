@@ -5,7 +5,7 @@
   "main": "./src/server.ts",
   "scripts": {
     "start": "pnpm run server",
-    "dev": "  src/server.ts",
+    "dev": "  pnpm run server",
     "server": "ts-node-dev --transpile-only src/server.ts",
     "build": "tsc",
     "serve": "node dist/server.js",

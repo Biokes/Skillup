@@ -1,12 +1,13 @@
 import { io, Socket } from "socket.io-client";
 import { GameType, Player, GameState, GameResult } from "@/types/game";
+import { toast } from "sonner";
 
 class SocketService {
   private socket: Socket | null = null;
   private listeners: Map<string, Function[]> = new Map();
 
   connect(username: string, walletAddress: string) {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+    const backendUrl = import.meta.env.VITE_BACKEND_URL!;
     if (this.socket && this.socket.connected) {
       console.log("⚠️ Socket already connected. Skipping new connection.");
       return;
@@ -18,7 +19,6 @@ class SocketService {
       this.socket.disconnect();
       this.socket = null;
     }
-
     this.socket = io(backendUrl, {
       query: { username, walletAddress},
       transports: ["websocket"],
@@ -42,7 +42,6 @@ class SocketService {
 
     this.setupGameEventListeners();
   }
-
   private ensureConnected() {
     if (!this.socket || !this.socket.connected) {
       console.error("Socket is not connected. Reconnecting...");
@@ -94,7 +93,11 @@ class SocketService {
     this.socket.on("opponentDisconnected", () => {
       this.emit("opponentDisconnected");
     });
-
+    this.socket.on("quickMatchError", (errorRespose: {message?:string, successful: boolean, error?: Error}) => { 
+      toast.error(errorRespose.message?? errorRespose.error.message)
+    })
+    this.socket.on('joined',()=>{})
+    this.socket.on('waiting',()=>{})
     this.socket.on("leaderboardUpdate", (data: { gameType: GameType; leaderboard: any[] }) => {
         this.emit("leaderboardUpdate", data);
       }
@@ -109,9 +112,10 @@ class SocketService {
     this.socket?.emit("joinRoom", { roomCode, player });
   }
 
-  findQuickMatch(walletAddress:string, gameType: GameType, isStaked:boolean) {
+  findQuickMatch(walletAddress:string, gameType: GameType, isStaked:boolean, amount: number) {
     this.ensureConnected();
-    this.socket?.emit("findQuickMatch", {walletAddress, gameType, isStaked});
+    this.socket?.emit("quickMatch", { walletAddress, gameType, isStaked, amount });
+    console.log('finding quick match')
   }
 
   createQuickMatch(gameType: GameType, player: Player) {

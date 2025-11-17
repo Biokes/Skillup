@@ -205,7 +205,7 @@ export default function GameProviders({ children }: { children: ReactNode }) {
 
     const findQuickMatch = useCallback(() => {
         const walletAddress = ''
-       socketService.findQuickMatch(walletAddress,'pingpong',false);
+       socketService.findQuickMatch(walletAddress,'pingpong',false, 0);
     }, []);
 
     const joinFriendlyRoom = useCallback((code: string) => {

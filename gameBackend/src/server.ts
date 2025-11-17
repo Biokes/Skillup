@@ -18,19 +18,19 @@ app.use(cors({
     credentials: true,
 }));
 
-app.use('/api/v1/', Routes)
+app.use('/api/v1', Routes)
 
 async function startServer() { 
     try { 
         await DataBaseSource.initialize();
-        console.log("db connected")
-        app.listen(PORT, () => {
-            console.log(`Server started on port ${PORT}`);
-            setInterval(async () => { await selfPing()},50_000*6)
-        });
         const webSocket = new WebSocket(app);
-        const webSocketServer = webSocket.getSocketServerSetup()
-        webSocketServer.on('connection', async (socket) => await webSocket.handleConnection(socket) )
+        console.log("db connected")
+        const httpServer = webSocket.getServer();
+        httpServer.listen(Number(PORT), () => {
+            console.log(`🚀 Server started on port ${PORT}`);
+            console.log(`🔌 Socket.IO available at ws://localhost:${PORT}/socket.io/`);
+            setInterval(async () => { await selfPing() }, 50_000 * 6);
+        });
     } catch (error) {
         console.error("error encountered while starting app : " + (error instanceof Error ? error.message : String(error)));
         process.exit(1);

@@ -7,9 +7,11 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PopupProps } from "@/types/game";
 import { Loader2 } from 'lucide-react';
+import { useGame } from "@/hooks/useGameContext";
 
 
 export default function Pong() {
+    const { findQuickMatch} = useGame()
     const [modalProps, setMmodalProps] = useState<PopupProps>({
         isOpen: false,
         headerText: '',
@@ -33,6 +35,7 @@ export default function Pong() {
         </section>
     )
     function createQuickMatch() {
+        findQuickMatch()
         setMmodalProps({
             body: <Connecting />,
             isOpen: true,
