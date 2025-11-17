@@ -9,7 +9,7 @@ export default function GameProviders({ children }: { children: ReactNode }) {
     const [gameType, setGameType] = useState<GameType | ''>("");
     const [showMatchModal, setShowMatchModal] = useState(true);
     const [matchType, setMatchType] = useState<MatchType | null>(null);
-    const [error, setRoomCode] = useState<string>('');
+    const [roomCode, setRoomCode] = useState<string>('');
     const [showRoomView, setShowRoomView] = useState<'create' | 'join' | 'waiting' | null>(null);
     const [gameState, setGameState] = useState<GameState | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);

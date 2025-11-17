@@ -89,4 +89,6 @@ export interface PopupProps {
 export interface OneChainGameType { 
   errorMessage: string;
   setErrorMessage: React.Dispatch<React.SetStateAction<string>>;
+  quickMatch: (walletAddress: string) => void;
+
 }

@@ -89,7 +89,9 @@ class SocketService {
     this.socket.on("opponentLeft", () => {
       this.emit("opponentLeft");
     });
-
+    this.socket.on('waiting', () => {
+      console.warn("waiting for another player connection to join room")
+    })
     this.socket.on("opponentDisconnected", () => {
       this.emit("opponentDisconnected");
     });

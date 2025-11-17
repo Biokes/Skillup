@@ -7,19 +7,19 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PopupProps } from "@/types/game";
 import { Loader2 } from 'lucide-react';
-import { useGame } from "@/hooks/useGameContext";
 import { toast } from "sonner";
 import {useCurrentAccount} from "@mysten/dapp-kit"
+import { useOneChainGame } from "@/hooks/useOneChainGameContext";
 
 export default function Pong() {
-    const { quickMatch } = useGame()
+    const { quickMatch } = useOneChainGame();
     const [modalProps, setMmodalProps] = useState<PopupProps>({
         isOpen: false,
         headerText: '',
         description: '',
         body: <></>
     })
-    const [roomCode, setRoomCode] = useState<string>('');
+    // const [roomCode, setRoomCode] = useState<string>('');
     const account = useCurrentAccount();
     const address = account?.address;
     function cancelConnection() { 
