@@ -1,12 +1,11 @@
-import { DefaultEventsMap, Socket } from "socket.io";
+import { Socket } from "socket.io";
 import { CreateGameDTO } from "@/src/data/entities/DTO/CreateGame";
 import { JoinRoomDTO } from "@/src/data/entities/DTO/joinRoom";
-import { QuickMatchDTO, quickMatchSchema } from "@/src/data/entities/DTO/QuickMatch";
+import { QuickMatchDTO, quickMatchSchema } from "../data/entities/DTO/QuickMatch";
 import { SessionRepository } from "../data/db/sessionRepository";
 import { Session } from "../data/entities/models/Session";
 import { ChainSkillsException } from "../exceptions";
 import { ZodError } from "zod";
-import { ErrorRequestHandler } from "express";
 
 export default class SessionService {
  
