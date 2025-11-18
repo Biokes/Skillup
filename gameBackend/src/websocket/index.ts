@@ -1,3 +1,4 @@
+import { QuickMatchDTO } from '@/src/data/entities/DTO/QuickMatch';
 import { quickMatchSchema } from './../data/entities/DTO/QuickMatch';
 import dotenv from "dotenv";
 import { Application } from "express";
@@ -60,34 +61,9 @@ export class WebSocket {
   async listenToGameEvents(socket: Socket) {
     socket.on('createQuickMatch', async (createRoomDto: CreateGameDTO) => await this.sessionService.createGameRoom(createRoomDto));
     socket.on('joinRoom', async (joinRoomDTO: JoinRoomDTO) => await this.sessionService.joinRoom(joinRoomDTO));
-    socket.on('quickMatch', async (quickMatchDto: QuickMatchDTO) => await this.handleQuickMatch(quickMatchDto, socket));
-  }
-
-  async handleQuickMatch(quickMatchDTO: QuickMatchDTO, socket: Socket) { 
-    let validatedDto;
-    try {
-      validatedDto = quickMatchSchema.parse(quickMatchDTO);
-    } catch (error) { 
-      socket.emit('quickMatchError', error instanceof ZodError ? {successful:false,message: error.message}:{successful:false, error} )
-      return
-    }
-    const session: Session = await this.sessionService.findQuickMatch(validatedDto!);
-    console.log('finding quick match')
-      !!session.player2 ?
-        socket.emit('joined', {
-          status: session.status,
-          isStaked: session.isStaked,
-          player1: session.player1,
-          player2: session.player2,
-          amount: session.amount
-        })
-        :
-        socket.emit('waiting', {
-          status: session.status,
-          isStaked: session.isStaked,
-          player1: session.player1,
-          amount: session.amount
-        })
+    socket.on('quickMatch', async (quickMatchDto: QuickMatchDTO) => await this.sessionService.handleQuickMatch(quickMatchDto, socket));
+    socket.on('retryQuickMatch', async (dto: QuickMatchDTO) => await this.sessionService.handleRetryQuickMatch(dto, socket))
+    socket.on("cancelQuickMatch", async (walletAddress:string) => await this.sessionService.cancelQuickMatch(walletAddress,socket))
   }
 
   private logErrorOnConsole(message: string, error: any) {

@@ -1,12 +1,15 @@
 import { DefaultEventsMap, Socket } from "socket.io";
 import { CreateGameDTO } from "@/src/data/entities/DTO/CreateGame";
 import { JoinRoomDTO } from "@/src/data/entities/DTO/joinRoom";
-import { QuickMatchDTO } from "@/src/data/entities/DTO/QuickMatch";
+import { QuickMatchDTO, quickMatchSchema } from "@/src/data/entities/DTO/QuickMatch";
 import { SessionRepository } from "../data/db/sessionRepository";
 import { Session } from "../data/entities/models/Session";
 import { ChainSkillsException } from "../exceptions";
+import { ZodError } from "zod";
+import { ErrorRequestHandler } from "express";
 
 export default class SessionService {
+ 
 
   private readonly sessionRepository: SessionRepository;
   constructor() {
@@ -31,8 +34,75 @@ export default class SessionService {
           throw new ChainSkillsException(`Error finding quickMatch: ${(error as Error).message}, at SessionService.ts:findQuickMatch`)
       }
   }
+  
+  async handleQuickMatch(quickMatchDTO: QuickMatchDTO, socket: Socket) { 
+    let validatedDto;
+    try {
+      validatedDto = quickMatchSchema.parse(quickMatchDTO);
+    } catch (error) { 
+      socket.emit('quickMatchError', error instanceof ZodError ? {successful:false,message: error.message}:{successful:false, error} )
+      return
+    }
+    const session: Session = await this.findQuickMatch(validatedDto!);
+      !!session.player2 ?
+        socket.emit('joined', {
+          id: session.id,  
+          status: session.status,
+          isStaked: session.isStaked,
+          player1: session.player1,
+          player2: session.player2,
+          amount: session.amount
+        })
+        :
+        socket.emit('waiting', {
+          status: session.status,
+          isStaked: session.isStaked,
+          player1: session.player1,
+          amount: session.amount
+        })
+  }
     
-  async deActivateOlderSessions(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> ) { }
+  async handleRetryQuickMatch(quickMatchDTO: QuickMatchDTO, socket: Socket) { 
+      try { 
+        const existing = await this.sessionRepository.findOne({where: { player1: quickMatchDTO.walletAddress, status: "WAITING"}});
+          if (existing) { 
+              await this.sessionRepository.delete(existing.id);
+          }
+        await this.handleQuickMatch(quickMatchDTO, socket)  
+      } catch (error) { 
+      socket.emit('retryMatchError', error instanceof ZodError ? {successful:false,message: error.message}:{successful:false, error} )
+      return
+    } 
+  }  
+    
+  async cancelQuickMatch(walletAddress: string, socket: Socket): Promise<void> {
+      try {
+          const existing = await this.sessionRepository.findOne({ where: { player1: walletAddress, status: "WAITING" } });
+          if (existing) {
+              await this.sessionRepository.delete(existing.id);
+          }
+          socket.emit('cancelQuickMatch', {
+            successful:true
+          })
+      } catch (error) { 
+      socket.emit('cancelMatchError', {successful:false,message: (error as Error).message})
+      return
+    } 
+  }
+
+//   async cancelQuickMatch(walletAddress: string): Promise<void> {
+//     try {
+//         await this.sessionRepository.delete({
+//             where:{
+//             player1: walletAddress,
+//             status: "WAITING"
+//         }});
+//     } catch (error) {
+//         throw new ChainSkillsException(
+//             `Error cancelling quickMatch: ${error.message}, at SessionService.ts:cancelQuickMatch`
+//         );
+//     }
+// }
  
   //       async handleCreateRoom(socket, data) {
   //     const { gameType, player, roomCode } = data;

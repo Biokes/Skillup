@@ -12,8 +12,8 @@
     transform: rotate(360deg);
   }
 }
-.spin{
-    animation: spin 1s linear infinite;
+.spin {
+  animation: spin 1s linear infinite;
 }
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
@@ -126,7 +126,8 @@ button {
   @apply text-amber-400 text-3xl font-bold text-start rounded p-2 text-nowrap;
   font-family: "ribeye";
 }
-.livegames > :nth-child(2), .leadersBoard > :nth-child(2) {
+.livegames > :nth-child(2),
+.leadersBoard > :nth-child(2) {
   @apply flex flex-grow text-center justify-center items-center rounded-b-lg;
   border: 1px solid #f8b141;
 }
@@ -138,32 +139,48 @@ button {
   @apply text-amber-400 lg:text-xl text-xl font-bold text-start rounded p-2 text-nowrap;
   font-family: "ribeye";
 }
-.howToPlay{
-    @apply min-h-[350px] flex w-full max-h-[450px] p-2 overflow-y-auto flex-col border-[2px] border-primary rounded-lg
+.howToPlay {
+  @apply min-h-[350px] flex w-full max-h-[450px] p-2 overflow-y-auto flex-col border-[2px] border-primary rounded-lg
   sm:max-w-[350px] lg:max-w-[400px] w-full;
-} 
-.howToPlay > header{
-    @apply text-amber-400 text-2xl font-bold text-start rounded p-2 text-nowrap;
+}
+.howToPlay > header {
+  @apply text-amber-400 text-2xl font-bold text-start rounded p-2 text-nowrap;
   font-family: "ribeye";
 }
-.howToPlay> p{
+.howToPlay > p {
   @apply border-[1px] border-[#f8b141] rounded-lg h-full text-lg text-center flex p-2 items-center;
 }
-.dialogBody{
+.dialogBody {
   @apply flex flex-col justify-center w-full p-3 items-center min-h-[120px] rounded;
-    border: 1px solid #f8b141;
+  border: 1px solid #f8b141;
 }
-.loading{
+.loading {
   @apply spin h-6 w-8 font-bold text-[#f8b141];
 }
-.connecting{
+.connecting,
+.failedConnection {
   @apply flex flex-col justify-center items-center gap-2;
 }
-.cancelButton{
+.cancelButton {
   @apply h-[30px] w-[100px] rounded-sm bg-[#0B0B0E] hover:bg-[#0B0B0E] border-[#f8b141] border-[1px] text-primary hover:text-red-400 hover:cursor-not-allowed;
-  font-family: 'ribeye';
+  font-family: "ribeye";
 }
 .connectButton {
   @apply !bg-primary !px-3 !py-1 !shadow-none hover:!shadow-none transition-none !text-[0.9rem] !duration-300 transition-all transform;
-  font-family: 'ribeye' !important;
+  font-family: "ribeye" !important;
+}
+.failedConnection > p {
+  @apply text-[1rem] text-gradient;
+  font-family: "ribeye";
+}
+.failedConnection > footer {
+  @apply flex justify-center items-center gap-2 transition-all transform duration-300;
+}
+.failedConnection > footer > :first-child {
+  @apply bg-green-400 hover:bg-green-700 text-white cursor-pointer;
+  font-family: "ribeye";
+}
+.failedConnection > footer > :last-child {
+  @apply !bg-red-400 hover:!bg-red-700 text-white cursor-not-allowed;
+  font-family: "ribeye";
 }

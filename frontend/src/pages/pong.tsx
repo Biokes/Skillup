@@ -19,13 +19,14 @@ export default function Pong() {
         description: '',
         body: <></>
     })
-    const [isTimedOut, setTimedOut] = useState<boolean>(false)
+    const [isActiveTimed, activeTimed] = useState<boolean>(false)
 
     // const [roomCode, setRoomCode] = useState<string>('');
     const account = useCurrentAccount();
-    const address = account?.address;
+    const address = account?.address ?? null;
 
     function cancelConnection() {
+        activeTimed(false)
         setMmodalProps((prev) => ({ ...prev, isOpen: false }))
     }
     function handleRetry() {
@@ -39,7 +40,7 @@ export default function Pong() {
     }
 
     const Connecting = () => {
-        if (!isTimedOut) {
+        if (!isActiveTimed) {
             return (
                 <section className='connecting'>
                     <Loader2 className="loading" />
@@ -55,18 +56,18 @@ export default function Pong() {
             )
         }
         return (
-            <section className="connecting">
-                <p className="ribeye text-[1.1rem] text-red-500">
+            <section className="failedConnection">
+                <p>
                     Cannot find opponent
                 </p>
-
-                <Button className="retryButton" onClick={handleRetry}>
-                    Try Again
-                </Button>
-
-                <Button className="cancelButton" onClick={handleCancelTimeout}>
-                    Cancel
-                </Button>
+                <footer>
+                    <Button onClick={handleRetry}>
+                        Try Again
+                    </Button>
+                    <Button onClick={handleCancelTimeout}>
+                        Cancel
+                    </Button>
+                </footer>
             </section>
         );
     }
@@ -79,7 +80,7 @@ export default function Pong() {
         quickMatch(address);
 
         setTimeout(() => {
-            setTimedOut(true);
+            activeTimed(true);
         }, 20000);
 
         setMmodalProps({
@@ -151,8 +152,9 @@ export default function Pong() {
     ]
     const livegames = []
     const players = []
-    const MenuDialog = ({ modalProps }: { modalProps: PopupProps}) => (
-        <Dialog open={modalProps.isOpen} onOpenChange={(open) => {if (!open) return}}>
+
+    const MenuDialog = ({ modalProps }: { modalProps: PopupProps }) => (
+        <Dialog open={modalProps.isOpen} onOpenChange={(open) => { if (!open) return }}>
             <DialogContent
                 onPointerDownOutside={(e) => e.preventDefault()}
                 onInteractOutside={(e) => e.preventDefault()}
@@ -172,6 +174,7 @@ export default function Pong() {
             </DialogContent>
         </Dialog>
     )
+
     const PongHero = () => (
         <div className='pong_hero'>
             <section>
@@ -183,7 +186,7 @@ export default function Pong() {
                             whileHover={{ scale: [1.1, 1.3, 1.1], rotate: [0, 2, -2, 0] }}
                             onClick={game.action}
                         >
-                            {game.icon}
+                            {/* {game.icon} */}
                             <h6 className={'text-gradient'}>{game.texts} <br /> ({game.gameType})</h6>
                         </motion.article>
                     ))
@@ -280,7 +283,7 @@ export default function Pong() {
             <PongHero />
             <BoostPack />
             <BottomCard />
-            <MenuDialog modalProps={modalProps} setMmodalProps={setMmodalProps} />
+            <MenuDialog modalProps={modalProps}/>
         </>
     )
 }
