@@ -10,6 +10,7 @@ import { Session } from "../data/entities/models/Session";
 import { ChainSkillsException } from "../exceptions";
 import { ZodError } from "zod";
 import { GameService } from "./GameService";
+import { Game } from "../data/entities/models/Game";
 
 export default class SessionService {
   private readonly sessionRepository: SessionRepository;
@@ -72,7 +73,7 @@ export default class SessionService {
     const session: Session = await this.findQuickMatch(validatedDto!);
     socket.join(`game-${session.id}`);
       if (session.player2) {
-          this.gameService.createGameForSession(session)
+          const game: Game = await this.gameService.createGameForSession(session)
           this.socketServer.to(`game-${session.id}`).emit("joined", {
               id: session.id,
               status: session.status,
@@ -82,10 +83,9 @@ export default class SessionService {
               amount: session.amount,
               gameId: game.id
           })
-          
         return;
       }
-       socket.emit("waiting", {
+       socket.emit("waiting", {    
           status: session.status,
           isStaked: session.isStaked,
           player1: session.player1,
