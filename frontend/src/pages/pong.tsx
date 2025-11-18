@@ -30,13 +30,17 @@ export default function Pong() {
         setMmodalProps((prev) => ({ ...prev, isOpen: false }))
     }
     function handleRetry() {
-        // retryQuickMatch(address);
-        // setMatchTimeout(false);
+        activeTimed(false);
+        setTimeout(() => {
+            activeTimed(true);
+        }, 20000);
+
+        retryQuickMatch(address);
     }
     function handleCancelTimeout() {
-        // cancelQuickMatch();
-        // setMatchTimeout(false);
-        // setMmodalProps(prev => ({ ...prev, isOpen: false }));
+        cancelQuickMatch(address);
+        activeTimed(false);
+        setMmodalProps(prev => ({ ...prev, isOpen: false }));
     }
 
     const Connecting = () => {

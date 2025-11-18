@@ -90,6 +90,6 @@ export interface OneChainGameType {
   errorMessage: string;
   setErrorMessage: React.Dispatch<React.SetStateAction<string>>;
   quickMatch: (walletAddress: string) => void;
-  retryQuickMatch: ()=> void;
-  cancelQuickMatch: () => void;
+  retryQuickMatch: (walletAddress:string)=> void;
+  cancelQuickMatch: (walletAddress: string) => void;
 }

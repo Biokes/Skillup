@@ -106,6 +106,20 @@ class SocketService {
       }
     );
   }
+  
+  quickMatch(walletAddress:string, gameType: GameType, isStaked:boolean, amount: number) {
+    this.ensureConnected();
+    this.socket?.emit("quickMatch", { walletAddress, gameType, isStaked, amount });
+  }
+
+  cancelMatch(walletAddress:string) {
+    this.ensureConnected();
+    this.socket?.emit("cancelQuickMatch", { walletAddress });
+  }
+   retryQuickMatch(walletAddress:string, gameType: GameType, isStaked:boolean, amount: number) {
+    this.ensureConnected();
+    this.socket?.emit("retryQuickMatch", { walletAddress, gameType, isStaked, amount });
+  }
 
   createRoom(gameType: GameType, player: Player, roomCode?: string) {
     this.socket?.emit("createRoom", { gameType, player, roomCode });
@@ -115,10 +129,6 @@ class SocketService {
     this.socket?.emit("joinRoom", { roomCode, player });
   }
 
-  quickMatch(walletAddress:string, gameType: GameType, isStaked:boolean, amount: number) {
-    this.ensureConnected();
-    this.socket?.emit("quickMatch", { walletAddress, gameType, isStaked, amount });
-  }
 
   createQuickMatch(walletAddress: string, gameCode: string) {
     this.ensureConnected();
