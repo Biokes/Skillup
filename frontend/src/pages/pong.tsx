@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { PopupProps } from "@/types/game";
 import { Loader2 } from 'lucide-react';
 import { toast } from "sonner";
-import {useCurrentAccount} from "@mysten/dapp-kit"
+import { useCurrentAccount } from "@mysten/dapp-kit"
 import { useOneChainGame } from "@/hooks/useOneChainGameContext";
 
 export default function Pong() {
@@ -19,36 +19,69 @@ export default function Pong() {
         description: '',
         body: <></>
     })
-    const [isMatchTimeOut, setMatchTimeOut] = useState<boolean>(false)
+    const [isTimedOut, setTimedOut] = useState<boolean>(false)
 
     // const [roomCode, setRoomCode] = useState<string>('');
     const account = useCurrentAccount();
     const address = account?.address;
 
-    function cancelConnection() { 
-        setMmodalProps((prev)=>({...prev, isOpen:false}))
+    function cancelConnection() {
+        setMmodalProps((prev) => ({ ...prev, isOpen: false }))
+    }
+    function handleRetry() {
+        // retryQuickMatch(address);
+        // setMatchTimeout(false);
+    }
+    function handleCancelTimeout() {
+        // cancelQuickMatch();
+        // setMatchTimeout(false);
+        // setMmodalProps(prev => ({ ...prev, isOpen: false }));
     }
 
-    const Connecting = () => (
-        <section className='connecting'>
-            <Loader2 className="loading" />
-            <motion.h5
-                className="ribeye text-gradient"
-                animate={{ scale: [1, 1.05, 1], rotate: [0, 1, -1, 0] }}
-                transition={{ duration: 2, ease: "easeInOut", repeat: Infinity }}
-            >Connecting to game server</motion.h5>
-            <Button className={cn('cancelButton')} onClick={cancelConnection}>
-                Cancel
-            </Button>
-        </section>
-    )
+    const Connecting = () => {
+        if (!isTimedOut) {
+            return (
+                <section className='connecting'>
+                    <Loader2 className="loading" />
+                    <motion.h5
+                        className="ribeye text-gradient"
+                        animate={{ scale: [1, 1.05, 1], rotate: [0, 1, -1, 0] }}
+                        transition={{ duration: 2, ease: "easeInOut", repeat: Infinity }}
+                    >Connecting to game server</motion.h5>
+                    <Button className={cn('cancelButton')} onClick={cancelConnection}>
+                        Cancel
+                    </Button>
+                </section>
+            )
+        }
+        return (
+            <section className="connecting">
+                <p className="ribeye text-[1.1rem] text-red-500">
+                    Cannot find opponent
+                </p>
+
+                <Button className="retryButton" onClick={handleRetry}>
+                    Try Again
+                </Button>
+
+                <Button className="cancelButton" onClick={handleCancelTimeout}>
+                    Cancel
+                </Button>
+            </section>
+        );
+    }
 
     function findQuickMatch() {
-        if (!address) { 
+        if (!address) {
             toast.info("please connect wallet")
             return;
         }
         quickMatch(address);
+
+        setTimeout(() => {
+            setTimedOut(true);
+        }, 20000);
+
         setMmodalProps({
             body: <Connecting />,
             isOpen: true,
@@ -118,9 +151,13 @@ export default function Pong() {
     ]
     const livegames = []
     const players = []
-    const MenuDialog = ({ modalProps, setMmodalProps }: { modalProps: PopupProps, setMmodalProps: React.Dispatch<React.SetStateAction<PopupProps>> }) => (
-        <Dialog open={modalProps.isOpen} onOpenChange={() => setMmodalProps(prev => ({ ...prev, isOpen: false }))}>
-            <DialogContent>
+    const MenuDialog = ({ modalProps }: { modalProps: PopupProps}) => (
+        <Dialog open={modalProps.isOpen} onOpenChange={(open) => {if (!open) return}}>
+            <DialogContent
+                onPointerDownOutside={(e) => e.preventDefault()}
+                onInteractOutside={(e) => e.preventDefault()}
+                onEscapeKeyDown={(e) => e.preventDefault()}
+            >
                 <DialogHeader>
                     <DialogTitle className={'text-start text-gradient ribeye'}>
                         {modalProps.headerText}

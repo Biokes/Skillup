@@ -75,7 +75,6 @@ export class WebSocket {
     console.log('finding quick match')
       !!session.player2 ?
         socket.emit('joined', {
-          roomCode: session.roomCode,
           status: session.status,
           isStaked: session.isStaked,
           player1: session.player1,
@@ -84,7 +83,6 @@ export class WebSocket {
         })
         :
         socket.emit('waiting', {
-          roomCode: session.roomCode,
           status: session.status,
           isStaked: session.isStaked,
           player1: session.player1,
