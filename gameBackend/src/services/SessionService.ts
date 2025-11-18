@@ -18,7 +18,9 @@ export default class SessionService {
   async joinRoom(joinRoomDTO: JoinRoomDTO) { }
     
   async findQuickMatch(quickMatchDTO: QuickMatchDTO): Promise<Session> {
-      try {
+    try {
+        const existing = await this.sessionRepository.findOne({where: { player1: quickMatchDTO.walletAddress, status: "WAITING"}});
+        if (existing) return existing;
           const foundSessions: Session[] = await this.sessionRepository.find({ where: { status: "WAITING", isStaked: quickMatchDTO.isStaked } });
           const availableSession = foundSessions.find( (entity) => entity.player1 !== quickMatchDTO.walletAddress);
           if (availableSession) {

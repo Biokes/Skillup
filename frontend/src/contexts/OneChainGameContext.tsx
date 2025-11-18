@@ -14,12 +14,15 @@ export default function OneChainGameProviders({ children }: { children: ReactNod
     const quickMatch = useCallback((walletAddress: string) => {
         socketService.quickMatch(walletAddress,'pingpong',false, 0);
     }, []);
-    
+    const retryQuickMatch = useCallback(() => { }, [])
+    const cancelQuickMatch = useCallback(() => { },[])
     return (
         <OneChainGameContext.Provider value={{
             errorMessage,
             setErrorMessage,
-            quickMatch
+            quickMatch,
+            retryQuickMatch,
+            cancelQuickMatch
         }}>
             { children}
         </OneChainGameContext.Provider>

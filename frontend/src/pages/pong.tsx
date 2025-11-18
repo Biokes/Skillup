@@ -12,19 +12,23 @@ import {useCurrentAccount} from "@mysten/dapp-kit"
 import { useOneChainGame } from "@/hooks/useOneChainGameContext";
 
 export default function Pong() {
-    const { quickMatch } = useOneChainGame();
+    const { quickMatch, retryQuickMatch, cancelQuickMatch } = useOneChainGame();
     const [modalProps, setMmodalProps] = useState<PopupProps>({
         isOpen: false,
         headerText: '',
         description: '',
         body: <></>
     })
+    const [isMatchTimeOut, setMatchTimeOut] = useState<boolean>(false)
+
     // const [roomCode, setRoomCode] = useState<string>('');
     const account = useCurrentAccount();
     const address = account?.address;
+
     function cancelConnection() { 
         setMmodalProps((prev)=>({...prev, isOpen:false}))
     }
+
     const Connecting = () => (
         <section className='connecting'>
             <Loader2 className="loading" />
@@ -38,6 +42,7 @@ export default function Pong() {
             </Button>
         </section>
     )
+
     function findQuickMatch() {
         if (!address) { 
             toast.info("please connect wallet")
@@ -51,18 +56,19 @@ export default function Pong() {
             description: 'Connecting to play a quick free match',
         })
     }
-    function createFreeRoom() { 
-        if (!address) { 
-            toast.info("please connect wallet")
-            return;
-        }
-        setMmodalProps({
-            body: <></>,
-            isOpen: true,
-            headerText: 'Create Room(Free)',
-            description:'Create game connection room with friends'
-        })
-    }
+
+    // function createFreeRoom() { 
+    //     if (!address) { 
+    //         toast.info("please connect wallet")
+    //         return;
+    //     }
+    //     setMmodalProps({
+    //         body: <></>,
+    //         isOpen: true,
+    //         headerText: 'Create Room(Free)',
+    //         description:'Create game connection room with friends'
+    //     })
+    // }
 
     const games = [
         {
@@ -75,7 +81,7 @@ export default function Pong() {
             texts: 'Create/join room',
             gameType: 'free',
             icon: <Zap className='h-5 w-5' />,
-            action: createFreeRoom
+            action: () => { }
         },
         {
             texts: 'Frendly Stake',
