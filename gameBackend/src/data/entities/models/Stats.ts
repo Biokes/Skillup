@@ -3,19 +3,19 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 @Entity()
 export class Stats {
   @PrimaryGeneratedColumn("uuid")
-  id: string;
+  id!: string;
   @Column({ default: 0 })
-  wins: number;
+  wins!: number;
   @Column({ default: 0 })
-  losses: number;
+  losses!: number;
   @Column({ default: 0 })
-  gamePlayed: number;
+  gamePlayed!: number;
   @Column({ default: 0 })
-  winStreak: number;
+  winStreak!: number;
   @Column({ default: 0 })
-  bestStreak: number;
+  bestStreak!: number;
   @Column({ default: 0 })
-  rating: number;
-  @Column({ type: "simple-array", default: "" })
-  recentForm: string[];
+  rating!: number;
+  @Column({ type: "simple-array", default: [] })
+  recentForm!: string[];
 }

@@ -1,5 +1,5 @@
-import { QuickMatchDTO } from '@/src/data/entities/DTO/QuickMatch';
-import { quickMatchSchema } from './../data/entities/DTO/QuickMatch';
+// import { QuickMatchDTO } from '@/src/data/entities/DTO/QuickMatch';
+// import { quickMatchSchema } from './../data/entities/DTO/QuickMatch';
 import dotenv from "dotenv";
 import { Application } from "express";
 import { createServer } from "http";
@@ -9,21 +9,21 @@ import SessionService from "../services/SessionService";
 import { CreateGameDTO } from "../data/entities/DTO/CreateGame"
 import { JoinRoomDTO } from "../data/entities/DTO/joinRoom";
 import { QuickMatchDTO } from "../data/entities/DTO/QuickMatch";
-import { Session } from "../data/entities/models/Session";
-import { ZodError } from 'zod';
+// import { Session } from "../data/entities/models/Session";
+// import { ZodError } from 'zod';
 dotenv.config();
 
 export class WebSocket {
   private FRONTEND_URL = process.env.FRONTEND_URL;
   private readonly socketServer;
-  private readonly socketConnection;
+  private readonly server: Server;
   private readonly sessionService: SessionService;
   private readonly playerService: PlayerService;
     
   constructor(app: Application) {
     this.playerService = new PlayerService()
     this.socketServer = createServer(app);
-    this.socketConnection = new Server(this.socketServer, {
+    this.server = new Server(this.socketServer, {
       cors: {
         origin: this.FRONTEND_URL,
         methods: ["GET", "POST", "PATCH"],
@@ -39,14 +39,14 @@ export class WebSocket {
       allowUpgrades: false,
       perMessageDeflate: false,
     });
-    this.socketConnection.on("connection", (socket: Socket) => {this.handleConnection(socket)});
-    this.socketConnection.engine.on("connection_error", (err) => this.logErrorOnConsole("Socket engine on failed with error: ", err));
-    this.socketConnection.on("error", (error) => this.logErrorOnConsole("Socket on failed with error: ", error));
-    this.sessionService = new SessionService();
+    this.server.on("connection", (socket: Socket) => {this.handleConnection(socket)});
+    this.server.engine.on("connection_error", (err) => this.logErrorOnConsole("Socket engine on failed with error: ", err));
+    this.server.on("error", (error) => this.logErrorOnConsole("Socket on failed with error: ", error));
+    this.sessionService = new SessionService(this.server);
   }
       
   getSocketServerSetup() {
-    return this.socketConnection;
+    return this.server;
   }
   
   getServer() { 

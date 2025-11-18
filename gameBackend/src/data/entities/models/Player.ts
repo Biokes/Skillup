@@ -13,5 +13,5 @@ export class Player {
   avatarURL!: string;
   @OneToOne(() => Stats, { cascade: true, eager: true })
   @JoinColumn()
-  stats!: Stats;
+  stats?: Stats;
 }
