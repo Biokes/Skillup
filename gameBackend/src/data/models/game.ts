@@ -3,13 +3,7 @@ import { GAME_STATUS, IGame } from "./types.js";
 
 const gameSchema = new mongoose.Schema<IGame>(
   {
-    // id: {
-    //   unique: true,
-    //   index: true,
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   required: true
-    // },
-    roomCode: {
+       roomCode: {
       type: String,
       required: true,
       unique: true,

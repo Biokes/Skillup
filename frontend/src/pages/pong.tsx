@@ -103,13 +103,8 @@ export default function Pong() {
         activeTimed(false)
         setMmodalProps((prev) => ({ ...prev, isOpen: false }))
     }
-
   
-
-    const Connecting = () => ( 
-            connectionNode
-        )
-    
+    const Connecting = () => (connectionNode)
 
     function findQuickMatch() {
         if (!address) {
@@ -117,7 +112,6 @@ export default function Pong() {
             return;
         }
         quickMatch(address);
-
         setTimeout(() => {
             activeTimed(true);
         }, 20000);

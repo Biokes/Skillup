@@ -24,7 +24,6 @@ async function startServer() {
     try { 
         await DataBaseSource.initialize();
         const webSocket = new WebSocket(app);
-        console.log("db connected")
         const httpServer = webSocket.getServer();
         httpServer.listen(Number(PORT), () => {
             console.log(`🚀 Server started on port ${PORT}`);

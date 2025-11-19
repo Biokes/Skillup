@@ -9,7 +9,7 @@ import GameProviders from "./contexts/GameContext";
 import Pong from "./pages/pong"
 import OneChainProviders from "./contexts/OneChainProvider";
 import OneChainGameProviders from "./contexts/OneChainGameContext";
-import { PingPongGame } from "./components/pingpong";
+import PingPongGame from "./components/pingpong";
 
 const App = () => (
   <OneChainProviders>

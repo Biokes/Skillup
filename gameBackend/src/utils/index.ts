@@ -6,8 +6,6 @@ export async function selfPing() {
   try {
     const response = await fetch(`http://localhost:${PORT}/api/v1/`);
     if (response.ok) {
-      const result = await response.json();
-      console.log(`[Ping] SUCCESS! Response: ${result.message}`);
       return;
     }
     console.error(
