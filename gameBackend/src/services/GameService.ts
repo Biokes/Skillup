@@ -1,4 +1,7 @@
-import { Server, Socket } from "socket.io";
+import {
+    Server,
+    // Socket
+} from "socket.io";
 import { GameRepository } from "../data/db/gameRepository";
 import { Game } from "../data/entities/models/Game";
 import { Session } from "../data/entities/models/Session";
@@ -7,6 +10,7 @@ import { PongPhysics } from "../utils/GamePhysics";
 import { PowerupManager } from "../utils/PowerUpManager";
 import PlayerRepository from "../data/db/playerRepository";
 import { Player } from "../data/entities/models/Player";
+import { ChainSkillsException } from "../exceptions";
 
 export class GameService {
   private readonly gameRepository: GameRepository;
@@ -62,7 +66,9 @@ export class GameService {
     return gameState;
   }
 
-  startGameLoop(gameId: string, socket1: Socket, socket2: Socket): void {
+    startGameLoop(gameId: string,
+        // socket1: Socket, socket2: Socket
+    ): void {
     const gameState = this.activeGames.get(gameId);
     if (!gameState) return;
 
@@ -176,17 +182,15 @@ export class GameService {
     if (!gameState) return;
 
     gameState.status = "ENDED";
-      gameState.winner = winnerAddress;
-      const gameWinner = await this.playerRepo.findOne({ where: {walletAddress: gameState.winner}})
+    gameState.winner = winnerAddress;
+    const gameWinner = await this.playerRepo.findOne({ where: {walletAddress: gameState.winner}})
     this.stopGameLoop(gameId);
-
+      
     try {
       const game = await this.gameRepository.findOne({where: { id: gameState.gameId }});
-      if (game && game.session) {
-        await this.gameRepository.update(gameState.gameId, { winner: gameWinner as Player });
-      }
+      if (game && game.session) await this.gameRepository.update(gameState.gameId, { winner: gameWinner as Player });
     } catch (error) {
-      console.error("Error saving game result:", error);
+      throw new ChainSkillsException(`Error saving game result: ${(error as Error).message}`);
     }
 
     // Emit game over
@@ -241,8 +245,7 @@ export class GameService {
     const gameState = this.activeGames.get(gameId);
     if (!gameState) return;
 
-    const playerState =
-      playerNumber === 1 ? gameState.player1 : gameState.player2;
+    const playerState = playerNumber === 1 ? gameState.player1 : gameState.player2;
     playerState.disconnected = true;
     playerState.disconnectTime = Date.now();
 
@@ -304,8 +307,9 @@ export class GameService {
     this.socketServer.to(`game-${gameId}`).emit("gameUpdate", payload);
   }
 
-  getGameState(gameId: string): GameState | undefined {
-    return this.activeGames.get(gameId);
+  getGameState(gameId: string): GameState {
+    if(!this.activeGames.get(gameId)) throw new ChainSkillsException(`invalid gameId ${gameId}`);
+    return this.activeGames.get(gameId) as GameState;
   }
 
   getActiveGamesCount(): number {

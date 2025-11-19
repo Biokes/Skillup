@@ -95,9 +95,7 @@ export default class SessionService {
 
   async handleRetryQuickMatch(quickMatchDTO: QuickMatchDTO, socket: Socket) {
     try {
-      const existing = await this.sessionRepository.findOne({
-        where: { player1: quickMatchDTO.walletAddress, status: "WAITING" },
-      });
+      const existing = await this.sessionRepository.findOne({  where: { player1: quickMatchDTO.walletAddress, status: "WAITING" },});
       if (existing) {
         await this.sessionRepository.delete(existing.id);
       }
@@ -122,21 +120,11 @@ export default class SessionService {
       return;
     }
   }
-
-  //   async cancelQuickMatch(walletAddress: string): Promise<void> {
-  //     try {
-  //         await this.sessionRepository.delete({
-  //             where:{
-  //             player1: walletAddress,
-  //             status: "WAITING"
-  //         }});
-  //     } catch (error) {
-  //         throw new ChainSkillsException(
-  //             `Error cancelling quickMatch: ${error.message}, at SessionService.ts:cancelQuickMatch`
-  //         );
-  //     }
-  // }
-
+ 
+  async getSessionById(id: string): Promise<Session|null> { 
+      return await this.sessionRepository.findById(id)
+  }  
+    
   //       async handleCreateRoom(socket, data) {
   //     const { gameType, player, roomCode } = data;
   //     try {
