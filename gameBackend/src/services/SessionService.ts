@@ -19,7 +19,7 @@ export default class SessionService {
   constructor(server: Server) {
     this.sessionRepository = new SessionRepository();
     this.socketServer = server;
-    this.gameService = new GameService()  
+    this.gameService = new GameService(server)  
   }
 
   async createGameRoom(createDTO: CreateGameDTO) {}

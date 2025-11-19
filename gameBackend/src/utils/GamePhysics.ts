@@ -45,7 +45,6 @@ export class PongPhysics {
       ball.speed = Math.min(ball.speed * GAME_CONSTANTS.BALL_ACCELERATION, GAME_CONSTANTS.BALL_SPEED_MAX);
     }
 
-    // Right paddle collision
     if (
       ball.dx > 0 &&
       ball.x + ball.radius > CANVAS_WIDTH - PADDLE_WIDTH - 20 &&
