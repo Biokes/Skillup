@@ -1,4 +1,4 @@
-import { OneChainGameType } from '@/';
+import { OneChainGameType } from "@/";
 import React, { ReactNode } from "React";
 
 export type GameType =
@@ -67,11 +67,13 @@ export interface GameContextType {
   playerName: string;
   selectMatchType: (type: MatchType) => void;
   setGameType: React.Dispatch<React.SetStateAction<GameType | string>>;
-  setShowRoomView: React.Dispatch<React.SetStateAction<"create" | "join" | "waiting" | null>>;
+  setShowRoomView: React.Dispatch<
+    React.SetStateAction<"create" | "join" | "waiting" | null>
+  >;
   // createFriendlyRoom: () => void;
   // joinFriendlyRoom: (code: string) => void;
   createQuickMatch: (walletAddress: string, code: string) => void;
-  joinQuickMatch: (walletAddress: string, code:string) => void;
+  joinQuickMatch: (walletAddress: string, code: string) => void;
   quickMatch: (walletAddress: string) => void;
   pauseGame: () => void;
   resumeGame: () => void;
@@ -81,15 +83,24 @@ export interface GameContextType {
 }
 
 export interface PopupProps {
-    isOpen: boolean,
-    headerText: string,
-    description: string,
-    body: ReactNode
+  isOpen: boolean;
+  headerText: string;
+  description: string;
+  body: JSX.Element;
 }
-export interface OneChainGameType { 
+export interface OneChainGameType {
   errorMessage: string;
   setErrorMessage: React.Dispatch<React.SetStateAction<string>>;
   quickMatch: (walletAddress: string) => void;
-  retryQuickMatch: (walletAddress:string)=> void;
+  retryQuickMatch: (walletAddress: string) => void;
   cancelQuickMatch: (walletAddress: string) => void;
+}
+export interface JoinGameResponse {
+  id: string;
+  status: string;
+  isStaked: boolean;
+  player1: string;
+  player2: string;
+  amount: number;
+  gameId: string;
 }

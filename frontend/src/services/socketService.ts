@@ -1,5 +1,5 @@
 import { io, Socket } from "socket.io-client";
-import { GameType, Player, GameState, GameResult } from "@/types/game";
+import { GameType, Player, GameState, GameResult } from "@/types";
 import { toast } from "sonner";
 
 class SocketService {
@@ -54,58 +54,49 @@ class SocketService {
   private setupGameEventListeners() {
     if (!this.socket) return;
 
-    this.socket.on("roomCreated", (data: { roomCode: string; room: any }) => {
-      this.emit("roomCreated", data);
-    });
-
-    this.socket.on("waitingForOpponent", (data: { roomCode: string }) => {
-      this.emit("waitingForOpponent", data);
-    });
-
-    this.socket.on("roomReady", (data: { room: any }) => {
-      this.emit("roomReady", data);
-    });
-
-    this.socket.on("gameStart", (gameState: GameState) => {
-      this.emit("gameStart", gameState);
-    });
-
-    this.socket.on("gameUpdate", (gameState: GameState) => {
-      this.emit("gameUpdate", gameState);
-    });
-
-    this.socket.on("gameOver", (result: GameResult) => {
-      this.emit("gameOver", result);
-    });
-
-    this.socket.on("gamePaused", (data: { pausesRemaining: number }) => {
-      this.emit("gamePaused", data);
-    });
-
-    this.socket.on("gameResumed", () => {
-      this.emit("gameResumed");
-    });
-
-    this.socket.on("opponentLeft", () => {
-      this.emit("opponentLeft");
-    });
-    this.socket.on('waiting', () => {
-      console.warn("waiting for another player connection to join room")
+    // this.socket.on("roomCreated", (data: { roomCode: string; room: any }) => {
+    //   this.emit("roomCreated", data);
+    // });
+    // this.socket.on("waitingForOpponent", (data: { roomCode: string }) => {
+    //   this.emit("waitingForOpponent", data);
+    // });
+    // this.socket.on("roomReady", (data: { room: any }) => {
+    //   this.emit("roomReady", data);
+    // });
+    // this.socket.on('joined', (data: Session) => { 
+    // })
+    // // this.socket.on("gameStart", (gameState: GameState) => {
+    // //   this.emit("gameStart", gameState);
+    // // });
+    // this.socket.on("gameUpdate", (gameState: GameState) => {
+    //   this.emit("gameUpdate", gameState);
+    // });
+    // this.socket.on("gameOver", (result: GameResult) => {
+    //   this.emit("gameOver", result);
+    // });
+    // this.socket.on("gamePaused", (data: { pausesRemaining: number }) => {
+    //   this.emit("gamePaused", data);
+    // });
+    // this.socket.on("gameResumed", () => {
+    //   this.emit("gameResumed");
+    // });
+    // this.socket.on("opponentLeft", () => {
+    //   this.emit("opponentLeft");
+    // });
+    // this.socket.on('waiting', () => {
+    //   console.warn("waiting for another player connection to join room")
+    // })
+    // this.socket.on("opponentDisconnected", () => {
+    //   this.emit("opponentDisconnected");
+    // });
+    
+    this.socket.on("quickMatchError", (errorResponse: { message?: string, successful: boolean, error?: Error }) => { 
+      toast.error("Please try again, something went wrong");      
+      console.error("Quick match error: ", errorResponse)
     })
-    this.socket.on("opponentDisconnected", () => {
-      this.emit("opponentDisconnected");
-    });
-    this.socket.on("quickMatchError", (errorRespose: {message?:string, successful: boolean, error?: Error}) => { 
-      
-      
-    })
-    this.socket.on('joined',()=>{})
-    this.socket.on('waiting',()=>{})
-    this.socket.on("leaderboardUpdate", (data: { gameType: GameType; leaderboard: any[] }) => {
-        this.emit("leaderboardUpdate", data);
-      }
-    );
+  
   }
+
   
   quickMatch(walletAddress:string, gameType: GameType, isStaked:boolean, amount: number) {
     this.ensureConnected();
@@ -116,10 +107,21 @@ class SocketService {
     this.ensureConnected();
     this.socket?.emit("cancelQuickMatch", { walletAddress });
   }
-   retryQuickMatch(walletAddress:string, gameType: GameType, isStaked:boolean, amount: number) {
+
+  retryQuickMatch(walletAddress:string, gameType: GameType, isStaked:boolean, amount: number) {
     this.ensureConnected();
     this.socket?.emit("retryQuickMatch", { walletAddress, gameType, isStaked, amount });
   }
+
+
+
+
+
+
+
+
+
+
 
   createRoom(gameType: GameType, player: Player, roomCode?: string) {
     this.socket?.emit("createRoom", { gameType, player, roomCode });
@@ -232,6 +234,12 @@ class SocketService {
   getSocketId() {
     return this.socket?.id || null;
   }
+
+  getSocket() {
+    this.ensureConnected()
+    return this.socket;
+  }
+  
 }
 
 export const socketService = new SocketService();

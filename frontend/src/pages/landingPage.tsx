@@ -8,7 +8,8 @@
 
   export default function LandingPage() {
     const navigate = useNavigate()
-        const {address} = useCurrentAccount();
+    const account = useCurrentAccount() ?? {};
+    const address = account?.address ?? null
 
     const Hero = () => (
       <main className='hero'>

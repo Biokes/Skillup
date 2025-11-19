@@ -161,6 +161,9 @@ button {
 .failedConnection {
   @apply flex flex-col justify-center items-center gap-2;
 }
+.connecting> p{
+  @apply w-full text-start;
+}
 .cancelButton {
   @apply h-[30px] w-[100px] rounded-sm bg-[#0B0B0E] hover:bg-[#0B0B0E] border-[#f8b141] border-[1px] text-primary hover:text-red-400 hover:cursor-not-allowed;
   font-family: "ribeye";

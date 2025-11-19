@@ -3,13 +3,15 @@ import { Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { PopupProps } from "@/types/game";
+import { JoinGameResponse, PopupProps } from "@/types";
 import { Loader2 } from 'lucide-react';
 import { toast } from "sonner";
 import { useCurrentAccount } from "@mysten/dapp-kit"
 import { useOneChainGame } from "@/hooks/useOneChainGameContext";
+import { socketService } from "@/services/socketService"; 
+import { useNavigate } from "react-router-dom";
 
 export default function Pong() {
     const { quickMatch, retryQuickMatch, cancelQuickMatch } = useOneChainGame();
@@ -19,34 +21,57 @@ export default function Pong() {
         description: '',
         body: <></>
     })
+    const navigate= useNavigate()
+    const socket = socketService.getSocket();
+    const account = useCurrentAccount() ?? {};
+    const address = account?.address ?? null;
     const [isActiveTimed, activeTimed] = useState<boolean>(false)
 
-    // const [roomCode, setRoomCode] = useState<string>('');
-    const account = useCurrentAccount();
-    const address = account?.address ?? null;
+    useEffect(() => {
+        socket.on('joined', (joinResponse: JoinGameResponse) => { 
+            if (address) { 
+                const hasJoined: boolean = joinResponse.player1.toLowerCase() === String(address).toLowerCase() || joinResponse.player2.toLowerCase() === String(address).toLowerCase();
+                if (hasJoined) {
+                    navigate('/pong', {state: joinResponse})
+                }
+            }
+        })
+        return () => {
+            socketService.off("joined")
+        };
+     },[socket, address, navigate])
+    
+    const [connectionNode, setConnectionNode] = useState(
+        <section className='connecting'>
+            <Loader2 className="loading" />
+            <motion.h5
+                className="ribeye text-gradient"
+                animate={{ scale: [1, 1.05, 1], rotate: [0, 1, -1, 0] }}
+                transition={{ duration: 2, ease: "easeInOut", repeat: Infinity }}
+            >Connecting to game server</motion.h5>
+            <Button className={cn('cancelButton')} onClick={cancelConnection}>
+                Cancel
+            </Button>
+        </section>
+    )
 
-    function cancelConnection() {
-        activeTimed(false)
-        setMmodalProps((prev) => ({ ...prev, isOpen: false }))
-    }
-    function handleRetry() {
+    const handleRetry= useCallback(()=>{
         activeTimed(false);
         setTimeout(() => {
             activeTimed(true);
         }, 20000);
-
         retryQuickMatch(address);
-    }
-    function handleCancelTimeout() {
+    }, [address, retryQuickMatch])
+
+    const handleCancelTimeout = useCallback(()=>{
         cancelQuickMatch(address);
         activeTimed(false);
         setMmodalProps(prev => ({ ...prev, isOpen: false }));
-    }
-
-    const Connecting = () => {
-        if (!isActiveTimed) {
-            return (
-                <section className='connecting'>
+    }, [address, cancelQuickMatch])
+    
+    useEffect(() => { 
+        setConnectionNode(!isActiveTimed ?
+             <section className='connecting'>
                     <Loader2 className="loading" />
                     <motion.h5
                         className="ribeye text-gradient"
@@ -56,10 +81,8 @@ export default function Pong() {
                     <Button className={cn('cancelButton')} onClick={cancelConnection}>
                         Cancel
                     </Button>
-                </section>
-            )
-        }
-        return (
+            </section>
+            :
             <section className="failedConnection">
                 <p>
                     Cannot find opponent
@@ -73,8 +96,20 @@ export default function Pong() {
                     </Button>
                 </footer>
             </section>
-        );
+        )
+    },[handleCancelTimeout, handleRetry, isActiveTimed])
+
+    function cancelConnection() {
+        activeTimed(false)
+        setMmodalProps((prev) => ({ ...prev, isOpen: false }))
     }
+
+  
+
+    const Connecting = () => ( 
+            connectionNode
+        )
+    
 
     function findQuickMatch() {
         if (!address) {
@@ -287,7 +322,7 @@ export default function Pong() {
             <PongHero />
             <BoostPack />
             <BottomCard />
-            <MenuDialog modalProps={modalProps}/>
+            <MenuDialog modalProps={modalProps} />
         </>
     )
 }

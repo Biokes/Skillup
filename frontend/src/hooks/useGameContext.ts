@@ -1,4 +1,4 @@
-import { GameContextType } from '@/types/game';
+import { GameContextType } from '@/types';
 import { createContext, useContext } from 'react';
 
 
@@ -10,4 +10,3 @@ export const useGame = () => {
   }
   return context;
 }
-  

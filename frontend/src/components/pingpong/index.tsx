@@ -12,12 +12,16 @@
 // import { FriendlyMatchChoice } from "@/components/room/FriendlyMatchChoice";
 // import { socketService } from "@/services/socketService";
 
-// export const PingPongGame = () => {
+export const PingPongGame = () => {
+    return (
+        <p>
+            ping pong game
+        </p>
+    )
 //   const canvasRef = useRef<HTMLCanvasElement>(null);
 //   const navigate = useNavigate();
 //   const [showControls, setShowControls] = useState(true);
 //   const [rally, setRally] = useState(0);
-
 //   // Multiplayer integration
 //   const {
 //     showMatchModal,
@@ -42,7 +46,6 @@
 //     playAgain,
 //     setShowRoomView,
 //   } = useMultiplayerGame('pingpong');
-
 //   // Persistent game state using refs
 //   const gameStateRef = useRef({
 //     ball: { x: 0, y: 0, radius: 12, dx: 0, dy: 0, speed: 6, maxSpeed: 15, trail: [] as any[] },
@@ -596,4 +599,4 @@
 //       </motion.div>
 //     </div>
 //   );
-// };
+};

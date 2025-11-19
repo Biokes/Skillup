@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { socketService } from '@/services/socketService';
 import { toast } from 'sonner';
-import { MatchType, Player, GameState, GameResult, GameType } from '@/types/game';
+import { MatchType, Player, GameState, GameResult, GameType } from '@/types';
 import { GameContext } from "@/hooks/useGameContext";
 
 export default function GameProviders({ children }: { children: ReactNode }) {
