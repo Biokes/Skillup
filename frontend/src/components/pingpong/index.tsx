@@ -34,7 +34,7 @@ export default function PingPongGame() {
         }
     ]
 
-    const BoostPack = () => (
+    const BoostPack = () => ( 
         <section className="inventory">
             <h5>My Inventory</h5>
             <div>
