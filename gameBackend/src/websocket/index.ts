@@ -75,7 +75,7 @@ export class WebSocket {
     socket.on("gameReady", async (data: ReadyGameDTO) => { await this.handleGameReady(socket, data);});
     socket.on("paddleMove", (data: PaddleMovementDTO) => { this.handlePaddleMove(socket, data); });
     // socket.on("usePowerup", (data: { playerNumber: number; powerupType: string; gameId: string }) => {this.handlePowerup(socket, data);});
-    // socket.on("forfeitGame", (data: { gameId: string; playerNumber: number }) => { this.handleForfeit(socket, data); });
+    socket.on("forfeitGame", (data: { gameId: string; playerNumber: number }) => { this.handleForfeit(socket, data); });
     socket.on("disconnect", () => {this.handleDisconnect(socket);});
     socket.on("reconnect_attempt", () => { this.handleReconnect(socket);});
   }
@@ -148,7 +148,16 @@ export class WebSocket {
       this.pongGameService.handleReconnect(gameId, playerNumber);
     }
   }
-  
+  private handleForfeit( socket: Socket, data: { gameId: string; playerNumber: number }): void {
+    const { gameId, playerNumber } = data;
+    try {
+      console.log(`🏳️ Player ${playerNumber} forfeited game ${gameId}`);
+      this.pongGameService.handleForfeit(gameId, playerNumber);
+    } catch (error) {
+      console.error("Error handling forfeit:", error);
+      socket.emit("error", { message: "Forfeit failed" });
+    }
+  }
   private logErrorOnConsole(message: string, error: any) {
     console.error(message, error);
   }
