@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import { Application } from "express";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
-import PlayerService from "../services/playerService";
 import SessionService from "../services/SessionService";
 import { CreateGameDTO } from "../data/entities/DTO/CreateGame"
 import { JoinRoomDTO } from "../data/entities/DTO/joinRoom";
@@ -12,22 +11,24 @@ import { QuickMatchDTO } from "../data/entities/DTO/QuickMatch";
 import { ReadyGameDTO } from "../data/entities/DTO/ReadyGame";
 import { GameService } from "../services/GameService";
 import { PaddleMovementDTO } from "../data/entities/DTO/PaddleMovementDTO";
+// import PlayerService from "../services/playerService";
 // import { Session } from "../data/entities/models/Session";
 // import { ZodError } from 'zod';
 dotenv.config();
+
 
 export class WebSocket {
   private FRONTEND_URL = process.env.FRONTEND_URL;
   private readonly socketServer;
   private readonly server: Server;
   private readonly sessionService: SessionService;
-  private readonly playerService: PlayerService;
+  // private readonly playerService: PlayerService;
   private readonly pongGameService: GameService;
   private socketToGameMap: Map<string, { gameId: string; playerNumber: number }> = new Map();
 
 
   constructor(app: Application) {
-    this.playerService = new PlayerService()
+    // this.playerService = new PlayerService()
     this.socketServer = createServer(app);
     this.server = new Server(this.socketServer, {
       cors: {

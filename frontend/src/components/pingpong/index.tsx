@@ -14,6 +14,9 @@
 
 import { motion } from "framer-motion"
 import Navbar from "../commons/navbar"
+import { useRef, useState } from "react"
+import { GameState } from "@/types"
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/lib/utils"
 
 export default function PingPongGame() {
     const powerups = [
@@ -34,7 +37,7 @@ export default function PingPongGame() {
         }
     ]
 
-    const BoostPack = () => ( 
+    const BoostPack = () => (
         <section className="inventory">
             <h5>My Inventory</h5>
             <div>
@@ -53,14 +56,28 @@ export default function PingPongGame() {
         </section>
     )
 
-    const GameBoard = () => { 
+    const GameBoard = () => {
+        const canvasRef = useRef<HTMLCanvasElement>(null);
+        const [gameState, setGameState] = useState<GameState>({
+            ballX: CANVAS_WIDTH / 2,
+            ballY: CANVAS_HEIGHT / 2,
+            paddle1Y: CANVAS_HEIGHT / 2 - 50,
+            paddle2Y: CANVAS_HEIGHT / 2 - 50,
+            paddle1Height: 100,
+            paddle2Height: 100,
+            score1: 0,
+            score2: 0,
+            activePowerups: { player1: null, player2: null },
+            status: 'COUNTDOWN',
+        });
         return (
             <aside className="gameBoard">
+                <canvas ref={canvasRef} width={800} height={500} className="canvas" />
             </aside>
         )
     }
     return (
-        <main>
+        <main className=''>
             <Navbar />
             <BoostPack />
             <GameBoard />

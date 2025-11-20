@@ -18,24 +18,24 @@ export interface Player {
   socketId?: string;
 }
 
-export interface GameState {
-  id?: string;
-  roomCode?: string;
-  gameType?: GameType;
-  players: Player[];
-  status?: "waiting" | "active" | "paused" | "finished";
-  score?: any;
-  isPaused: boolean;
-  currentPlayer?: any;
-  // Game-specific properties
-  ball?: any;
-  paddle1?: any;
-  paddle2?: any;
-  puck?: any;
-  board?: any;
-  capturedPieces?: any;
-  currentRally?: number;
-}
+// export interface GameState {
+//   id?: string;
+//   roomCode?: string;
+//   gameType?: GameType;
+//   players: Player[];
+//   status?: "waiting" | "active" | "paused" | "finished";
+//   score?: any;
+//   isPaused: boolean;
+//   currentPlayer?: any;
+//   // Game-specific properties
+//   ball?: any;
+//   paddle1?: any;
+//   paddle2?: any;
+//   puck?: any;
+//   board?: any;
+//   capturedPieces?: any;
+//   currentRally?: number;
+// }
 
 export interface GameResult {
   winner?: string;
@@ -103,4 +103,26 @@ export interface JoinGameResponse {
   player2: string;
   amount: number;
   gameId: string;
+}
+export interface GameBoardProps {
+  playerNumber: 1 | 2;
+  playerAddresses: { player1: string; player2: string };
+  gameId: string;
+  sessionId: string;
+}
+export interface GameState {
+  ballX: number;
+  ballY: number;
+  paddle1Y: number;
+  paddle2Y: number;
+  paddle1Height: number;
+  paddle2Height: number;
+  score1: number;
+  score2: number;
+  activePowerups: { player1: string | null; player2: string | null };
+  status:  'COUNTDOWN' | 'PLAYING' | 'SCORE_PAUSE' | 'ENDED';
+}
+export interface CountdownState {
+  active: boolean;
+  remaining: number;
 }

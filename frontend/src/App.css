@@ -205,5 +205,10 @@ button {
   hover:cursor-pointer transition-all transform duration-150 hover:bg-primary/20;
   border: 1px solid #f8b141;
   font-family: "ribeye";
-
+}
+.gameBoard{
+  @apply px-3
+}
+.gameBoard > canvas{
+  @apply rounded-lg max-w-full h-auto bg-black border-primary/75 border-[2px];
 }
