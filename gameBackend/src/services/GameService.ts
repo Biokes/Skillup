@@ -190,12 +190,9 @@ export class GameService {
       score2: gameState.player2.score,
       message: `${winnerAddress} wins!`,
     });
-
-    // Cleanup
-    setTimeout(() => {
-      this.activeGames.delete(gameId);
-      this.lastFrameTime.delete(gameId);
-    }, 5000);
+    
+    this.activeGames.delete(gameId);
+    this.lastFrameTime.delete(gameId);
   }
 
   stopGameLoop(gameId: string): void {
