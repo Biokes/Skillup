@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/landingPage";
-import GameProviders from "./contexts/GameContext";
+// import GameProviders from "./contexts/GameContext";
 import Pong from "./pages/pong"
 import OneChainProviders from "./contexts/OneChainProvider";
 import OneChainGameProviders from "./contexts/OneChainGameContext";
@@ -13,7 +13,7 @@ import PingPongGame from "./components/pingpong";
 const App = () => (
   <OneChainProviders>
     <OneChainGameProviders>
-      <GameProviders>
+      {/* <GameProviders> */}
         <TooltipProvider>
           <BrowserRouter>
             <Routes>
@@ -26,7 +26,7 @@ const App = () => (
           <Toaster />
           <Sonner />
         </TooltipProvider>
-      </GameProviders>
+      {/* </GameProviders> */}
     </OneChainGameProviders>
   </OneChainProviders>
  

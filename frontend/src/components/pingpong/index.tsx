@@ -7,6 +7,8 @@ import { socketService } from "@/services/socketService"
 import { useLocation } from "react-router-dom"
 import { useCurrentAccount } from "@mysten/dapp-kit"
 import { toast } from "../ui/sonner"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog"
+import { Button } from "../ui/button"
 
 export default function PingPongGame() {
     const powerups = [
@@ -47,7 +49,7 @@ export default function PingPongGame() {
     )
     const { state } = useLocation()
 
-    const GameBoard = () => {
+    function GameBoard () {
         const account = useCurrentAccount() ?? {};
         const address = account?.address ?? null;
         const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -123,14 +125,14 @@ export default function PingPongGame() {
                 console.log('Game over:', data.message);
                 setGameOver(true);
                 setWinner(data.winner);
-                toast.success(data.message);
+                // toast.success(data.message);
             };
 
             const handleOpponentDisconnected = (data: { playerNumber: number; message: string }) => {
                 console.log('Opponent disconnected, you win!');
                 setOpponent(true);
                 setGameOver(true);
-                setWinner('You');
+                setWinner(address);
                 toast.success('Opponent disconnected. You win!');
             };
 
@@ -168,58 +170,7 @@ export default function PingPongGame() {
 
             return () => clearInterval(timer);
         }, [countdown.active]);
-
-        // useEffect(() => {
-        //     if (isDeviceTouchRef.current) return;
-
-        //      const handleKeyDown = (e: KeyboardEvent) => {
-        //         const key = e.key.toLowerCase();
-        //         if (key === 'w') {
-        //         console.log(`⬆️ W pressed - inputRef.w = true`);
-        //         inputRef.current.keyboard.w = true;
-        //         }
-        //         if (key === 's') {
-        //         console.log(`⬇️ S pressed - inputRef.s = true`);
-        //         inputRef.current.keyboard.s = true;
-        //         }
-        //         if (e.key === 'ArrowUp') {
-        //         console.log(`⬆️ ArrowUp pressed - inputRef.arrowUp = true`);
-        //         inputRef.current.keyboard.arrowUp = true;
-        //         }
-        //         if (e.key === 'ArrowDown') {
-        //         console.log(`⬇️ ArrowDown pressed - inputRef.arrowDown = true`);
-        //         inputRef.current.keyboard.arrowDown = true;
-        //         }
-        //     };
-
-        //     const handleKeyUp = (event: KeyboardEvent) => {
-        //         const key = event.key.toLowerCase();
-        //         if (key === 'w') {
-        //         console.log(`⬆️ W released - inputRef.w = false`);
-        //         inputRef.current.keyboard.w = false;
-        //         }
-        //         if (key === 's') {
-        //         console.log(`⬇️ S released - inputRef.s = false`);
-        //         inputRef.current.keyboard.s = false;
-        //         }
-        //         if (event.key === 'ArrowUp') {
-        //         console.log(`⬆️ ArrowUp released - inputRef.arrowUp = false`);
-        //         inputRef.current.keyboard.arrowUp = false;
-        //         }
-        //         if (event.key === 'ArrowDown') {
-        //         console.log(`⬇️ ArrowDown released - inputRef.arrowDown = false`);
-        //         inputRef.current.keyboard.arrowDown = false;
-        //         }
-        //     };
-        //     window.addEventListener('keydown', handleKeyDown);
-        //     window.addEventListener('keyup', handleKeyUp);
-
-        //     return () => {
-        //         window.removeEventListener('keydown', handleKeyDown);
-        //         window.removeEventListener('keyup', handleKeyUp);
-        //     };
-        // }, []);
-
+        
         useEffect(() => {
             if (isDeviceTouchRef.current) return;
 
@@ -274,7 +225,7 @@ export default function PingPongGame() {
         }, []);
 
         useEffect(() => {
-            if (!isDeviceTouchRef.current) return; // Skip if not touch device
+            if (!isDeviceTouchRef.current) return;
 
             const canvas = canvasRef.current;
             if (!canvas) return;
@@ -402,6 +353,23 @@ export default function PingPongGame() {
             }
         }, [gameState, countdown, address]);
 
+        function GameOverPopUp() { 
+            return (
+                <Dialog>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>
+                                Game Ended
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div>
+                            <p>{winner === address ? 'You won 🎉🤭🕺' : 'Your Opponent won 😔😔'}</p>
+                            <Button>Go to Home</Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )
+        }
         return (
             <aside className="gameBoard">
                 <canvas ref={canvasRef} width={800} height={500} className="canvas" />
