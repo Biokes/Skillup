@@ -76,12 +76,8 @@ export class WebSocket {
   private async handleGameReady(socket: Socket,readyGameData:ReadyGameDTO): Promise<void> {
     const { gameId, playerNumber, sessionId } = readyGameData;
     try {
-      // Store mapping of socket to game
       this.socketToGameMap.set(socket.id, { gameId, playerNumber });
-      // Join game room
       socket.join(`game-${gameId}`);
-      // console.log("gameId: ",gameId)
-      // Initialize game if first player
       let gameState = this.pongGameService.getGameState(gameId);
       if (!gameState) {
         const session = await this.sessionService.getSessionById(sessionId);
@@ -92,8 +88,6 @@ export class WebSocket {
         gameState = await this.pongGameService.initializeGame(session, gameId);
         console.log("gameState: ",gameState)
       }
-
-      // Get both player sockets and start game
       const room = this.server.sockets.adapter.rooms.get(`game-${gameId}`);
       if (room && room.size === 2) {
         const sockets = Array.from(room);

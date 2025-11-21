@@ -95,8 +95,8 @@ export default function PingPongGame() {
         }, [address]);
 
         useEffect(() => {
+            
             const handleGameStart = (data: { message: string; countdown: number }) => {
-                console.log('Game starting...');
                 setCountdown({ active: true, remaining: 3 });
             };
 
@@ -173,21 +173,45 @@ export default function PingPongGame() {
         useEffect(() => {
             if (isDeviceTouchRef.current) return;
 
-            const handleKeyDown = (e: KeyboardEvent) => {
-                if (e.key.toLowerCase() === 'w') inputRef.current.keyboard.w = true;
-                if (e.key.toLowerCase() === 's') inputRef.current.keyboard.s = true;
-                if (e.key === 'ArrowUp') inputRef.current.keyboard.arrowUp = true;
-                if (e.key === 'ArrowDown') inputRef.current.keyboard.arrowDown = true;
-                console.log("moving down")
+             const handleKeyDown = (event: KeyboardEvent) => {
+                const key = event.key.toLowerCase();
+                if (key === 'w') {
+                console.log(`⬆️ W pressed - inputRef.w = true`);
+                inputRef.current.keyboard.w = true;
+                }
+                if (key === 's') {
+                console.log(`⬇️ S pressed - inputRef.s = true`);
+                inputRef.current.keyboard.s = true;
+                }
+                if (event.key === 'ArrowUp') {
+                console.log(`⬆️ ArrowUp pressed - inputRef.arrowUp = true`);
+                inputRef.current.keyboard.arrowUp = true;
+                }
+                if (event.key === 'ArrowDown') {
+                console.log(`⬇️ ArrowDown pressed - inputRef.arrowDown = true`);
+                inputRef.current.keyboard.arrowDown = true;
+                }
             };
 
-            const handleKeyUp = (e: KeyboardEvent) => {
-                if (e.key.toLowerCase() === 'w') inputRef.current.keyboard.w = false;
-                if (e.key.toLowerCase() === 's') inputRef.current.keyboard.s = false;
-                if (e.key === 'ArrowUp') inputRef.current.keyboard.arrowUp = false;
-                if (e.key === 'ArrowDown') inputRef.current.keyboard.arrowDown = false;
+            const handleKeyUp = (event: KeyboardEvent) => {
+                const key = event.key.toLowerCase();
+                if (key === 'w') {
+                console.log(`⬆️ W released - inputRef.w = false`);
+                inputRef.current.keyboard.w = false;
+                }
+                if (key === 's') {
+                console.log(`⬇️ S released - inputRef.s = false`);
+                inputRef.current.keyboard.s = false;
+                }
+                if (event.key === 'ArrowUp') {
+                console.log(`⬆️ ArrowUp released - inputRef.arrowUp = false`);
+                inputRef.current.keyboard.arrowUp = false;
+                }
+                if (event.key === 'ArrowDown') {
+                console.log(`⬇️ ArrowDown released - inputRef.arrowDown = false`);
+                inputRef.current.keyboard.arrowDown = false;
+                }
             };
-
             window.addEventListener('keydown', handleKeyDown);
             window.addEventListener('keyup', handleKeyUp);
 

@@ -66,27 +66,22 @@ export class GameService {
     return gameState;
   }
 
-    startGameLoop(gameId: string,
-        // socket1: Socket, socket2: Socket
-    ): void {
+    startGameLoop(gameId: string): void {
     const gameState = this.activeGames.get(gameId);
     if (!gameState) return;
 
-    // Emit countdown
     gameState.countdownStartTime = Date.now();
     this.socketServer.to(`game-${gameId}`).emit("gameStart", {
       message: "Game starts in 3 seconds",
       countdown: 3,
     });
-    // Wait for countdown, then start game loop
+      
     setTimeout(() => {
       gameState.status = "PLAYING";
       this.socketServer .to(`game-${gameId}`) .emit("countdownComplete", { message: "Game Started!" });
-
       const gameLoop = setInterval(() => {
         this.updateGameState(gameId);
       }, GAME_CONSTANTS.GAME_LOOP_INTERVAL_MS);
-
       this.gameLoops.set(gameId, gameLoop);
     }, GAME_CONSTANTS.COUNTDOWN_DURATION_MS);
   }
@@ -120,14 +115,12 @@ export class GameService {
       paddle1Height,
       paddle2Height
     );
-
     // Check for scoring
     const scoreCheck = PongPhysics.checkScoring(gameState.ball);
     if (scoreCheck.scored) {
       this.handleScore(gameId, scoreCheck.scoredBy!);
       return;
     }
-
     // Broadcast game update
     this.broadcastGameUpdate(gameId, paddle1Height, paddle2Height);
   }
@@ -216,9 +209,12 @@ export class GameService {
   handlePaddleMove(gameId: string, playerNumber: number, position: number): void {
     const gameState = this.activeGames.get(gameId);
     if (!gameState) return;
-    const paddleHeight = playerNumber === 1 ? PowerupManager.getPaddleHeight(gameState.player1) : PowerupManager.getPaddleHeight(gameState.player2);
+    const player1PaddleHeight = PowerupManager.getPaddleHeight(gameState.player1);
+    const player2PaddleHeight = PowerupManager.getPaddleHeight(gameState.player2)
+    const paddleHeight = playerNumber === 1 ? player1PaddleHeight :player2PaddleHeight;
     const validPosition = Math.max( 0, Math.min(GAME_CONSTANTS.CANVAS_HEIGHT - paddleHeight, position));
-    playerNumber === 1 ? gameState.player1.paddleY = validPosition :  gameState.player2.paddleY = validPosition;
+    playerNumber === 1 ? gameState.player1.paddleY = validPosition : gameState.player2.paddleY = validPosition;
+    this.broadcastGameUpdate(gameId,player1PaddleHeight, player2PaddleHeight)
   }
 
   handlePowerup(gameId: string, playerNumber: number, powerupType: string): boolean {
@@ -236,7 +232,6 @@ export class GameService {
     return true;
   }
 
-  // ============ DISCONNECT HANDLING ============
   handleDisconnect(gameId: string, playerNumber: number): void {
     const gameState = this.activeGames.get(gameId);
     if (!gameState) return;
@@ -250,7 +245,6 @@ export class GameService {
       message: "Opponent disconnected. Waiting for reconnection...",
     });
       
-    // Wait 5 seconds for reconnection
     setTimeout(() => {
       if (playerState.disconnected) {
         const winnerId = playerNumber === 1 ? 2 : 1;
@@ -301,12 +295,9 @@ export class GameService {
     };
 
     this.socketServer.to(`game-${gameId}`).emit("gameUpdate", payload);
-    console.log("payload: ", payload)
-    console.log("gameID: ", gameId)
   }
 
   getGameState(gameId: string) {
-    // if(!this.activeGames.get(gameId)) throw new ChainSkillsException(`invalid gameId ${gameId}`);
     return this.activeGames.get(gameId);
   }
 
