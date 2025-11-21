@@ -1,16 +1,13 @@
 import { Socket, Server } from "socket.io";
-import { CreateGameDTO } from "@/src/data/entities/DTO/CreateGame";
-import { JoinRoomDTO } from "@/src/data/entities/DTO/joinRoom";
-import {
-  QuickMatchDTO,
-  quickMatchSchema,
-} from "../data/entities/DTO/QuickMatch";
-import { SessionRepository } from "../data/db/sessionRepository";
-import { Session } from "../data/entities/models/Session";
+import { CreateGameDTO } from "@/src/data/DTO/CreateGame";
+import { JoinRoomDTO } from "@/src/data/DTO/joinRoom";
+import { QuickMatchDTO, quickMatchSchema } from "../data/DTO/QuickMatch";
+import { SessionRepository } from "../data/repositories/sessionRepository";
+import { Session } from "../data/models/Session";
 import { ChainSkillsException } from "../exceptions";
 import { ZodError } from "zod";
 import { GameService } from "./GameService";
-import { Game } from "../data/entities/models/Game";
+import { Game } from "../data/models/Game";
 
 export default class SessionService {
   private readonly sessionRepository: SessionRepository;
@@ -75,7 +72,16 @@ export default class SessionService {
       if (session.player2) {
           const game: Game = await this.gameService.createGameForSession(session)
           this.socketServer.to(`game-${session.id}`).emit("joined", {
-              id: session.id,
+              sessionId: session.id,
+              status: session.status,
+              isStaked: session.isStaked,
+              player1: session.player1,
+              player2: session.player2,
+              amount: session.amount,
+              gameId: game.id
+          })
+        console.log("joined params : ",  {
+              sessionId: session.id,
               status: session.status,
               isStaked: session.isStaked,
               player1: session.player1,

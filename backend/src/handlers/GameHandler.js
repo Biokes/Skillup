@@ -28,7 +28,6 @@ class GameHandler {
       pool: new PoolService(),
       checkers: new CheckersService()
     };
-
     this.gameLoops = new Map();
   }
 

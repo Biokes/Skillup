@@ -1,4 +1,4 @@
-import PlayerRepository from "../data/db/playerRepository";
+import PlayerRepository from "../data/repositories/playerRepository";
 import { ChainSkillsException } from "../exceptions"
 
 export default class PlayerService {

@@ -3,6 +3,7 @@ import { GameType, Player, GameState, GameResult } from "@/types";
 import { toast } from "sonner";
 
 class SocketService {
+
   private socket: Socket | null = null;
   private listeners: Map<string, Function[]> = new Map();
 
@@ -25,7 +26,11 @@ class SocketService {
       transports: ["websocket"],
       reconnection: true,
       reconnectionAttempts: 5,
-      reconnectionDelay: 1000
+      reconnectionDelay: 1000,
+      upgrade: false,
+      path: "/socket.io/",
+      withCredentials: true,
+      timeout: 20000,
     });
 
     this.socket.on("connect", () => {
@@ -40,14 +45,16 @@ class SocketService {
       console.log("⚠️ Socket error:", data);
       this.emit("error", data.message);
     });
-
+    
     this.setupGameEventListeners();
   }
   private ensureConnected() {
     if (!this.socket || !this.socket.connected) {
       console.error("Socket is not connected. Reconnecting...");
       const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
-      this.socket = io(backendUrl, { transports: ["websocket"] });
+      this.socket = io(backendUrl, {
+        transports: ["websocket"],
+      });
     }
   }
 
@@ -96,8 +103,11 @@ class SocketService {
     })
   
   }
+   gameReady(gameId: string, playerNumber: number, sessionId: string) {
+    this.ensureConnected();
+    this.socket?.emit("gameReady", { gameId, playerNumber, sessionId });
+  }
 
-  
   quickMatch(walletAddress:string, gameType: GameType, isStaked:boolean, amount: number) {
     this.ensureConnected();
     this.socket?.emit("quickMatch", { walletAddress, gameType, isStaked, amount });
@@ -113,84 +123,14 @@ class SocketService {
     this.socket?.emit("retryQuickMatch", { walletAddress, gameType, isStaked, amount });
   }
 
-
-
-
-
-
-
-
-
-
-
-  createRoom(gameType: GameType, player: Player, roomCode?: string) {
-    this.socket?.emit("createRoom", { gameType, player, roomCode });
-  }
-
-  joinRoom(roomCode: string, player: Player) {
-    this.socket?.emit("joinRoom", { roomCode, player });
-  }
-
-
-  createQuickMatch(walletAddress: string, gameCode: string) {
+  paddleMove(playerNumber: number, position: number, gameId: string) {
+    console.log(`playerNumber: ${playerNumber}, position : ${position}, gameId: ${gameId}`)
     this.ensureConnected();
-    this.socket?.emit("createQuickMatch", { walletAddress, gameCode });
+    this.socket?.emit("paddleMove", { playerNumber, position, gameId });
   }
-
-  joinQuickMatch(gameType: GameType, player: Player) {
-    this.ensureConnected();
-    this.socket?.emit("joinQuickMatch", { gameType, player });
-  }
-
-  createStakedGame(data: {
-    roomCode: string;
-    gameType: GameType;
-    player1: Player;
-    stakeAmount: string;
-    player1Address: string;
-    player1TxHash: string;
-  }) {
-    this.socket?.emit("createStakedGame", data);
-  }
-
-  leaveRoom() {
-    this.socket?.emit("leaveRoom");
-  }
-
-  paddleMove(data: { position: number }) {
-    this.socket?.emit("paddleMove", data);
-  }
-
-  // strikerMove(position: { x: number; y: number }) {
-  //   this.socket?.emit("strikerMove", { position });
-  // }
-
-  // chessMove(moveData: { from: string; to: string; promotion?: string }) {
-  //   this.socket?.emit("chessMove", moveData);
-  // }
-
-  // poolShoot(angle: number, power: number) {
-  //   this.socket?.emit("poolShoot", { angle, power });
-  // }
-
-  // checkersMove(moveData: { from: { row: number; col: number }; to: { row: number; col: number } }) {
-  //   this.socket?.emit("checkersMove", moveData);
-  // }
-
-  pauseGame() {
-    this.socket?.emit("pauseGame");
-  }
-
-  resumeGame() {
-    this.socket?.emit("resumeGame");
-  }
-
+ 
   forfeitGame() {
     this.socket?.emit("forfeitGame");
-  }
-
-  getLeaderboard(gameType: GameType, limit = 10) {
-    this.socket?.emit("getLeaderboard", { gameType, limit });
   }
 
   on(event: string, callback: Function) {
@@ -198,11 +138,24 @@ class SocketService {
       this.listeners.set(event, []);
     }
     this.listeners.get(event)!.push(callback);
+    // Setup actual socket.io listener if socket exists
+    if (this.socket) {
+      this.socket.off(event); // Remove old listeners to avoid duplicates
+      this.socket.on(event, (data) => {
+        const callbacks = this.listeners.get(event);
+        if (callbacks) {
+          callbacks.forEach((cb) => cb(data));
+        }
+      });
+    }
   }
 
   off(event: string, callback?: Function) {
     if (!callback) {
       this.listeners.delete(event);
+      if (this.socket) {
+        this.socket.off(event);
+      }
     } else {
       const callbacks = this.listeners.get(event);
       if (callbacks) {

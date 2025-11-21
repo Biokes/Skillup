@@ -7,3 +7,5 @@ module skillup::skillup;
 // https://docs.sui.io/concepts/sui-move-concepts/conventions
 
 
+module skillup::skillup_powerup;
+

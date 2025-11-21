@@ -5,4 +5,4 @@ const PaddleMovementSchema = z.object({
   position: z.number().min(0),
   gameId: z.string().min(1),
 });
-export type PaddleMovementDTO = z.infer<typeof PaddleMovementSchema>
+export type PaddleMovementDTO = z.infer<typeof PaddleMovementSchema>    

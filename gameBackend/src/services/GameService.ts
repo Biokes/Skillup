@@ -2,14 +2,14 @@ import {
     Server,
     // Socket
 } from "socket.io";
-import { GameRepository } from "../data/db/gameRepository";
-import { Game } from "../data/entities/models/Game";
-import { Session } from "../data/entities/models/Session";
+import { GameRepository } from "../data/repositories/gameRepository";
+import { Game } from "../data/models/Game";
+import { Session } from "../data/models/Session";
 import { GAME_CONSTANTS, GameState, GameUpdatePayload } from "../utils";
 import { PongPhysics } from "../utils/GamePhysics";
 import { PowerupManager } from "../utils/PowerUpManager";
-import PlayerRepository from "../data/db/playerRepository";
-import { Player } from "../data/entities/models/Player";
+import PlayerRepository from "../data/repositories/playerRepository";
+import { Player } from "../data/models/Player";
 import { ChainSkillsException } from "../exceptions";
 
 export class GameService {
@@ -78,13 +78,10 @@ export class GameService {
       message: "Game starts in 3 seconds",
       countdown: 3,
     });
-
     // Wait for countdown, then start game loop
     setTimeout(() => {
       gameState.status = "PLAYING";
-      this.socketServer
-        .to(`game-${gameId}`)
-        .emit("countdownComplete", { message: "Game Started!" });
+      this.socketServer .to(`game-${gameId}`) .emit("countdownComplete", { message: "Game Started!" });
 
       const gameLoop = setInterval(() => {
         this.updateGameState(gameId);
@@ -305,11 +302,13 @@ export class GameService {
     };
 
     this.socketServer.to(`game-${gameId}`).emit("gameUpdate", payload);
+    console.log("payload: ", payload)
+    console.log("gameID: ", gameId)
   }
 
-  getGameState(gameId: string): GameState {
-    if(!this.activeGames.get(gameId)) throw new ChainSkillsException(`invalid gameId ${gameId}`);
-    return this.activeGames.get(gameId) as GameState;
+  getGameState(gameId: string) {
+    // if(!this.activeGames.get(gameId)) throw new ChainSkillsException(`invalid gameId ${gameId}`);
+    return this.activeGames.get(gameId);
   }
 
   getActiveGamesCount(): number {

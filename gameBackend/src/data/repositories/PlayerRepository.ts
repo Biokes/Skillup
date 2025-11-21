@@ -1,48 +1,11 @@
-import { IPlayer } from "../models/types.js";
-import { BaseRepository } from "./BaseRepository.js";
-import Player from "../models/player.js";
-import { ChainSkillsException } from "../../exceptions/index.js";
-import { Types } from "mongoose";
+import { DataBaseSource } from "../../config/dbSource";
+import { Player } from "../models/Player";
+import BaseRepository from "./base";
+import { Repository } from "typeorm";
 
-export class PlayerRepository extends BaseRepository<IPlayer>{
+export default class PlayerRepository extends BaseRepository<Player> {
   constructor() {
-    super(Player);
+    const PlayerRepo: Repository<Player> = DataBaseSource.getRepository(Player);
+    super(PlayerRepo);
   }
-
-  async findByName(name:string) {
-    return await this.findOne({ name });
-  }
-
-  async findByWalletAddress(walletAddress:string) {
-    return await this.findOne({ walletAddress: walletAddress.toLowerCase() });
-  }
-
-  async findOrCreate(name:string, walletAddress:string) {
-    try {
-      let player = await this.findByWalletAddress(walletAddress);
-      if (!player) {
-        player = await this.create({
-          name,
-          walletAddress: walletAddress.toLowerCase(),
-          lastActive: new Date()
-        });
-      }
-
-      return player;
-    } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        throw new ChainSkillsException(`Error in findOrCreateStats: ${message}, PlayerRepository.ts:34`);    }
-  }
-
-  async updateActivity(playerId:Types.ObjectId) {
-    return await this.updateById(playerId, { lastActive: new Date() });
-  }
-
-    async getActivePlayers(since: Date): Promise<IPlayer[]> {
-        return await this.find(
-            { lastActive: { $gte: since } },
-            { sort: { lastActive: -1 } }
-        );
-    }
 }
-

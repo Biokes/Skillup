@@ -96,7 +96,7 @@ export interface OneChainGameType {
   cancelQuickMatch: (walletAddress: string) => void;
 }
 export interface JoinGameResponse {
-  id: string;
+  sessionId: string;
   status: string;
   isStaked: boolean;
   player1: string;

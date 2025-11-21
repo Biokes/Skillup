@@ -30,8 +30,10 @@ export default function Pong() {
     useEffect(() => {
         socket.on('joined', (joinResponse: JoinGameResponse) => { 
             if (address) { 
-                const hasJoined: boolean = joinResponse.player1.toLowerCase() === String(address).toLowerCase() || joinResponse.player2.toLowerCase() === String(address).toLowerCase();
+                const hasJoined: boolean = joinResponse.player1.toLowerCase() === String(address).toLowerCase()
+                    || joinResponse.player2.toLowerCase() === String(address).toLowerCase();
                 if (hasJoined) {
+                    console.log('joinedResponse: ',joinResponse);
                     navigate('/pong', {state: joinResponse})
                 }
             }

@@ -2,7 +2,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/landingPage";
 import GameProviders from "./contexts/GameContext";
@@ -19,7 +18,6 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/home" element={<LandingPage />} />
-              {/* <Route path="/home" element={<Index />} /> */}
               <Route path="*" element={<NotFound />} />
               <Route path='/' element={<Pong />} />
               <Route path='/pong' element={ <PingPongGame/>}/>

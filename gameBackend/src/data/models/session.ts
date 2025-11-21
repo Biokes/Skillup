@@ -1,59 +1,32 @@
-import { ISession } from "./types.js";
-import mongoose from "mongoose";
+import { AfterLoad, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { CHARS } from "../../utils";
 
-const sessionSchema = new mongoose.Schema<ISession>({
-  playerID: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Player',
-    required: true,
-    index: true
-  },
-  playerWalletAddress: {
-    type: String,
-    required: true,
-    index: true
-  },
-  deviceId: {
-    type: String,
-    required: true,
-    index: true 
-  },
-  socketId: {
-    type: String,
-    required: true,
-    index: true
-  },
-  currentRoom: {
-    type: String,
-    default: null
-  },
-  currectGame: {
-    type: String,
-    default: null
-  },
-  isActive: {
-    type: Boolean,
-    default: true,
-    index: true
+
+@Entity()
+export class Session {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
+  @Column({ type: "varchar", length: 6, nullable: true })
+  roomCode?: string;
+  @Column({default:'WAITING'})
+  status!: string;
+  @Column({default:false})
+  isStaked!: boolean;
+  @Column({ nullable: true })
+  player1?: string;
+  @Column({ nullable: true })
+  player2?: string;
+  @Column({ default: 0 })
+  amount!: number;
+  @AfterLoad()
+  deriveRoomCode() {
+    if (this.id && !this.roomCode) {
+        this.roomCode = this.id.replace(/-/g, '')
+            .substring(0, 6)
+            .split('')
+            .map((char) => CHARS[parseInt(char, 16) % CHARS.length])
+            .join('')
+            .toUpperCase()
+    }
   }
-}, {
-  timestamps: true
-});
-
-sessionSchema.index({ playerId: 1, isActive: 1 });
-sessionSchema.index({ playerName: 1, isActive: 1 });
-sessionSchema.index({ socketId: 1, isActive: 1 });
-
-sessionSchema.methods.updateSync = function() {
-  this.lastSyncedAt = new Date();
-  return this.save();
-};
-
-sessionSchema.methods.deactivate = function() {
-  this.isActive = false;
-  return this.save();
-};
-
-const Session = mongoose.model<ISession>('Session', sessionSchema);
-
-export default Session;
+}

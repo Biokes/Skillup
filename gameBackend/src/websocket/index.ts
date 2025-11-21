@@ -1,19 +1,14 @@
-// import { QuickMatchDTO } from '@/src/data/entities/DTO/QuickMatch';
-// import { quickMatchSchema } from './../data/entities/DTO/QuickMatch';
 import dotenv from "dotenv";
 import { Application } from "express";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
 import SessionService from "../services/SessionService";
-import { CreateGameDTO } from "../data/entities/DTO/CreateGame"
-import { JoinRoomDTO } from "../data/entities/DTO/joinRoom";
-import { QuickMatchDTO } from "../data/entities/DTO/QuickMatch";
-import { ReadyGameDTO } from "../data/entities/DTO/ReadyGame";
+import { CreateGameDTO } from "../data/DTO/CreateGame"
+import { JoinRoomDTO } from "../data/DTO/joinRoom";
+import { QuickMatchDTO } from "../data/DTO/QuickMatch";
+import { ReadyGameDTO } from "../data/DTO/ReadyGame";
 import { GameService } from "../services/GameService";
-import { PaddleMovementDTO } from "../data/entities/DTO/PaddleMovementDTO";
-// import PlayerService from "../services/playerService";
-// import { Session } from "../data/entities/models/Session";
-// import { ZodError } from 'zod';
+import { PaddleMovementDTO } from "../data/DTO/PaddleMovementDTO";
 dotenv.config();
 
 
@@ -22,13 +17,10 @@ export class WebSocket {
   private readonly socketServer;
   private readonly server: Server;
   private readonly sessionService: SessionService;
-  // private readonly playerService: PlayerService;
   private readonly pongGameService: GameService;
   private socketToGameMap: Map<string, { gameId: string; playerNumber: number }> = new Map();
 
-
   constructor(app: Application) {
-    // this.playerService = new PlayerService()
     this.socketServer = createServer(app);
     this.server = new Server(this.socketServer, {
       cors: {
@@ -46,7 +38,7 @@ export class WebSocket {
       allowUpgrades: false,
       perMessageDeflate: false,
     });
-    this.server.on("connection", (socket: Socket) => {this.handleConnection(socket)});
+    this.server.on("connection",async (socket: Socket) => {await this.handleConnection(socket)});
     this.server.engine.on("connection_error", (err) => this.logErrorOnConsole("Socket engine on failed with error: ", err));
     this.server.on("error", (error) => this.logErrorOnConsole("Socket on failed with error: ", error));
     this.sessionService = new SessionService(this.server);
@@ -88,6 +80,7 @@ export class WebSocket {
       this.socketToGameMap.set(socket.id, { gameId, playerNumber });
       // Join game room
       socket.join(`game-${gameId}`);
+      // console.log("gameId: ",gameId)
       // Initialize game if first player
       let gameState = this.pongGameService.getGameState(gameId);
       if (!gameState) {
@@ -97,6 +90,7 @@ export class WebSocket {
           return;
         }
         gameState = await this.pongGameService.initializeGame(session, gameId);
+        console.log("gameState: ",gameState)
       }
 
       // Get both player sockets and start game

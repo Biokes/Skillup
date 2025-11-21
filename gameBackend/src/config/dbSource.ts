@@ -1,9 +1,9 @@
 import { DataSource } from "typeorm";
 import dotenv from "dotenv";
-import { Player } from "../data/entities/models/Player";
-import { Stats } from "../data/entities/models/Stats"; 
-import { Session } from "../data/entities/models/Session";
-import { Game } from "../data/entities/models/Game";
+import { Player } from "../data/models/Player";
+import { Stats } from "../data/models/Stats"; 
+import { Session } from "../data/models/Session";
+import { Game } from "../data/models/Game";
 
 const envFile = process.env.NODE_ENV === "test" ? ".env.test" : ".env";
 dotenv.config({ path: envFile });
