@@ -212,3 +212,13 @@ button {
 .gameBoard > canvas{
   @apply rounded-lg max-w-full h-auto bg-black border-primary/75 border-[2px];
 }
+.gameOver{
+  @apply flex flex-col justify-center items-center py-3 rounded gap-2 border-primary border-[1px];
+}
+.gameOver> p{
+  @apply text-[0.85rem] text-primary;
+  font-family: "ribeye";
+}
+.gameOver button{
+  @apply h-[30px] rounded-[5px];
+}

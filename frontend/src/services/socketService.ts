@@ -124,7 +124,6 @@ class SocketService {
   }
 
   paddleMove(playerNumber: number, position: number, gameId: string) {
-    console.log(`playerNumber: ${playerNumber}, position : ${position}, gameId: ${gameId}`)
     this.ensureConnected();
     this.socket?.emit("paddleMove", { playerNumber, position, gameId });
   }

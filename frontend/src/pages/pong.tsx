@@ -33,7 +33,6 @@ export default function Pong() {
                 const hasJoined: boolean = joinResponse.player1.toLowerCase() === String(address).toLowerCase()
                     || joinResponse.player2.toLowerCase() === String(address).toLowerCase();
                 if (hasJoined) {
-                    console.log('joinedResponse: ',joinResponse);
                     navigate('/pong', {state: joinResponse})
                 }
             }

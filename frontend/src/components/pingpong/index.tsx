@@ -4,10 +4,10 @@ import { useRef, useState, useEffect } from "react"
 import { CountdownState, GameState } from "@/types"
 import { BALL_RADIUS, CANVAS_HEIGHT, CANVAS_WIDTH, PADDLE_WIDTH } from "@/lib/utils"
 import { socketService } from "@/services/socketService"
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { useCurrentAccount } from "@mysten/dapp-kit"
 import { toast } from "../ui/sonner"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog"
 import { Button } from "../ui/button"
 
 export default function PingPongGame() {
@@ -48,7 +48,7 @@ export default function PingPongGame() {
         </section>
     )
     const { state } = useLocation()
-
+    const navigate = useNavigate()
     function GameBoard () {
         const account = useCurrentAccount() ?? {};
         const address = account?.address ?? null;
@@ -67,9 +67,8 @@ export default function PingPongGame() {
             status: 'COUNTDOWN',
         });
         const [countdown, setCountdown] = useState<CountdownState>({ active: true, remaining: 3 });
-        const [gameOver, setGameOver] = useState(false);
+        const [gameOver, setGameOver] = useState<boolean>(false);
         const [winner, setWinner] = useState<string | null>(null);
-        const [opponent, setOpponent] = useState<boolean>(false);
         const inputRef = useRef({
             keyboard: { w: false, s: false, arrowUp: false, arrowDown: false },
             touch: { playerY: null as number | null },
@@ -117,7 +116,6 @@ export default function PingPongGame() {
             };
 
             const handleNextServe = () => {
-                console.log('Next serve countdown');
                 setCountdown({ active: true, remaining: 3 });
             };
 
@@ -125,12 +123,11 @@ export default function PingPongGame() {
                 console.log('Game over:', data.message);
                 setGameOver(true);
                 setWinner(data.winner);
-                // toast.success(data.message);
             };
 
             const handleOpponentDisconnected = (data: { playerNumber: number; message: string }) => {
                 console.log('Opponent disconnected, you win!');
-                setOpponent(true);
+                // setOpponent(true);
                 setGameOver(true);
                 setWinner(address);
                 toast.success('Opponent disconnected. You win!');
@@ -177,40 +174,21 @@ export default function PingPongGame() {
             const handleKeyDown = (event: KeyboardEvent) => {
                 const key = event.key.toLowerCase();
 
-                if (key === 'w') {
-                    console.log(`⬆️ W pressed`);
-                    inputRef.current.keyboard.w = true;
-                }
-                if (key === 's') {
-                    console.log(`⬇️ S pressed`);
-                    inputRef.current.keyboard.s = true;
-                }
                 if (key === 'arrowup') {
-                    console.log(`⬆️ ArrowUp pressed`);
                     inputRef.current.keyboard.arrowUp = true;
                 }
                 if (key === 'arrowdown') {
-                    console.log(`⬇️ ArrowDown pressed`);
                     inputRef.current.keyboard.arrowDown = true;
                 }
             };
 
             const handleKeyUp = (event: KeyboardEvent) => {
                 const key = event.key.toLowerCase();
-                if (key === 'w') {
-                    console.log(`⬆️ W released`);
-                    inputRef.current.keyboard.w = false;
-                }
-                if (key === 's') {
-                    console.log(`⬇️ S released`);
-                    inputRef.current.keyboard.s = false;
-                }
+
                 if (key === 'arrowup') {
-                    console.log(`⬆️ ArrowUp released`);
                     inputRef.current.keyboard.arrowUp = false;
                 }
                 if (key === 'arrowdown') {
-                    console.log(`⬇️ ArrowDown released`);
                     inputRef.current.keyboard.arrowDown = false;
                 }
             };
@@ -353,18 +331,34 @@ export default function PingPongGame() {
             }
         }, [gameState, countdown, address]);
 
-        function GameOverPopUp() { 
+        // useEffect(() => {
+        // },[winner])
+
+        function GameOverPopUp(props: {gameState:GameState}) { 
             return (
-                <Dialog>
+                <Dialog open={gameOver} onOpenChange={(gameOver) => {if(!gameOver) return}}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>
+                            <DialogTitle className='ribeye text-[1.2rem] text-[#f8b141]'>
                                 Game Ended
                             </DialogTitle>
+                            <DialogDescription>
+                            </DialogDescription>
                         </DialogHeader>
-                        <div>
-                            <p>{winner === address ? 'You won 🎉🤭🕺' : 'Your Opponent won 😔😔'}</p>
-                            <Button>Go to Home</Button>
+                        <div className="gameOver">
+                            <motion.p
+                                className="ribeye !text-[1.2rem] !text-[#f8b141]"
+                                animate={{ scale: [1, 1.05, 1], rotate: [0, 1, -1, 0] }}
+                                transition={{ duration: 2, ease: "easeInOut", repeat: Infinity }}
+                            >
+                                {winner === address ? 'You won 🎉🤭🕺' : 'Your Opponent won 😔😔'}
+                            </motion.p>
+                            <p>
+                                {`${winner === state?.player1? '(You)': '(Opponent)' } ${props.gameState.score1} : ${props.gameState.score2} ${winner === state?.player2? '(You)': '(Opponent)' }`}
+                            </p>
+                            <Button onClick={() => {
+                                navigate('/')
+                            }}>Back Home</Button>
                         </div>
                     </DialogContent>
                 </Dialog>
@@ -373,6 +367,7 @@ export default function PingPongGame() {
         return (
             <aside className="gameBoard">
                 <canvas ref={canvasRef} width={800} height={500} className="canvas" />
+                {gameOver && <GameOverPopUp gameState={gameState}/>}
             </aside>
         )
     }
