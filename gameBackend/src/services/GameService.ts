@@ -213,7 +213,6 @@ export class GameService {
     }
   }
 
-  // ============ PLAYER INPUT ============
   handlePaddleMove(gameId: string, playerNumber: number, position: number): void {
     const gameState = this.activeGames.get(gameId);
     if (!gameState) return;

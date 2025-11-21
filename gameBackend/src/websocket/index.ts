@@ -101,10 +101,7 @@ export class WebSocket {
         const socket2 = this.server.sockets.sockets.get(sockets[1] as string);
 
         if (socket1 && socket2) {
-          // console.log(`🎮 Starting game ${gameId}`);
-          this.pongGameService.startGameLoop(gameId,
-            // socket1, socket2
-          );
+          this.pongGameService.startGameLoop(gameId);
         }
       }
     } catch (error) {
