@@ -214,7 +214,6 @@ export class GameService {
     const paddleHeight = playerNumber === 1 ? player1PaddleHeight :player2PaddleHeight;
     const validPosition = Math.max( 0, Math.min(GAME_CONSTANTS.CANVAS_HEIGHT - paddleHeight, position));
     playerNumber === 1 ? gameState.player1.paddleY = validPosition : gameState.player2.paddleY = validPosition;
-    this.broadcastGameUpdate(gameId,player1PaddleHeight, player2PaddleHeight)
   }
 
   handlePowerup(gameId: string, playerNumber: number, powerupType: string): boolean {

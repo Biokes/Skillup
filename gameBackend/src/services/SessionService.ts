@@ -80,15 +80,6 @@ export default class SessionService {
               amount: session.amount,
               gameId: game.id
           })
-        console.log("joined params : ",  {
-              sessionId: session.id,
-              status: session.status,
-              isStaked: session.isStaked,
-              player1: session.player1,
-              player2: session.player2,
-              amount: session.amount,
-              gameId: game.id
-          })
         return;
       }
        socket.emit("waiting", {    

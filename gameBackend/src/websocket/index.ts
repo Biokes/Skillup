@@ -86,7 +86,6 @@ export class WebSocket {
           return;
         }
         gameState = await this.pongGameService.initializeGame(session, gameId);
-        console.log("gameState: ",gameState)
       }
       const room = this.server.sockets.adapter.rooms.get(`game-${gameId}`);
       if (room && room.size === 2) {

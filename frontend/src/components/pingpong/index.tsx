@@ -51,7 +51,7 @@ export default function PingPongGame() {
         const account = useCurrentAccount() ?? {};
         const address = account?.address ?? null;
         const canvasRef = useRef<HTMLCanvasElement>(null);
-        const playerNumber = address === state?.player1 ? 1 : 2
+        const playerNumber = String(address).toLowerCase() === String(state?.player1).toLowerCase() ? 1 : 2
         const [gameState, setGameState] = useState<GameState>({
             ballX: CANVAS_WIDTH / 2,
             ballY: CANVAS_HEIGHT / 2,
@@ -90,12 +90,11 @@ export default function PingPongGame() {
         }, []);
 
         useEffect(() => {
-            socketService.gameReady(state?.gameId, state?.player1 === address ? 1 : 2, state?.sessionId);
-            console.log(`Player ${state?.playerNumber} ready for game ${state?.gameId}`);
-        }, [address]);
+            socketService.gameReady(state?.gameId, playerNumber, state?.sessionId);
+        }, [address, playerNumber]);
 
         useEffect(() => {
-            
+
             const handleGameStart = (data: { message: string; countdown: number }) => {
                 setCountdown({ active: true, remaining: 3 });
             };
@@ -170,48 +169,101 @@ export default function PingPongGame() {
             return () => clearInterval(timer);
         }, [countdown.active]);
 
+        // useEffect(() => {
+        //     if (isDeviceTouchRef.current) return;
+
+        //      const handleKeyDown = (e: KeyboardEvent) => {
+        //         const key = e.key.toLowerCase();
+        //         if (key === 'w') {
+        //         console.log(`⬆️ W pressed - inputRef.w = true`);
+        //         inputRef.current.keyboard.w = true;
+        //         }
+        //         if (key === 's') {
+        //         console.log(`⬇️ S pressed - inputRef.s = true`);
+        //         inputRef.current.keyboard.s = true;
+        //         }
+        //         if (e.key === 'ArrowUp') {
+        //         console.log(`⬆️ ArrowUp pressed - inputRef.arrowUp = true`);
+        //         inputRef.current.keyboard.arrowUp = true;
+        //         }
+        //         if (e.key === 'ArrowDown') {
+        //         console.log(`⬇️ ArrowDown pressed - inputRef.arrowDown = true`);
+        //         inputRef.current.keyboard.arrowDown = true;
+        //         }
+        //     };
+
+        //     const handleKeyUp = (event: KeyboardEvent) => {
+        //         const key = event.key.toLowerCase();
+        //         if (key === 'w') {
+        //         console.log(`⬆️ W released - inputRef.w = false`);
+        //         inputRef.current.keyboard.w = false;
+        //         }
+        //         if (key === 's') {
+        //         console.log(`⬇️ S released - inputRef.s = false`);
+        //         inputRef.current.keyboard.s = false;
+        //         }
+        //         if (event.key === 'ArrowUp') {
+        //         console.log(`⬆️ ArrowUp released - inputRef.arrowUp = false`);
+        //         inputRef.current.keyboard.arrowUp = false;
+        //         }
+        //         if (event.key === 'ArrowDown') {
+        //         console.log(`⬇️ ArrowDown released - inputRef.arrowDown = false`);
+        //         inputRef.current.keyboard.arrowDown = false;
+        //         }
+        //     };
+        //     window.addEventListener('keydown', handleKeyDown);
+        //     window.addEventListener('keyup', handleKeyUp);
+
+        //     return () => {
+        //         window.removeEventListener('keydown', handleKeyDown);
+        //         window.removeEventListener('keyup', handleKeyUp);
+        //     };
+        // }, []);
+
         useEffect(() => {
             if (isDeviceTouchRef.current) return;
 
-             const handleKeyDown = (event: KeyboardEvent) => {
+            const handleKeyDown = (event: KeyboardEvent) => {
                 const key = event.key.toLowerCase();
+
                 if (key === 'w') {
-                console.log(`⬆️ W pressed - inputRef.w = true`);
-                inputRef.current.keyboard.w = true;
+                    console.log(`⬆️ W pressed`);
+                    inputRef.current.keyboard.w = true;
                 }
                 if (key === 's') {
-                console.log(`⬇️ S pressed - inputRef.s = true`);
-                inputRef.current.keyboard.s = true;
+                    console.log(`⬇️ S pressed`);
+                    inputRef.current.keyboard.s = true;
                 }
-                if (event.key === 'ArrowUp') {
-                console.log(`⬆️ ArrowUp pressed - inputRef.arrowUp = true`);
-                inputRef.current.keyboard.arrowUp = true;
+                if (key === 'arrowup') {
+                    console.log(`⬆️ ArrowUp pressed`);
+                    inputRef.current.keyboard.arrowUp = true;
                 }
-                if (event.key === 'ArrowDown') {
-                console.log(`⬇️ ArrowDown pressed - inputRef.arrowDown = true`);
-                inputRef.current.keyboard.arrowDown = true;
+                if (key === 'arrowdown') {
+                    console.log(`⬇️ ArrowDown pressed`);
+                    inputRef.current.keyboard.arrowDown = true;
                 }
             };
 
             const handleKeyUp = (event: KeyboardEvent) => {
                 const key = event.key.toLowerCase();
                 if (key === 'w') {
-                console.log(`⬆️ W released - inputRef.w = false`);
-                inputRef.current.keyboard.w = false;
+                    console.log(`⬆️ W released`);
+                    inputRef.current.keyboard.w = false;
                 }
                 if (key === 's') {
-                console.log(`⬇️ S released - inputRef.s = false`);
-                inputRef.current.keyboard.s = false;
+                    console.log(`⬇️ S released`);
+                    inputRef.current.keyboard.s = false;
                 }
-                if (event.key === 'ArrowUp') {
-                console.log(`⬆️ ArrowUp released - inputRef.arrowUp = false`);
-                inputRef.current.keyboard.arrowUp = false;
+                if (key === 'arrowup') {
+                    console.log(`⬆️ ArrowUp released`);
+                    inputRef.current.keyboard.arrowUp = false;
                 }
-                if (event.key === 'ArrowDown') {
-                console.log(`⬇️ ArrowDown released - inputRef.arrowDown = false`);
-                inputRef.current.keyboard.arrowDown = false;
+                if (key === 'arrowdown') {
+                    console.log(`⬇️ ArrowDown released`);
+                    inputRef.current.keyboard.arrowDown = false;
                 }
             };
+
             window.addEventListener('keydown', handleKeyDown);
             window.addEventListener('keyup', handleKeyUp);
 
@@ -257,7 +309,7 @@ export default function PingPongGame() {
 
         useEffect(() => {
             const paddleInterval = setInterval(() => {
-                let newPaddleY : number| null = null;
+                let newPaddleY: number | null = null;
 
                 if (isDeviceTouchRef.current) {
                     // Touch input
@@ -265,22 +317,22 @@ export default function PingPongGame() {
                 } else {
                     // Keyboard input
                     if (playerNumber === 1) {
-                        if (inputRef.current.keyboard.w && gameState.paddle1Y > 0) {
-                            newPaddleY = gameState.paddle1Y - 7;
-                        } else if (inputRef.current.keyboard.s && gameState.paddle1Y < CANVAS_HEIGHT - gameState.paddle1Height) {
-                            newPaddleY = gameState.paddle1Y + 7;
+                        if (inputRef.current.keyboard.arrowUp && gameState.paddle1Y > 0) {
+                            newPaddleY = gameState.paddle1Y - 12;
+                        } else if (inputRef.current.keyboard.arrowDown && gameState.paddle1Y < CANVAS_HEIGHT - gameState.paddle1Height) {
+                            newPaddleY = gameState.paddle1Y + 12;
                         }
                     } else {
                         if (inputRef.current.keyboard.arrowUp && gameState.paddle2Y > 0) {
-                            newPaddleY = gameState.paddle2Y - 7;
+                            newPaddleY = gameState.paddle2Y - 12;
                         } else if (inputRef.current.keyboard.arrowDown && gameState.paddle2Y < CANVAS_HEIGHT - gameState.paddle2Height) {
-                            newPaddleY = gameState.paddle2Y + 7;
+                            newPaddleY = gameState.paddle2Y + 12;
                         }
                     }
                 }
                 // Throttled emission
                 if (newPaddleY !== null && Date.now() - lastPaddleMoveRef.current > 50 && !!state.gameId) {
-                    socketService.paddleMove(playerNumber,newPaddleY, state?.gameId);
+                    socketService.paddleMove(playerNumber, newPaddleY, state?.gameId);
                     lastPaddleMoveRef.current = Date.now();
                 }
             }, 16);
@@ -308,9 +360,9 @@ export default function PingPongGame() {
             ctx.font = '12px Ribeye';
             ctx.fillStyle = '#64c8ff';
             ctx.textAlign = 'left';
-            ctx.fillText(state?.player1 ===address ?"You":'Opponent', 30, 25);
+            ctx.fillText(state?.player1 ? "You" : 'Opponent', 30, 25);
             ctx.textAlign = 'right';
-            ctx.fillText(state?.player2 ===address ?"You":'Opponent', CANVAS_WIDTH - 30, 25);
+            ctx.fillText(state?.player2 === address ? "You" : 'Opponent', CANVAS_WIDTH - 30, 25);
             // Paddles with glow
             ctx.fillStyle = gameState.activePowerups.player1 === 'padStretch' ? '#fbbf24' : '#06b6d4';
             ctx.shadowColor = gameState.activePowerups.player1 === 'padStretch' ? '#fbbf24' : '#06b6d4';
@@ -330,7 +382,7 @@ export default function PingPongGame() {
             ctx.beginPath();
             ctx.arc(gameState.ballX, gameState.ballY, BALL_RADIUS, 0, Math.PI * 2);
             ctx.fill();
-            ctx.shadowBlur = 0;
+            ctx.shadowBlur = 3;
             // Score
             ctx.font = 'bold 48px Ribeye';
             ctx.fillStyle = '#ffffff';
@@ -348,7 +400,7 @@ export default function PingPongGame() {
                 ctx.fillText(countdown.remaining.toString(), CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
                 ctx.shadowBlur = 0;
             }
-        }, [gameState, countdown]);
+        }, [gameState, countdown, address]);
 
         return (
             <aside className="gameBoard">
