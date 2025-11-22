@@ -318,6 +318,7 @@ export class GameService {
       loserPlayer.stats.gamePlayed += 1;
       loserPlayer.stats.winStreak = 0;
       loserPlayer.stats.rating = XP.LOSS;
+      loserPlayer.stats.recentForm.push('L');
     }
   }
 
@@ -328,6 +329,7 @@ export class GameService {
       winnerPlayer.stats.winStreak += 1;
       winnerPlayer.stats.bestStreak = Math.max(winnerPlayer.stats.bestStreak, winnerPlayer.stats.winStreak);
       winnerPlayer.stats.rating += XP.WIN;
+      winnerPlayer.stats.recentForm.push('W')
     }
   }
   private async extractPlayersAndWinnerFromAddresses(cleanWinner: string, cleanPlayer1: string, cleanPlayer2: string) {
