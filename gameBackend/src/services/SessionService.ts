@@ -1,5 +1,5 @@
 import { Socket, Server } from "socket.io";
-import { CreateGameDTO } from "@/src/data/DTO/CreateGame";
+// import { CreateGameDTO } from "@/src/data/DTO/CreateGame";
 import { JoinRoomDTO } from "@/src/data/DTO/joinRoom";
 import { QuickMatchDTO, quickMatchSchema } from "../data/DTO/QuickMatch";
 import { SessionRepository } from "../data/repositories/sessionRepository";
@@ -24,13 +24,16 @@ export default class SessionService {
     // async createGameRoom(createDTO: CreateGameDTO) {}
 
   async joinRoom(joinRoomDTO: JoinRoomDTO, socket: Socket) {
+    const wallet = joinRoomDTO.walletAddress.toLowerCase();
+    const code = joinRoomDTO.gameCode.toLowerCase();
+
     const existingSession = await this.sessionRepository.findOne({
       where: {
-        player1: joinRoomDTO.walletAddress.toLowerCase(),
+        player1: wallet,
         status: SESSION_STATUS.WAITING,
         isStaked: false,
         amount: 0,
-        roomCode: joinRoomDTO.gameCode
+        roomCode: code
       }
     });
 
@@ -44,17 +47,28 @@ export default class SessionService {
         status: SESSION_STATUS.WAITING,
         isStaked: false,
         amount: 0,
-        roomCode: joinRoomDTO.gameCode
+        roomCode: code
       }
     });
 
-    let sessionFound = foundSessions.find(  (session) => !!session.player1 &&  session.player1.toLowerCase() !== joinRoomDTO.walletAddress.toLowerCase());
-
+    let sessionFound = foundSessions.find(
+      (session) =>
+        !!session.player1 &&
+        session.player1.toLowerCase() !== wallet
+    );
     if (sessionFound) {
-      sessionFound = await this.sessionRepository.update(sessionFound.id, {
-        player2: joinRoomDTO.walletAddress.toLowerCase(),
+      const updatedSession = await this.sessionRepository.update(sessionFound.id, {
+        player2: wallet,
         status: SESSION_STATUS.READY
-      }) as Session;
+      });
+      if (!updatedSession) {
+        socket.emit("joinError", {
+          successful: false,
+          message: "Failed to update session."
+        });
+        return;
+      }
+      sessionFound = updatedSession;
       const game: Game = await this.gameService.createGameForSession(sessionFound);
       socket.join(`game-${sessionFound.id}`);
       this.socketServer.to(`game-${sessionFound.id}`).emit("joinedWithCode", {
@@ -70,29 +84,17 @@ export default class SessionService {
       return;
     }
 
-    sessionFound = await this.sessionRepository.create({
-      player1: joinRoomDTO.walletAddress.toLowerCase(),
-      roomCode: joinRoomDTO.gameCode.toLowerCase(),
+    const newSession = await this.sessionRepository.create({
+      player1: wallet,
+      roomCode: code,
       isStaked: false,
       amount: 0,
       status: SESSION_STATUS.WAITING
     });
 
-    this.joinAndEmitSession(socket, sessionFound);
+    this.joinAndEmitSession(socket, newSession);
   }
-
-  private joinAndEmitSession(socket: Socket, sessionFound: Session) {
-    socket.join(`game-${sessionFound.id}`);
-    socket.emit("waitingWithCode", {
-      sessionId: sessionFound.id,
-      status: sessionFound.status,
-      code: sessionFound.roomCode,
-      isStaked: sessionFound.isStaked,
-      player1: sessionFound.player1,
-      amount: sessionFound.amount
-    });
-  }
-
+ 
   async findQuickMatch(quickMatchDTO: QuickMatchDTO): Promise<Session> {
     try {
       const existing = await this.sessionRepository.findOne({  where: { player1: quickMatchDTO.walletAddress, status: SESSION_STATUS.WAITING, isStaked: quickMatchDTO.isStaked, amount: quickMatchDTO.amount}, });
@@ -174,6 +176,18 @@ export default class SessionService {
       return await this.sessionRepository.findById(id)
   }  
     
+  private joinAndEmitSession(socket: Socket, sessionFound: Session) {
+    socket.join(`game-${sessionFound.id}`);
+    socket.emit("waitingWithCode", {
+      sessionId: sessionFound.id,
+      status: sessionFound.status,
+      code: sessionFound.roomCode,
+      isStaked: sessionFound.isStaked,
+      player1: sessionFound.player1,
+      amount: sessionFound.amount
+    });
+  }
+
   //       async handleCreateRoom(socket, data) {
   //     const { gameType, player, roomCode } = data;
   //     try {
