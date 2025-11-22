@@ -165,8 +165,6 @@ export class GameService {
     const { cleanWinner, cleanPlayer1, cleanPlayer2 } = this.cleanAddresses(winnerAddress, gameState);
     const { winnerPlayer, loserPlayer } = await this.extractPlayersAndWinnerFromAddresses(cleanWinner, cleanPlayer1, cleanPlayer2);
     this.updatePlayersStats(winnerPlayer, loserPlayer);
-    console.log("winnerPlayer: ", winnerPlayer)
-    console.log("loserPlayer: ",loserPlayer)
     await this.playerRepo.save([winnerPlayer!, loserPlayer!]);
     this.stopGameLoop(gameId);
     try {

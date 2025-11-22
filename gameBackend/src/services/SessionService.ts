@@ -8,31 +8,101 @@ import { ChainSkillsException } from "../exceptions";
 import { ZodError } from "zod";
 import { GameService } from "./GameService";
 import { Game } from "../data/models/Game";
+import { SESSION_STATUS } from "../utils";
 
 export default class SessionService {
   private readonly sessionRepository: SessionRepository;
-    private readonly socketServer: Server;
-    private readonly gameService: GameService;  
+  private readonly socketServer: Server;
+  private readonly gameService: GameService;
+  
   constructor(server: Server) {
     this.sessionRepository = new SessionRepository();
     this.socketServer = server;
     this.gameService = new GameService(server)  
   }
 
-  async createGameRoom(createDTO: CreateGameDTO) {}
+    // async createGameRoom(createDTO: CreateGameDTO) {}
 
-  async joinRoom(joinRoomDTO: JoinRoomDTO) {}
+  async joinRoom(joinRoomDTO: JoinRoomDTO, socket: Socket) {
+    const existingSession = await this.sessionRepository.findOne({
+      where: {
+        player1: joinRoomDTO.walletAddress.toLowerCase(),
+        status: SESSION_STATUS.WAITING,
+        isStaked: false,
+        amount: 0,
+        roomCode: joinRoomDTO.gameCode
+      }
+    });
+
+    if (existingSession) {
+      this.joinAndEmitSession(socket, existingSession);
+      return;
+    }
+
+    const foundSessions: Session[] = await this.sessionRepository.find({
+      where: {
+        status: SESSION_STATUS.WAITING,
+        isStaked: false,
+        amount: 0,
+        roomCode: joinRoomDTO.gameCode
+      }
+    });
+
+    let sessionFound = foundSessions.find(  (session) => !!session.player1 &&  session.player1.toLowerCase() !== joinRoomDTO.walletAddress.toLowerCase());
+
+    if (sessionFound) {
+      sessionFound = await this.sessionRepository.update(sessionFound.id, {
+        player2: joinRoomDTO.walletAddress.toLowerCase(),
+        status: SESSION_STATUS.READY
+      }) as Session;
+      const game: Game = await this.gameService.createGameForSession(sessionFound);
+      socket.join(`game-${sessionFound.id}`);
+      this.socketServer.to(`game-${sessionFound.id}`).emit("joinedWithCode", {
+        sessionId: sessionFound.id,
+        status: sessionFound.status,
+        code: sessionFound.roomCode,
+        isStaked: sessionFound.isStaked,
+        player1: sessionFound.player1,
+        player2: sessionFound.player2,
+        amount: sessionFound.amount,
+        gameId: game.id
+      });
+      return;
+    }
+
+    sessionFound = await this.sessionRepository.create({
+      player1: joinRoomDTO.walletAddress.toLowerCase(),
+      roomCode: joinRoomDTO.gameCode.toLowerCase(),
+      isStaked: false,
+      amount: 0,
+      status: SESSION_STATUS.WAITING
+    });
+
+    this.joinAndEmitSession(socket, sessionFound);
+  }
+
+  private joinAndEmitSession(socket: Socket, sessionFound: Session) {
+    socket.join(`game-${sessionFound.id}`);
+    socket.emit("waitingWithCode", {
+      sessionId: sessionFound.id,
+      status: sessionFound.status,
+      code: sessionFound.roomCode,
+      isStaked: sessionFound.isStaked,
+      player1: sessionFound.player1,
+      amount: sessionFound.amount
+    });
+  }
 
   async findQuickMatch(quickMatchDTO: QuickMatchDTO): Promise<Session> {
     try {
-      const existing = await this.sessionRepository.findOne({  where: { player1: quickMatchDTO.walletAddress, status: "WAITING", isStaked: quickMatchDTO.isStaked, amount: quickMatchDTO.amount}, });
+      const existing = await this.sessionRepository.findOne({  where: { player1: quickMatchDTO.walletAddress, status: SESSION_STATUS.WAITING, isStaked: quickMatchDTO.isStaked, amount: quickMatchDTO.amount}, });
       if (existing) return existing;
-      const foundSessions: Session[] = await this.sessionRepository.find({  where: { status: "WAITING", isStaked: quickMatchDTO.isStaked, amount: quickMatchDTO.amount } });
+      const foundSessions: Session[] = await this.sessionRepository.find({  where: { status: SESSION_STATUS.WAITING, isStaked: quickMatchDTO.isStaked, amount: quickMatchDTO.amount } });
       const availableSession = foundSessions.find((entity) => entity.player1 !== quickMatchDTO.walletAddress);
       if (availableSession) {
-        return (await this.sessionRepository.update(availableSession.id, {  player2: quickMatchDTO.walletAddress,  status: "READY", isStaked: quickMatchDTO.isStaked, amount: quickMatchDTO.amount,})) as Session;
+        return (await this.sessionRepository.update(availableSession.id, {  player2: quickMatchDTO.walletAddress,  status: SESSION_STATUS.READY , isStaked: quickMatchDTO.isStaked, amount: quickMatchDTO.amount,})) as Session;
       }
-      return await this.sessionRepository.create({player1: quickMatchDTO.walletAddress,amount: quickMatchDTO.amount,isStaked: quickMatchDTO.isStaked,status: "WAITING",});
+      return await this.sessionRepository.create({player1: quickMatchDTO.walletAddress,amount: quickMatchDTO.amount,isStaked: quickMatchDTO.isStaked,status: SESSION_STATUS.WAITING});
     } catch (error) {
       throw new ChainSkillsException( `Error finding quickMatch: ${(error as Error).message}, at SessionService.ts:findQuickMatch`);
     }
@@ -74,7 +144,7 @@ export default class SessionService {
 
   async handleRetryQuickMatch(quickMatchDTO: QuickMatchDTO, socket: Socket) {
     try {
-      const existing = await this.sessionRepository.findOne({  where: { player1: quickMatchDTO.walletAddress, status: "WAITING" },});
+      const existing = await this.sessionRepository.findOne({  where: { player1: quickMatchDTO.walletAddress, status: SESSION_STATUS.WAITING },});
       if (existing) {
         await this.sessionRepository.delete(existing.id);
       }
@@ -91,7 +161,7 @@ export default class SessionService {
 
   async cancelQuickMatch(walletAddress: string, socket: Socket): Promise<void> {
     try {
-      const existing = await this.sessionRepository.findOne({ where: { player1: walletAddress, status: "WAITING" },});
+      const existing = await this.sessionRepository.findOne({ where: { player1: walletAddress, status: SESSION_STATUS.WAITING },});
       if (existing) await this.sessionRepository.delete(existing.id);
       socket.emit("cancelQuickMatch", {successful: true});
     } catch (error) {

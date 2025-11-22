@@ -94,7 +94,8 @@ export interface OneChainGameType {
   quickMatch: (walletAddress: string) => void;
   retryQuickMatch: (walletAddress: string) => void;
   cancelQuickMatch: (walletAddress: string) => void;
-  cancelCreateOrJoinMatch: (walletAddress: string, code:string) => void;
+  cancelCreateOrJoinMatch: (walletAddress: string, code: string) => void;
+  connectFreeWithCode: (walletAddress: string, code: string) => void;
 }
 export interface JoinGameResponse {
   sessionId: string;

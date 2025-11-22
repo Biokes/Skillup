@@ -3,7 +3,6 @@ import { GameType, Player, GameState, GameResult } from "@/types";
 import { toast } from "sonner";
 
 class SocketService {
-
   private socket: Socket | null = null;
   private listeners: Map<string, Function[]> = new Map();
 
@@ -60,67 +59,31 @@ class SocketService {
 
   private setupGameEventListeners() {
     if (!this.socket) return;
-
-    // this.socket.on("roomCreated", (data: { roomCode: string; room: any }) => {
-    //   this.emit("roomCreated", data);
-    // });
-    // this.socket.on("waitingForOpponent", (data: { roomCode: string }) => {
-    //   this.emit("waitingForOpponent", data);
-    // });
-    // this.socket.on("roomReady", (data: { room: any }) => {
-    //   this.emit("roomReady", data);
-    // });
-    // this.socket.on('joined', (data: Session) => { 
-    // })
-    // // this.socket.on("gameStart", (gameState: GameState) => {
-    // //   this.emit("gameStart", gameState);
-    // // });
-    // this.socket.on("gameUpdate", (gameState: GameState) => {
-    //   this.emit("gameUpdate", gameState);
-    // });
-    // this.socket.on("gameOver", (result: GameResult) => {
-    //   this.emit("gameOver", result);
-    // });
-    // this.socket.on("gamePaused", (data: { pausesRemaining: number }) => {
-    //   this.emit("gamePaused", data);
-    // });
-    // this.socket.on("gameResumed", () => {
-    //   this.emit("gameResumed");
-    // });
-    // this.socket.on("opponentLeft", () => {
-    //   this.emit("opponentLeft");
-    // });
-    // this.socket.on('waiting', () => {
-    //   console.warn("waiting for another player connection to join room")
-    // })
-    // this.socket.on("opponentDisconnected", () => {
-    //   this.emit("opponentDisconnected");
-    // });
-    
+     
     this.socket.on("quickMatchError", (errorResponse: { message?: string, successful: boolean, error?: Error }) => { 
       toast.error("Please try again, something went wrong");      
       console.error("Quick match error: ", errorResponse)
     })
-  
   }
-   gameReady(gameId: string, playerNumber: number, sessionId: string) {
+
+  gameReady(gameId: string, playerNumber: number, sessionId: string) {
     this.ensureConnected();
     this.socket?.emit("gameReady", { gameId, playerNumber, sessionId });
   }
 
   quickMatch(walletAddress:string, gameType: GameType, isStaked:boolean, amount: number) {
     this.ensureConnected();
-    this.socket?.emit("quickMatch", { walletAddress, gameType, isStaked, amount });
+    this.socket?.emit("quickMatch", { walletAddress: walletAddress.toLowerCase(), gameType, isStaked, amount });
   }
 
   cancelMatch(walletAddress:string) {
     this.ensureConnected();
-    this.socket?.emit("cancelQuickMatch", { walletAddress });
+    this.socket?.emit("cancelQuickMatch", { walletAddress: walletAddress.toLowerCase() });
   }
 
   retryQuickMatch(walletAddress:string, gameType: GameType, isStaked:boolean, amount: number) {
     this.ensureConnected();
-    this.socket?.emit("retryQuickMatch", { walletAddress, gameType, isStaked, amount });
+    this.socket?.emit("retryQuickMatch", { walletAddress: walletAddress.toLowerCase(), gameType, isStaked, amount });
   }
 
   paddleMove(playerNumber: number, position: number, gameId: string) {
@@ -131,10 +94,14 @@ class SocketService {
   forfeitGame() {
     this.socket?.emit("forfeitGame");
   }
-  
+
+  connectWithCode(walletAddress: string, code: string) {
+    this.ensureConnected();
+    this.socket?.emit('joinRoom',{walletAddress: walletAddress.toLowerCase(), gameCode: code.toLowerCase()})
+  }
+
   cancelCreateOrJoinMatch(walletAddress: string, code: string) { 
     this.ensureConnected();
-    console.log(`cancelling createOrJoinMatch with address: ${walletAddress} and code: ${code}`)
   }
 
   on(event: string, callback: Function) {

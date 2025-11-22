@@ -62,7 +62,7 @@ export class WebSocket {
     socket.on('quickMatch', async (quickMatchDto: QuickMatchDTO) => await this.sessionService.handleQuickMatch(quickMatchDto, socket));
     socket.on('retryQuickMatch', async (dto: QuickMatchDTO) => await this.sessionService.handleRetryQuickMatch(dto, socket))
     socket.on("cancelQuickMatch", async (walletAddress:string) => await this.sessionService.cancelQuickMatch(walletAddress,socket))
-    socket.on('createQuickMatch', async (createRoomDto: CreateGameDTO) => await this.sessionService.createGameRoom(createRoomDto));
+    // socket.on('createQuickMatch', async (createRoomDto: CreateGameDTO) => await this.sessionService.createGameRoom(createRoomDto));
     socket.on('joinRoom', async (joinRoomDTO: JoinRoomDTO) => await this.sessionService.joinRoom(joinRoomDTO));
 
     socket.on("gameReady", async (data: ReadyGameDTO) => { await this.handleGameReady(socket, data);});
@@ -70,8 +70,9 @@ export class WebSocket {
     // socket.on("usePowerup", (data: { playerNumber: number; powerupType: string; gameId: string }) => {this.handlePowerup(socket, data);});
     socket.on("forfeitGame", (data: { gameId: string; playerNumber: number }) => { this.handleForfeit(socket, data); });
     socket.on("disconnect", () => {this.handleDisconnect(socket);});
-    socket.on("reconnect_attempt", () => { this.handleReconnect(socket);});
+    socket.on("reconnect_attempt", () => { this.handleReconnect(socket); });
   }
+
 
   private async handleGameReady(socket: Socket,readyGameData:ReadyGameDTO): Promise<void> {
     const { gameId, playerNumber, sessionId } = readyGameData;
@@ -115,7 +116,6 @@ export class WebSocket {
 
   private handleDisconnect(socket: Socket): void {
     const gameInfo = this.socketToGameMap.get(socket.id);
-
     if (gameInfo) {
       const { gameId, playerNumber } = gameInfo;
       this.pongGameService.handleDisconnect(gameId, playerNumber);
@@ -130,6 +130,7 @@ export class WebSocket {
       this.pongGameService.handleReconnect(gameId, playerNumber);
     }
   }
+
   private handleForfeit( socket: Socket, data: { gameId: string; playerNumber: number }): void {
     const { gameId, playerNumber } = data;
     try {

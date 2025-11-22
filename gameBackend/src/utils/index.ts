@@ -17,6 +17,12 @@ export async function selfPing() {
 }
 
 export const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+export const SESSION_STATUS = {
+  WAITING: 'WAITING',
+  READY: 'READY',
+  ENDED:"ENDED"
+}
 export const XP = {
   WIN: 100,
   LOSS: 30
