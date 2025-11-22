@@ -118,25 +118,21 @@ export class WebSocket {
 
     if (gameInfo) {
       const { gameId, playerNumber } = gameInfo;
-      console.log(`Player ${playerNumber} disconnected from game ${gameId}`);
       this.pongGameService.handleDisconnect(gameId, playerNumber);
       this.socketToGameMap.delete(socket.id);
     }
-    console.log(`🔌 Socket ${socket.id} disconnected`);
   }
 
   private handleReconnect(socket: Socket): void {
     const gameInfo = this.socketToGameMap.get(socket.id);
     if (gameInfo) {
       const { gameId, playerNumber } = gameInfo;
-      console.log(`✅ Player ${playerNumber} reconnected to game ${gameId}`);
       this.pongGameService.handleReconnect(gameId, playerNumber);
     }
   }
   private handleForfeit( socket: Socket, data: { gameId: string; playerNumber: number }): void {
     const { gameId, playerNumber } = data;
     try {
-      console.log(`🏳️ Player ${playerNumber} forfeited game ${gameId}`);
       this.pongGameService.handleForfeit(gameId, playerNumber);
     } catch (error) {
       console.error("Error handling forfeit:", error);

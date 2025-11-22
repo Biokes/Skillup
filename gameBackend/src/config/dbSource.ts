@@ -6,7 +6,7 @@ import { Session } from "../data/models/Session";
 import { Game } from "../data/models/Game";
 
 const envFile = process.env.NODE_ENV === "test" ? ".env.test" : ".env";
-dotenv.config({ path: envFile });
+dotenv.config({ path: envFile , quiet:true});
 
 export const DataBaseSource: DataSource = new DataSource({
   type: "postgres",

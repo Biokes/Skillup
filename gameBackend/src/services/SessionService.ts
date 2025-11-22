@@ -25,34 +25,16 @@ export default class SessionService {
 
   async findQuickMatch(quickMatchDTO: QuickMatchDTO): Promise<Session> {
     try {
-      const existing = await this.sessionRepository.findOne({
-        where: { player1: quickMatchDTO.walletAddress, status: "WAITING" },
-      });
+      const existing = await this.sessionRepository.findOne({  where: { player1: quickMatchDTO.walletAddress, status: "WAITING", isStaked: quickMatchDTO.isStaked, amount: quickMatchDTO.amount}, });
       if (existing) return existing;
-      const foundSessions: Session[] = await this.sessionRepository.find({
-        where: { status: "WAITING", isStaked: quickMatchDTO.isStaked },
-      });
-      const availableSession = foundSessions.find(
-        (entity) => entity.player1 !== quickMatchDTO.walletAddress
-      );
+      const foundSessions: Session[] = await this.sessionRepository.find({  where: { status: "WAITING", isStaked: quickMatchDTO.isStaked, amount: quickMatchDTO.amount } });
+      const availableSession = foundSessions.find((entity) => entity.player1 !== quickMatchDTO.walletAddress);
       if (availableSession) {
-        return (await this.sessionRepository.update(availableSession.id, {
-          player2: quickMatchDTO.walletAddress,
-          status: "READY",
-        })) as Session;
+        return (await this.sessionRepository.update(availableSession.id, {  player2: quickMatchDTO.walletAddress,  status: "READY", isStaked: quickMatchDTO.isStaked, amount: quickMatchDTO.amount,})) as Session;
       }
-      return await this.sessionRepository.create({
-        player1: quickMatchDTO.walletAddress,
-        amount: quickMatchDTO.amount,
-        isStaked: quickMatchDTO.isStaked,
-        status: "WAITING",
-      });
+      return await this.sessionRepository.create({player1: quickMatchDTO.walletAddress,amount: quickMatchDTO.amount,isStaked: quickMatchDTO.isStaked,status: "WAITING",});
     } catch (error) {
-      throw new ChainSkillsException(
-        `Error finding quickMatch: ${
-          (error as Error).message
-        }, at SessionService.ts:findQuickMatch`
-      );
+      throw new ChainSkillsException( `Error finding quickMatch: ${(error as Error).message}, at SessionService.ts:findQuickMatch`);
     }
   }
 
