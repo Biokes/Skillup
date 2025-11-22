@@ -22,6 +22,9 @@ export default function OneChainGameProviders({ children }: { children: ReactNod
     const cancelQuickMatch = useCallback((walletAddress: string) => { 
         socketService.cancelMatch(walletAddress);
     }, [])
+    const cancelCreateOrJoinMatch = useCallback((walletAddress: string, code: string) => {
+        socketService.cancelCreateOrJoinMatch(walletAddress, code)
+    },[])
     
     return (
         <OneChainGameContext.Provider value={{
@@ -29,7 +32,8 @@ export default function OneChainGameProviders({ children }: { children: ReactNod
             setErrorMessage,
             quickMatch,
             retryQuickMatch,
-            cancelQuickMatch
+            cancelQuickMatch,
+            cancelCreateOrJoinMatch
         }}>
             { children}
         </OneChainGameContext.Provider>

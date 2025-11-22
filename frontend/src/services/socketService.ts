@@ -131,6 +131,10 @@ class SocketService {
   forfeitGame() {
     this.socket?.emit("forfeitGame");
   }
+  cancelCreateOrJoinMatch(walletAddress: string, code: string) { 
+    this.ensureConnected();
+    console.log(`cancelling createOrJoinMatch with address: ${walletAddress} and code: ${code}`)
+  }
 
   on(event: string, callback: Function) {
     if (!this.listeners.has(event)) {

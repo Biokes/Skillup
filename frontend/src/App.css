@@ -180,11 +180,11 @@ button {
   @apply flex justify-center items-center gap-2 transition-all transform duration-300;
 }
 .failedConnection > footer > :first-child {
-  @apply bg-green-400 hover:bg-green-700 text-white cursor-pointer;
+  @apply bg-green-400 hover:bg-green-700 text-white cursor-pointer h-[30px];
   font-family: "ribeye";
 }
 .failedConnection > footer > :last-child {
-  @apply !bg-red-400 hover:!bg-red-700 text-white cursor-not-allowed;
+  @apply !bg-red-400 hover:!bg-red-700 text-white cursor-not-allowed h-[30px];
   font-family: "ribeye";
 }
 .inventory{

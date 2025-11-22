@@ -2,8 +2,8 @@ import Navbar from "@/components/commons/navbar";
 import { Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useState, useEffect, useCallback } from "react";
+import { cn, TIMEOUT_DURATION } from "@/lib/utils";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { JoinGameResponse, PopupProps } from "@/types";
 import { Loader2 } from 'lucide-react';
@@ -13,36 +13,87 @@ import { useOneChainGame } from "@/hooks/useOneChainGameContext";
 import { socketService } from "@/services/socketService"; 
 import { useNavigate } from "react-router-dom";
 
+
 export default function Pong() {
-    const { quickMatch, retryQuickMatch, cancelQuickMatch } = useOneChainGame();
-    const [modalProps, setMmodalProps] = useState<PopupProps>({
+    const { quickMatch, retryQuickMatch, cancelQuickMatch, cancelCreateOrJoinMatch } = useOneChainGame();
+    const [modalProps, setModalProps] = useState<PopupProps>({
         isOpen: false,
         headerText: '',
         description: '',
         body: <></>
     })
-    const navigate= useNavigate()
-    const socket = socketService.getSocket();
+    const navigate = useNavigate()
     const account = useCurrentAccount() ?? {};
     const address = account?.address ?? null;
-    const [isActiveTimed, activeTimed] = useState<boolean>(false)
+    const [isActiveTimed, setActiveTimed] = useState<boolean>(false)
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const [isConnecting, setIsConnecting] = useState<boolean>(false);
 
     useEffect(() => {
-        socket.on('joined', (joinResponse: JoinGameResponse) => { 
-            if (address) { 
-                const hasJoined: boolean = joinResponse.player1.toLowerCase() === String(address).toLowerCase()
-                    || joinResponse.player2.toLowerCase() === String(address).toLowerCase();
+        if (!socketService.isConnected()) {
+            socketService.connect(address || "");
+            console.log("🔌 Socket initialized");
+        }
+        const handleJoined = (joinResponse: JoinGameResponse) => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+            }
+            
+            if (address) {
+                const hasJoined: boolean = 
+                    joinResponse.player1.toLowerCase() === String(address).toLowerCase() ||
+                    joinResponse.player2.toLowerCase() === String(address).toLowerCase();
+                
                 if (hasJoined) {
-                    navigate('/pong', {state: joinResponse})
+                    setActiveTimed(false);
+                    setIsConnecting(false);
+                    setModalProps(prev => ({ ...prev, isOpen: false }));
+                    navigate('/pong', { state: joinResponse });
                 }
             }
-        })
-        return () => {
-            socketService.off("joined")
         };
-     },[socket, address, navigate])
+
+        socketService.on('joined', handleJoined);
+
+        return () => {
+            socketService.off('joined', handleJoined);
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        }
+    }, [address, navigate])
+
+    const startConnectionTimeout = useCallback((cancelQuickMatch: ()=>void) => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+        timeoutRef.current = setTimeout(() => {
+            cancelQuickMatch()
+            setActiveTimed(true);
+        }, TIMEOUT_DURATION);
+    }, [])
+
+    const handleRetryQuickMatch = useCallback(() => {
+        setActiveTimed(false);
+        setIsConnecting(true);
+        retryQuickMatch(address);
+        const cancel =()=>cancelQuickMatch(address)
+        startConnectionTimeout(cancel);
+    }, [address, retryQuickMatch, startConnectionTimeout, cancelQuickMatch])
+
+    const handleCancelTimeout = useCallback(() => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+        cancelQuickMatch(address);
+        setActiveTimed(false);
+        setIsConnecting(false);
+        setModalProps(prev => ({ ...prev, isOpen: false }));
+    }, [address, cancelQuickMatch])
     
-    const [connectionNode, setConnectionNode] = useState(
+    const ConnectingSection = () => (
         <section className='connecting'>
             <Loader2 className="loading" />
             <motion.h5
@@ -50,93 +101,84 @@ export default function Pong() {
                 animate={{ scale: [1, 1.05, 1], rotate: [0, 1, -1, 0] }}
                 transition={{ duration: 2, ease: "easeInOut", repeat: Infinity }}
             >Connecting to game server</motion.h5>
-            <Button className={cn('cancelButton')} onClick={cancelConnection}>
+            <Button className={cn('cancelButton')} onClick={handleCancelTimeout}>
                 Cancel
             </Button>
         </section>
     )
 
-    const handleRetry= useCallback(()=>{
-        activeTimed(false);
-        setTimeout(() => {
-            activeTimed(true);
-        }, 20000);
-        retryQuickMatch(address);
-    }, [address, retryQuickMatch])
+    const cancelConnection=  useCallback(() => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+        setActiveTimed(false);
+        setIsConnecting(false);
+        setModalProps(prev => ({ ...prev, isOpen: false }));
+    }, [])
 
-    const handleCancelTimeout = useCallback(()=>{
-        cancelQuickMatch(address);
-        activeTimed(false);
-        setMmodalProps(prev => ({ ...prev, isOpen: false }));
-    }, [address, cancelQuickMatch])
-    
-    useEffect(() => { 
-        setConnectionNode(!isActiveTimed ?
-             <section className='connecting'>
-                    <Loader2 className="loading" />
-                    <motion.h5
-                        className="ribeye text-gradient"
-                        animate={{ scale: [1, 1.05, 1], rotate: [0, 1, -1, 0] }}
-                        transition={{ duration: 2, ease: "easeInOut", repeat: Infinity }}
-                    >Connecting to game server</motion.h5>
-                    <Button className={cn('cancelButton')} onClick={cancelConnection}>
-                        Cancel
-                    </Button>
-            </section>
-            :
-            <section className="failedConnection">
-                <p>
-                    Cannot find opponent
-                </p>
-                <footer>
-                    <Button onClick={handleRetry}>
-                        Try Again
-                    </Button>
-                    <Button onClick={handleCancelTimeout}>
-                        Cancel
-                    </Button>
-                </footer>
-            </section>
-        )
-    },[handleCancelTimeout, handleRetry, isActiveTimed])
+    const FailedConnectionSection = ({handleRetry}:{handleRetry: ()=>void}) => (
+        <section className="failedConnection">
+            <p>
+                Cannot find opponent
+            </p>
+            <footer>
+                <Button onClick={handleRetry}>
+                    Try Again
+                </Button>
+                <Button onClick={cancelConnection}>
+                    Cancel
+                </Button>
+            </footer>
+        </section>
+    )
 
-    function cancelConnection() {
-        activeTimed(false)
-        setMmodalProps((prev) => ({ ...prev, isOpen: false }))
+    const getConnectionNode = ({handleRetry}:{handleRetry: ()=>void}) => {
+        if (!isActiveTimed && isConnecting) {
+            return <ConnectingSection />
+        } else if (isActiveTimed && isConnecting) {
+            return <FailedConnectionSection handleRetry={handleRetry}/>
+        }
+        return <ConnectingSection />
     }
-  
-    const Connecting = () => (connectionNode)
 
     function findQuickMatch() {
         if (!address) {
             toast.info("please connect wallet")
             return;
         }
+        setIsConnecting(true);
+        setActiveTimed(false);
+        
         quickMatch(address);
-        setTimeout(() => {
-            activeTimed(true);
-        }, 20000);
+        const cancel =()=>cancelQuickMatch(address)
+        startConnectionTimeout(cancel);
 
-        setMmodalProps({
-            body: <Connecting />,
+        setModalProps({
+            body: getConnectionNode({handleRetry: handleRetryQuickMatch}),
             isOpen: true,
             headerText: 'Quick Match (Free)',
             description: 'Connecting to play a quick free match',
         })
     }
 
-    // function createFreeRoom() { 
-    //     if (!address) { 
-    //         toast.info("please connect wallet")
-    //         return;
-    //     }
-    //     setMmodalProps({
-    //         body: <></>,
-    //         isOpen: true,
-    //         headerText: 'Create Room(Free)',
-    //         description:'Create game connection room with friends'
-    //     })
-    // }
+    
+    function createOrJoinMatch() { 
+         if (!address) {
+            toast.info("please connect wallet")
+            return;
+        }
+        setIsConnecting(true);
+        setActiveTimed(false);
+        const cancel = () => cancelCreateOrJoinMatch(address);
+        startConnectionTimeout(cancel);
+        setModalProps({
+            body: getConnectionNode({handleRetry: handleRetryQuickMatch}),
+            isOpen: true,
+            headerText: 'Create Or Join a Match',
+            description: 'Connect with other players with code.'
+        })
+    }
 
     const games = [
         {
@@ -149,10 +191,10 @@ export default function Pong() {
             texts: 'Create/join room',
             gameType: 'free',
             icon: <Zap className='h-5 w-5' />,
-            action: () => { }
+            action: createOrJoinMatch
         },
         {
-            texts: 'Frendly Stake',
+            texts: 'Friendly Stake',
             gameType: 'Stake',
             icon: <Zap className='h-5 w-5' />,
             action: () => { }
@@ -203,7 +245,7 @@ export default function Pong() {
                     </DialogDescription>
                 </DialogHeader>
                 <div className="dialogBody">
-                    {modalProps.body}
+                    {getConnectionNode({handleRetry: handleRetryQuickMatch})}
                 </div>
             </DialogContent>
         </Dialog>
