@@ -85,5 +85,6 @@ export default abstract class BaseRepository<T extends ObjectLiteral> {
      } catch (error) {
       throw new ChainSkillsException(`Error saving entity: ${(error as Error).message}, at baseRepository.ts:save`  );
     }
-}
+  }
+  
 }

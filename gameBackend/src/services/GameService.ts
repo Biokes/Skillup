@@ -6,7 +6,6 @@ import { GAME_CONSTANTS, GameState, GameUpdatePayload, XP } from "../utils";
 import { PongPhysics } from "../utils/GamePhysics";
 import { PowerupManager } from "../utils/PowerUpManager";
 import PlayerRepository from "../data/repositories/playerRepository";
-import { Player } from "../data/models/Player";
 import { ChainSkillsException } from "../exceptions";
 
 export class GameService {
@@ -62,7 +61,7 @@ export class GameService {
     return gameState;
   }
 
-    startGameLoop(gameId: string): void {
+  startGameLoop(gameId: string): void {
     const gameState = this.activeGames.get(gameId);
     if (!gameState) return;
 
