@@ -173,9 +173,6 @@ export class GameService {
       if (winnerPlayer.stats.winStreak > winnerPlayer.stats.bestStreak) winnerPlayer.stats.bestStreak = winnerPlayer.stats.winStreak;
       winnerPlayer.stats.rating += XP.WIN;
     }
-
-    await this.playerRepo.save([winnerPlayer!, loserPlayer!]);
-
     if (loserPlayer?.stats) {
         loserPlayer.stats.losses += 1;
         loserPlayer.stats.gamePlayed += 1;
@@ -183,27 +180,19 @@ export class GameService {
         loserPlayer.stats.rating = XP.LOSS;
     }
 
-    const gameWinner = await this.playerRepo.findOne({ where: {walletAddress: gameState.winner}})
+    await this.playerRepo.save([winnerPlayer!, loserPlayer!]);
     this.stopGameLoop(gameId);
-      
-    this.socketServer.to(`game-${gameId}`).emit("gameOver", {
-      winner: winnerAddress,
-      score1: gameState.player1.score,
-      score2: gameState.player2.score,
-      message: `${winnerAddress} wins!`,
-    });
-    
-    this.activeGames.delete(gameId);
-    this.lastFrameTime.delete(gameId);
 
     try {
-      const game = await this.gameRepository.findOne({where: { id: gameState.gameId }});
-      if (game && game.session) await this.gameRepository.update(gameState.gameId, { winner: gameWinner as Player });
-
+        const game = await this.gameRepository.findOne({where: { id: gameState.gameId }});
+        if (game && winnerPlayer) await this.gameRepository.update(gameState.gameId, { winner: winnerPlayer });
     } catch (error) {
       throw new ChainSkillsException(`Error saving game result: ${(error as Error).message}`);
     }
 
+    this.socketServer.to(`game-${gameId}`).emit("gameOver", { winner: winnerAddress, score1: gameState.player1.score, score2: gameState.player2.score, message: `${winnerAddress} wins!`,});
+    this.activeGames.delete(gameId);
+    this.lastFrameTime.delete(gameId);
   }
 
   stopGameLoop(gameId: string): void {
