@@ -7,6 +7,8 @@ import { PongPhysics } from "../utils/GamePhysics";
 import { PowerupManager } from "../utils/PowerUpManager";
 import PlayerRepository from "../data/repositories/playerRepository";
 import { ChainSkillsException } from "../exceptions";
+import { Stats } from "../data/models/Stats";
+import { Player } from "../data/models/Player";
 
 export class GameService {
   private readonly gameRepository: GameRepository;
@@ -158,30 +160,15 @@ export class GameService {
   async endGame(gameId: string, winnerAddress: string): Promise<void> {
     const gameState = this.activeGames.get(gameId);
     if (!gameState) return;
-
     gameState.status = "ENDED";
     gameState.winner = winnerAddress;
-
-    const winnerPlayer = await this.playerRepo.findOne({where: { walletAddress: winnerAddress }});
-    const loserAddress = winnerAddress === gameState.player1.address ? gameState.player2.address : gameState.player1.address;
-    const loserPlayer = await this.playerRepo.findOne({ where: { walletAddress: loserAddress } });
-    if (winnerPlayer?.stats) {
-      winnerPlayer.stats.wins += 1;
-      winnerPlayer.stats.gamePlayed += 1;
-      winnerPlayer.stats.winStreak += 1;
-      if (winnerPlayer.stats.winStreak > winnerPlayer.stats.bestStreak) winnerPlayer.stats.bestStreak = winnerPlayer.stats.winStreak;
-      winnerPlayer.stats.rating += XP.WIN;
-    }
-    if (loserPlayer?.stats) {
-        loserPlayer.stats.losses += 1;
-        loserPlayer.stats.gamePlayed += 1;
-        loserPlayer.stats.winStreak = 0;
-        loserPlayer.stats.rating = XP.LOSS;
-    }
-
+    const { cleanWinner, cleanPlayer1, cleanPlayer2 } = this.cleanAddresses(winnerAddress, gameState);
+    const { winnerPlayer, loserPlayer } = await this.extractPlayersAndWinnerFromAddresses(cleanWinner, cleanPlayer1, cleanPlayer2);
+    this.updatePlayersStats(winnerPlayer, loserPlayer);
+    console.log("winnerPlayer: ", winnerPlayer)
+    console.log("loserPlayer: ",loserPlayer)
     await this.playerRepo.save([winnerPlayer!, loserPlayer!]);
     this.stopGameLoop(gameId);
-
     try {
         const game = await this.gameRepository.findOne({where: { id: gameState.gameId }});
         if (game && winnerPlayer) await this.gameRepository.update(gameState.gameId, { winner: winnerPlayer });
@@ -190,10 +177,9 @@ export class GameService {
     }
 
     this.socketServer.to(`game-${gameId}`).emit("gameOver", { winner: winnerAddress, score1: gameState.player1.score, score2: gameState.player2.score, message: `${winnerAddress} wins!`,});
-    this.activeGames.delete(gameId);
-    this.lastFrameTime.delete(gameId);
+    this.cleanUpGameAfterEnding(gameId);
   }
-
+  
   stopGameLoop(gameId: string): void {
     const loop = this.gameLoops.get(gameId);
     if (loop) {
@@ -219,27 +205,17 @@ export class GameService {
     if (!PowerupManager.validatePowerup(playerState, powerupType))return false;
     PowerupManager.applyPowerup(playerState, powerupType);
     // Broadcast powerup usage
-    this.socketServer.to(`game-${gameId}`).emit("powerupUsed", {
-      playerNumber,
-      powerupType,
-      activePowerups: { player1: gameState.player1.activePowerup, player2: gameState.player2.activePowerup },
-    });
+    this.socketServer.to(`game-${gameId}`).emit("powerupUsed", { playerNumber, powerupType, activePowerups: { player1: gameState.player1.activePowerup, player2: gameState.player2.activePowerup },});
     return true;
   }
 
   handleDisconnect(gameId: string, playerNumber: number): void {
     const gameState = this.activeGames.get(gameId);
     if (!gameState) return;
-
     const playerState = playerNumber === 1 ? gameState.player1 : gameState.player2;
     playerState.disconnected = true;
     playerState.disconnectTime = Date.now();
-
-    this.socketServer.to(`game-${gameId}`).emit("opponentDisconnected", {
-      playerNumber,
-      message: "Opponent disconnected. Waiting for reconnection...",
-    });
-      
+    this.socketServer.to(`game-${gameId}`).emit("opponentDisconnected", { playerNumber, message: "Opponent disconnected. Waiting for reconnection..."});
     setTimeout(() => {
       if (playerState.disconnected) {
         const winnerId = playerNumber === 1 ? 2 : 1;
@@ -255,24 +231,20 @@ export class GameService {
     if (!gameState) return;
     const playerState =  playerNumber === 1 ? gameState.player1 : gameState.player2;
     playerState.disconnected = false;
-    this.socketServer.to(`game-${gameId}`).emit("playerReconnected", {playerNumber,message: "Opponent reconnected!",
-    });
+    this.socketServer.to(`game-${gameId}`).emit("playerReconnected", {playerNumber,message: "Opponent reconnected!",});
   }
 
   handleForfeit(gameId: string, playerNumber: number): void {
     const gameState = this.activeGames.get(gameId);
     if (!gameState || gameState.status === "ENDED") return;
-
     const winnerId = playerNumber === 1 ? 2 : 1;
-    const winnerAddress =
-      winnerId === 1 ? gameState.player1.address : gameState.player2.address;
+    const winnerAddress = winnerId === 1 ? gameState.player1.address : gameState.player2.address;
     this.endGame(gameId, winnerAddress);
   }
 
   broadcastGameUpdate(gameId: string, paddle1Height: number, paddle2Height: number): void {
     const gameState = this.activeGames.get(gameId);
     if (!gameState) return;
-
     const payload: GameUpdatePayload = {
       ballX: gameState.ball.x,
       ballY: gameState.ball.y,
@@ -288,7 +260,6 @@ export class GameService {
       },
       status: gameState.status,
     };
-
     this.socketServer.to(`game-${gameId}`).emit("gameUpdate", payload);
   }
 
@@ -299,4 +270,71 @@ export class GameService {
   getActiveGamesCount(): number {
     return this.activeGames.size;
   }
+
+  private async ensurePlayer(walletAddress: string): Promise<Player> {
+    let player:Player| null = await this.playerRepo.findOne({ where: { walletAddress },});
+    if (!player) {
+      player = await this.playerRepo.create({walletAddress,username: "Annonymous" + walletAddress.slice(2, 7),avatarURL: "",stats: this.createDefaultStats(),});
+      player = await this.playerRepo.save(player) as Player;
+    }
+    if (!player.stats) {
+      player.stats = this.createDefaultStats();
+      player = await this.playerRepo.save(player) as Player;
+    }
+    return player as Player;
+  }
+
+  private createDefaultStats(): Stats {
+    const stats = new Stats();
+    stats.wins = 0;
+    stats.losses = 0;
+    stats.gamePlayed = 0;
+    stats.winStreak = 0;
+    stats.bestStreak = 0;
+    stats.rating = 0;
+    stats.recentForm = [];
+    return stats;
+  }
+   private cleanUpGameAfterEnding(gameId: string) {
+    this.activeGames.delete(gameId);
+    this.lastFrameTime.delete(gameId);
+  }
+
+  private updatePlayersStats(winnerPlayer: Player, loserPlayer: Player) {
+    this.addPlayerStats(winnerPlayer);
+    this.subtractPlayerStats(loserPlayer);
+  }
+
+  private cleanAddresses(winnerAddress: string, gameState: GameState) {
+    const cleanWinner = winnerAddress.toLowerCase();
+    const cleanPlayer1 = gameState.player1.address.toLowerCase();
+    const cleanPlayer2 = gameState.player2.address.toLowerCase();
+    return { cleanWinner, cleanPlayer1, cleanPlayer2 };
+  }
+
+  private subtractPlayerStats(loserPlayer: Player) {
+    if (loserPlayer?.stats) {
+      loserPlayer.stats.losses += 1;
+      loserPlayer.stats.gamePlayed += 1;
+      loserPlayer.stats.winStreak = 0;
+      loserPlayer.stats.rating = XP.LOSS;
+    }
+  }
+
+  private addPlayerStats(winnerPlayer: Player) {
+    if (winnerPlayer?.stats) {
+      winnerPlayer.stats.wins += 1;
+      winnerPlayer.stats.gamePlayed += 1;
+      winnerPlayer.stats.winStreak += 1;
+      winnerPlayer.stats.bestStreak = Math.max(winnerPlayer.stats.bestStreak, winnerPlayer.stats.winStreak);
+      winnerPlayer.stats.rating += XP.WIN;
+    }
+  }
+  private async extractPlayersAndWinnerFromAddresses(cleanWinner: string, cleanPlayer1: string, cleanPlayer2: string) {
+    const loserAddress = cleanWinner === cleanPlayer1 ? cleanPlayer2 : cleanPlayer1;
+    const winnerPlayer = await this.ensurePlayer(cleanWinner);
+    const loserPlayer = await this.ensurePlayer(loserAddress);
+    return { winnerPlayer, loserPlayer };
+  }
+
 }

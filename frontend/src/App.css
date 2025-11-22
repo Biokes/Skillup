@@ -222,3 +222,28 @@ button {
 .gameOver button{
   @apply h-[30px] rounded-[5px];
 }
+.codeCreator p{
+  @apply text-gradient text-lg;
+  font-family: 'ribeye';
+}
+.codeCreator{
+  @apply flex flex-col justify-center items-center gap-3;
+}
+.codeCreator > input{
+  @apply border-primary outline-none px-2 rounded py-2 h-[25px] text-[0.85rem] text-black;
+  font-family:'ribeye';
+}
+.codeCreator > div {
+  @apply flex gap-2 justify-center items-center;
+}
+.codeCreator > div> * {
+  @apply w-[90px] text-[1rem] h-[30px];
+    font-family:'ribeye';
+}
+.codeCreator > div > :nth-child(2){
+  @apply cursor-not-allowed bg-red-400 ;  
+}
+.no-close [data-state] > button[data-dialog-close],
+.no-close .absolute.right-4.top-4 {
+    display: none !important;
+}
