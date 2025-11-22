@@ -17,6 +17,10 @@ export async function selfPing() {
 }
 
 export const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+export const XP = {
+  WIN: 100,
+  LOSS: 30
+}
 export const GAME_CONSTANTS = {
   CANVAS_WIDTH: 800,
   CANVAS_HEIGHT: 500,

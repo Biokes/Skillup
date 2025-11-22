@@ -74,5 +74,16 @@ export default abstract class BaseRepository<T extends ObjectLiteral> {
       throw new ChainSkillsException(`Error checking existence: ${(error as Error).message}, at baseRepository.ts:exists`);
     }
   }
- 
+
+  async save(entity: T | T[]): Promise<T | T[]> {
+    try {
+      if (Array.isArray(entity)) {
+            return await this.repository.save(entity);
+          } else {
+            return await this.repository.save(entity);
+          }
+     } catch (error) {
+      throw new ChainSkillsException(`Error saving entity: ${(error as Error).message}, at baseRepository.ts:save`  );
+    }
+}
 }
