@@ -60,7 +60,6 @@ export class GameService {
       status: "COUNTDOWN",
       startTime: Date.now(),
     };
-
     this.activeGames.set(gameId, gameState);
     this.lastFrameTime.set(gameId, Date.now());
     return gameState;
@@ -99,15 +98,12 @@ export class GameService {
     const deltaTimeMs = now - (this.lastFrameTime.get(gameId) || now);
     this.lastFrameTime.set(gameId, now);
 
-    // Update powerups
     PowerupManager.updatePowerups(gameState.player1, deltaTimeMs);
     PowerupManager.updatePowerups(gameState.player2, deltaTimeMs);
 
-    // Get paddle heights based on active powerups
     const paddle1Height = PowerupManager.getPaddleHeight(gameState.player1);
     const paddle2Height = PowerupManager.getPaddleHeight(gameState.player2);
 
-    // Update ball physics
     PongPhysics.updateBall(
       gameState.ball,
       gameState.player1.paddleY,
@@ -115,13 +111,12 @@ export class GameService {
       paddle1Height,
       paddle2Height
     );
-    // Check for scoring
+
     const scoreCheck = PongPhysics.checkScoring(gameState.ball);
     if (scoreCheck.scored) {
       this.handleScore(gameId, scoreCheck.scoredBy!);
       return;
     }
-    // Broadcast game update
     this.broadcastGameUpdate(gameId, paddle1Height, paddle2Height);
   }
 
@@ -137,24 +132,21 @@ export class GameService {
       gameState.player2.score++;
     }
 
-    // Emit score update
     this.socketServer.to(`game-${gameId}`).emit("scoreUpdate", {
       score1: gameState.player1.score,
       score2: gameState.player2.score,
       scoredBy,
     });
 
-    // Check win condition
-    if (gameState.player1.score >= GAME_CONSTANTS.WIN_SCORE) {
+    if (gameState.player1.score == GAME_CONSTANTS.WIN_SCORE) {
       this.endGame(gameId, gameState.player1.address);
       return;
     }
-    if (gameState.player2.score >= GAME_CONSTANTS.WIN_SCORE) {
+    if (gameState.player2.score == GAME_CONSTANTS.WIN_SCORE) {
       this.endGame(gameId, gameState.player2.address);
       return;
     }
 
-    // Reset ball and wait for next serve
     gameState.ball = PongPhysics.resetBall();
 
     setTimeout(() => {
@@ -183,14 +175,13 @@ export class GameService {
       throw new ChainSkillsException(`Error saving game result: ${(error as Error).message}`);
     }
 
-    // Emit game over
     this.socketServer.to(`game-${gameId}`).emit("gameOver", {
       winner: winnerAddress,
       score1: gameState.player1.score,
       score2: gameState.player2.score,
       message: `${winnerAddress} wins!`,
     });
-    
+    this
     this.activeGames.delete(gameId);
     this.lastFrameTime.delete(gameId);
   }
