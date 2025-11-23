@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import Navbar from "../commons/navbar";
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect } from "react";
 import { CountdownState, GameState } from "@/types";
 import { BALL_RADIUS, CANVAS_HEIGHT, CANVAS_WIDTH, PADDLE_WIDTH } from "@/lib/utils";
 import { socketService } from "@/services/socketService";
@@ -11,12 +11,27 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "../ui/button";
 
 export default function PingPongGame() {
+  const { state } = useLocation();
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+      if (!state?.sessionId || !state?.gameId || !state?.player1 || !state?.player2) {
+          navigate("/");
+          return;
+      }
+      socketService.getSocket().emit("validateSession", { sessionId: state?.sessionId }, (response:{success:boolean}) => {
+              if (!response.success) {
+                  toast.error("Create a game to play first");
+                  navigate("/")
+              }
+      })
+  }, [])
+  
   const powerups = [
     { name: "Multiball", icon: "🎆", owned: 0 },
     { name: "Pat Stretch", icon: "💪", owned: 0 },
     { name: "Shield", icon: "🛡️", owned: 0 },
   ];
-
   const BoostPack = () => (
     <section className="inventory">
       <h5>My Inventory</h5>
@@ -33,9 +48,6 @@ export default function PingPongGame() {
       </div>
     </section>
   );
-
-  const { state } = useLocation();
-  const navigate = useNavigate();
 
   function GameBoard() {
     const account = useCurrentAccount() ?? {};
@@ -79,9 +91,10 @@ export default function PingPongGame() {
     const [gameOver, setGameOver] = useState<boolean>(false);
     const gameOverRef = useRef<boolean>(false);
     useEffect(() => {
-      gameOverRef.current = gameOver;
+        gameOverRef.current = gameOver;
     }, [gameOver]);
-
+      
+      
     const [winner, setWinner] = useState<string | null>(null);
 
     const inputRef = useRef({
@@ -104,7 +117,7 @@ export default function PingPongGame() {
     }, []);
 
     useEffect(() => {
-      const handleGameStart = (data: { message: string; countdown: number }) => {
+      const handleGameStart = () => {
         if (gameOverRef.current) return;
         setCountdown({ active: true, remaining: 3 });
       };
@@ -178,35 +191,35 @@ export default function PingPongGame() {
     }, [countdownRef.current.active, gameOver]);
       
     useEffect(() => {
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (gameOverRef.current) return;
-        const key = event.key.toLowerCase();
-        if (!isDeviceTouchRef.current) {
-          if (key === "w") inputRef.current.keyboard.w = true;
-          if (key === "s") inputRef.current.keyboard.s = true;
-          if (key === "arrowup") inputRef.current.keyboard.arrowUp = true;
-          if (key === "arrowdown") inputRef.current.keyboard.arrowDown = true;
-        }
-      };
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (gameOverRef.current) return;
+            const key = event.key.toLowerCase();
+            if (!isDeviceTouchRef.current) {
+                if (key === "w") inputRef.current.keyboard.w = true;
+                if (key === "s") inputRef.current.keyboard.s = true;
+                if (key === "arrowup") inputRef.current.keyboard.arrowUp = true;
+                if (key === "arrowdown") inputRef.current.keyboard.arrowDown = true;
+            }
+        };
 
-      const handleKeyUp = (event: KeyboardEvent) => {
-        const key = event.key.toLowerCase();
-        if (!isDeviceTouchRef.current) {
-          if (key === "w") inputRef.current.keyboard.w = false;
-          if (key === "s") inputRef.current.keyboard.s = false;
-          if (key === "arrowup") inputRef.current.keyboard.arrowUp = false;
-          if (key === "arrowdown") inputRef.current.keyboard.arrowDown = false;
-        }
-      };
+        const handleKeyUp = (event: KeyboardEvent) => {
+            const key = event.key.toLowerCase();
+            if (!isDeviceTouchRef.current) {
+                if (key === "w") inputRef.current.keyboard.w = false;
+                if (key === "s") inputRef.current.keyboard.s = false;
+                if (key === "arrowup") inputRef.current.keyboard.arrowUp = false;
+                if (key === "arrowdown") inputRef.current.keyboard.arrowDown = false;
+            }
+        };
 
-      window.addEventListener("keydown", handleKeyDown);
-      window.addEventListener("keyup", handleKeyUp);
+        window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("keyup", handleKeyUp);
 
-      return () => {
-        window.removeEventListener("keydown", handleKeyDown);
-        window.removeEventListener("keyup", handleKeyUp);
-      };
-    }, []); // run once
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener("keyup", handleKeyUp);
+        };
+    }, []);
 
     useEffect(() => {
       const canvas = canvasRef.current;

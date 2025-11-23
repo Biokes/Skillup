@@ -71,6 +71,7 @@ export class WebSocket {
     socket.on("forfeitGame", (data: { gameId: string; playerNumber: number }) => { this.handleForfeit(socket, data); });
     socket.on("disconnect", () => {this.handleDisconnect(socket);});
     socket.on("reconnect_attempt", () => { this.handleReconnect(socket); });
+    socket.on('validateSession', async (dto: { sessionId: string }, callback) => await this.sessionService.validateSession(dto.sessionId, callback))
   }
 
 

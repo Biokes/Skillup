@@ -5,7 +5,7 @@ import { QuickMatchDTO, quickMatchSchema } from "../data/DTO/QuickMatch";
 import { SessionRepository } from "../data/repositories/sessionRepository";
 import { Session } from "../data/models/Session";
 import { ChainSkillsException } from "../exceptions";
-import { ZodError } from "zod";
+import { success, ZodError } from "zod";
 import { GameService } from "./GameService";
 import { Game } from "../data/models/Game";
 import { SESSION_STATUS } from "../utils";
@@ -80,7 +80,7 @@ export default class SessionService {
         player2: sessionFound.player2,
         amount: sessionFound.amount,
         gameId: game.id
-      });
+      }); 
       return;
     }
 
@@ -171,6 +171,7 @@ export default class SessionService {
       return;
     }
   }
+
   async cancelCreateMatchWithCode(walletAddress: string, socket: Socket, code: string) {
      try {
       const existing = await this.sessionRepository.findOne({ where: { player1: walletAddress, status: SESSION_STATUS.WAITING, roomCode: code.toLowerCase()},});
@@ -181,10 +182,19 @@ export default class SessionService {
       return;
     }
   }
-  
+
   async getSessionById(id: string): Promise<Session|null> { 
       return await this.sessionRepository.findById(id)
-  }  
+  }
+  
+  async validateSession(sessionId: string, callback: any){
+    const session = await this.getSessionById(sessionId);
+    if (session) { 
+      callback({ success: true })
+      return;
+    }
+    callback({success:false})
+  }
     
   private joinAndEmitSession(socket: Socket, sessionFound: Session) {
     socket.join(`game-${sessionFound.id}`);
