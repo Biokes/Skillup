@@ -64,7 +64,7 @@ export class WebSocket {
     socket.on("cancelQuickMatch", async (walletAddress:string) => await this.sessionService.cancelQuickMatch(walletAddress,socket))
     // socket.on('createQuickMatch', async (createRoomDto: CreateGameDTO) => await this.sessionService.createGameRoom(createRoomDto));
     socket.on('joinRoom', async (joinRoomDTO: JoinRoomDTO) => await this.sessionService.joinRoom(joinRoomDTO, socket));
-
+    socket.on('cancelJoinRoom',async (canceProps: {walletAddress: string, roomCode: string})=> await this.sessionService.cancelCreateMatchWithCode(canceProps.walletAddress, socket, canceProps.roomCode))
     socket.on("gameReady", async (data: ReadyGameDTO) => { await this.handleGameReady(socket, data);});
     socket.on("paddleMove", (data: PaddleMovementDTO) => { this.handlePaddleMove(socket, data); });
     // socket.on("usePowerup", (data: { playerNumber: number; powerupType: string; gameId: string }) => {this.handlePowerup(socket, data);});

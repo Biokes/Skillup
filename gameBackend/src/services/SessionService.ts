@@ -165,13 +165,23 @@ export default class SessionService {
     try {
       const existing = await this.sessionRepository.findOne({ where: { player1: walletAddress, status: SESSION_STATUS.WAITING },});
       if (existing) await this.sessionRepository.delete(existing.id);
-      socket.emit("cancelQuickMatch", {successful: true});
+      socket.emit("cancelQuickMatch", {successful: true, walletAddress});
     } catch (error) {
-      socket.emit("cancelMatchError", { successful: false, message: (error as Error).message});
+      socket.emit("cancelMatchError", { successful: false, walletAddress,message: (error as Error).message});
       return;
     }
   }
- 
+  async cancelCreateMatchWithCode(walletAddress: string, socket: Socket, code: string) {
+     try {
+      const existing = await this.sessionRepository.findOne({ where: { player1: walletAddress, status: SESSION_STATUS.WAITING, roomCode: code.toLowerCase()},});
+      if (existing) await this.sessionRepository.delete(existing.id);
+      socket.emit("cancelMatchWithCode", {successful: true, walletAddress});
+    } catch (error) {
+      socket.emit("cancelMatchWithCodeError", { successful: false, walletAddress,message: (error as Error).message});
+      return;
+    }
+  }
+  
   async getSessionById(id: string): Promise<Session|null> { 
       return await this.sessionRepository.findById(id)
   }  

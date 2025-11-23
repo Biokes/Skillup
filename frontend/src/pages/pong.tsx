@@ -64,7 +64,8 @@ export default function Pong() {
         open: boolean;
         header: string;
         description: string;
-    }>({ open: false, mode: null, header: "", description: ""});
+        currentAction: "quickMatch" | "codeMatch" | null; 
+    }>({ open: false, mode: null, header: "", description: "", currentAction: null});
 
     const [code, setCode] = useState("");
     const [isConnecting, setIsConnecting] = useState(false);
@@ -91,14 +92,29 @@ export default function Pong() {
                 if (joined) {
                     setTimedOut(false);
                     setIsConnecting(false);
-                    setModal(prev => ({ ...prev, open: false }));
+                    setModal({ description:"",header:'', currentAction: null, mode: null, open: false });
                     navigate("/pong", { state: response });
                 }
             }
         };
 
-        const joinWithCode = (response: JoinWithCodeResponse) => { 
-            console.log("joinedWithCode with response: ",response)
+        const joinWithCode = (response: JoinWithCodeResponse) => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+            }
+            if (address) { 
+                 const joined =
+                    response.player1.toLowerCase() === address.toLowerCase() ||
+                    response.player2.toLowerCase() === address.toLowerCase();
+
+                if (joined) {
+                    setTimedOut(false);
+                    setIsConnecting(false);
+                    setModal({ description:"",header:'', currentAction: null, mode: null, open: false });
+                    navigate("/pong", { state: response });
+                }
+            }
         }
 
         socketService.on("joined", onJoined);
@@ -122,14 +138,13 @@ export default function Pong() {
         }, TIMEOUT_DURATION);
     }, []);
 
-    const cancelConnection = useCallback(() => {
+    const cancelConnection = useCallback((mode:"connecting"| 'failed'|'enterCode'|null) => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
+        socketService.cancelMatch(address)
         setTimedOut(false);
         setIsConnecting(false);
-
-        setModal(prev => ({ ...prev, open: false }));
-    }, []);
+        setModal({ currentAction:null,mode:mode, header:'', description:'', open: false });
+    }, [address]);
 
     const handleRetryQuickMatch = useCallback(() => {
         setTimedOut(false);
@@ -146,12 +161,12 @@ export default function Pong() {
         setTimedOut(false);
         quickMatch(address);
         startTimeout(() => cancelQuickMatch(address));
-
         setModal({
             open: true,
             mode: "connecting",
             header: "Quick Match (Free)",
             description: "Connecting to play a quick match",
+            currentAction:'quickMatch'
         });
     }
 
@@ -162,10 +177,11 @@ export default function Pong() {
             mode: "enterCode",
             header: "Create / Join Match",
             description: "Enter a room code to create or join",
+            currentAction:'codeMatch'
         });
     }
 
-    function proceedCreateOrJoin() {
+    const  proceedCreateOrJoin= useCallback(()=>{
         if (!address) return toast.info("Please connect wallet");
         setIsConnecting(true);
         setTimedOut(false);
@@ -176,18 +192,35 @@ export default function Pong() {
             mode: "connecting",
             header: "Create / Join Match",
             description: "Connecting to match...",
-        });
-    }
+            currentAction:'codeMatch'
 
+        });
+    }, [address, cancelCreateOrJoinMatch, code, connectFreeWithCode, startTimeout])
+    
+    const handleRetryCodeMatch = useCallback(() => {
+        setTimedOut(false);
+        setIsConnecting(true);
+        connectFreeWithCode(address, code);
+        startTimeout(() => proceedCreateOrJoin());
+    }, [address, code, connectFreeWithCode, proceedCreateOrJoin, startTimeout]);
+
+    function getRetryHandler() {
+        if (modal.currentAction === "quickMatch") return handleRetryQuickMatch;
+        if (modal.currentAction === "codeMatch") return handleRetryCodeMatch;
+        return () => {};
+    }
     function getModalBody() {
         if (modal.mode === "connecting") {
             if (!timedOut) {
-                return <ConnectingSection onCancel={cancelConnection} />;
+                return <ConnectingSection onCancel={() => { cancelConnection('connecting')}} />;
             } 
-            return (<FailedConnectionSection onRetry={handleRetryQuickMatch} onCancel={cancelConnection}/>);
+            return (<FailedConnectionSection onRetry={getRetryHandler()} onCancel={()=>{cancelConnection('connecting')}}/>);
         }
 
         if (modal.mode === "enterCode") {
+            if (!timedOut) {
+                return (<FailedConnectionSection onRetry={proceedCreateOrJoin} onCancel={()=>{cancelConnection('enterCode')}} />);
+            }
             return (
                 <CodeInput code={code} setCode={setCode} onProceed={proceedCreateOrJoin}/>
             );

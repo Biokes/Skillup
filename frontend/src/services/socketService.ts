@@ -102,6 +102,7 @@ class SocketService {
 
   cancelCreateOrJoinMatch(walletAddress: string, code: string) { 
     this.ensureConnected();
+    this.socket?.emit('cancelJoinRoom', {walletAddress: walletAddress.toLowerCase(), roomCode: code.toLowerCase()})
   }
 
   on(event: string, callback: Function) {
@@ -111,7 +112,7 @@ class SocketService {
     this.listeners.get(event)!.push(callback);
     // Setup actual socket.io listener if socket exists
     if (this.socket) {
-      this.socket.off(event); // Remove old listeners to avoid duplicates
+      this.socket.off(event);
       this.socket.on(event, (data) => {
         const callbacks = this.listeners.get(event);
         if (callbacks) {
