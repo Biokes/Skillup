@@ -41,13 +41,13 @@ function FailedConnectionSection({ onRetry, onCancel }: { onRetry: () => void; o
     );
 }
 
-function CodeInput({ code, setCode, onProceed}: { code: string; setCode: (v: string) => void; onProceed: () => void}) {
+function CodeInput({ code, setCode, onProceed, onCancel }: { code: string; setCode: (v: string) => void; onProceed: () => void; onCancel: () => void}) {
     return (
         <section className='codeCreator'>
             <input type="text" placeholder="Enter code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} />
             <div>
                 <Button disabled={code.length !== 6} onClick={onProceed}>Proceed</Button>
-                <Button>Cancel</Button>
+                <Button onClick={onCancel}>Cancel</Button>
             </div>
         </section>
     );
@@ -218,11 +218,13 @@ export default function Pong() {
         }
 
         if (modal.mode === "enterCode") {
-            if (!timedOut) {
+            if (timedOut) {
                 return (<FailedConnectionSection onRetry={proceedCreateOrJoin} onCancel={()=>{cancelConnection('enterCode')}} />);
             }
             return (
-                <CodeInput code={code} setCode={setCode} onProceed={proceedCreateOrJoin}/>
+                <CodeInput code={code} setCode={setCode} onProceed={proceedCreateOrJoin} onCancel={() => {
+                    setModal((prev) =>({...prev, open:false}))
+                }}/>
             );
         }
 
