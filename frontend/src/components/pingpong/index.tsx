@@ -43,7 +43,7 @@ export default function PingPongGame() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const playerNumber = String(address).toLowerCase() === String(state?.player1).toLowerCase() ? 1 : 2;
 
-    const initialGameState: GameState = {
+    const initialGameState: GameState = {   
       ballX: CANVAS_WIDTH / 2,
       ballY: CANVAS_HEIGHT / 2,
       paddle1Y: CANVAS_HEIGHT / 2 - 50,
@@ -208,7 +208,6 @@ export default function PingPongGame() {
       };
     }, []); // run once
 
-    // ---- Touch listeners on the canvas: register / cleanup properly ----
     useEffect(() => {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -238,8 +237,7 @@ export default function PingPongGame() {
         canvas.removeEventListener("touchmove", handleTouchMove);
         canvas.removeEventListener("touchend", handleTouchEnd);
       };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canvasRef, playerNumber]); // rebind if canvas or playerNumber changes
+    }, [canvasRef, playerNumber]);
 
     useEffect(() => {
       const paddleInterval = setInterval(() => {
@@ -277,8 +275,7 @@ export default function PingPongGame() {
       }, 16);
 
       return () => clearInterval(paddleInterval);
-    //   eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [playerNumber, state?.gameId]); 
+    }, [playerNumber]); 
 
     useEffect(() => {
       let rafId = 0;
@@ -340,14 +337,12 @@ export default function PingPongGame() {
         ctx.fill();
         ctx.shadowBlur = 3;
 
-        // Score
         ctx.font = "bold 48px Ribeye";
         ctx.fillStyle = "#ffffff";
         ctx.textAlign = "center";
         ctx.fillText(gs.score1.toString(), CANVAS_WIDTH / 4, 70);
         ctx.fillText(gs.score2.toString(), (CANVAS_WIDTH * 3) / 4, 70);
 
-        // Countdown
         if (cd.active) {
           ctx.font = "bold 72px Ribeye";
           ctx.fillStyle = "#fbbf24";
@@ -359,20 +354,17 @@ export default function PingPongGame() {
           ctx.shadowBlur = 0;
         }
 
-        // schedule next frame
         rafId = requestAnimationFrame(draw);
       };
 
-      // start RAF
       rafId = requestAnimationFrame(draw);
 
       return () => {
         if (rafId) cancelAnimationFrame(rafId);
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // run once and rely on refs for subsequent updates
+    }, []);
 
-    // keep refs in sync when states change
     useEffect(() => {
       gameStateRef.current = gameState;
     }, [gameState]);
@@ -381,7 +373,6 @@ export default function PingPongGame() {
       countdownRef.current = countdown;
     }, [countdown]);
 
-    // GameOver popup component (unchanged visuals)
     function GameOverPopUp(props: { gameState: GameState }) {
       return (
         <Dialog open={gameOver} onOpenChange={(o) => { if (!o) return; }}>

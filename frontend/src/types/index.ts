@@ -96,6 +96,9 @@ export interface OneChainGameType {
   cancelQuickMatch: (walletAddress: string) => void;
   cancelCreateOrJoinMatch: (walletAddress: string, code: string) => void;
   connectFreeWithCode: (walletAddress: string, code: string) => void;
+  connectPaid: (walletAddress: string, amount: number) => void;
+  connectPaidWithCode: (walletAddress: string, code: string, amount: number) => void;
+
 }
 export interface JoinGameResponse {
   sessionId: string;
@@ -106,6 +109,17 @@ export interface JoinGameResponse {
   amount: number;
   gameId: string;
 }
+export interface JoinWithCodeResponse{
+  sessionId: string,
+  status: string,
+  code: string,
+  isStaked: string,
+  player1: string,
+  player2: string,
+  amount: number,
+  gameId: number
+}
+
 export interface GameBoardProps {
   playerNumber: 1 | 2;
   playerAddresses: { player1: string; player2: string };

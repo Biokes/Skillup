@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn, TIMEOUT_DURATION } from "@/lib/utils";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { JoinGameResponse, PopupProps } from "@/types";
+import { JoinGameResponse, JoinWithCodeResponse, PopupProps } from "@/types";
 import { Loader2 } from 'lucide-react';
 import { toast } from "sonner";
 import { useCurrentAccount } from "@mysten/dapp-kit"
@@ -59,12 +59,12 @@ export default function Pong() {
     const account = useCurrentAccount() ?? {};
     const address = account.address ?? null;
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const [modal, setModal] = useState<{ mode: "connecting" | "failed" | "enterCode" | null; open: boolean; header: string; description: string; }>({
-        open: false,
-        mode: null,
-        header: "",
-        description: "",
-    });
+    const [modal, setModal] = useState<{
+        mode: "connecting" | "failed" | "enterCode" | null;
+        open: boolean;
+        header: string;
+        description: string;
+    }>({ open: false, mode: null, header: "", description: ""});
 
     const [code, setCode] = useState("");
     const [isConnecting, setIsConnecting] = useState(false);
@@ -97,13 +97,21 @@ export default function Pong() {
             }
         };
 
+        const joinWithCode = (response: JoinWithCodeResponse) => { 
+            console.log("joinedWithCode with response: ",response)
+        }
+
         socketService.on("joined", onJoined);
+        socketService.on('joinedWithCode',joinWithCode)
 
         return () => {
             socketService.off("joined", onJoined);
+            socketService.off('joinedWithCode')
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
     }, [address, navigate]);
+
+
 
     const startTimeout = useCallback((cancelFn: () => void) => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
