@@ -390,7 +390,10 @@ export default function PingPongGame() {
                 {winner === address ? "You won 🎉🤭🕺" : "Your Opponent won 😔😔"}
               </motion.p>
               <p>
-                {`${winner === state?.player1 ? "(You)" : "(Opponent)"} ${props.gameState.score1} : ${props.gameState.score2} ${winner === state?.player2 ? "(You)" : "(Opponent)"}`}
+                          {`${winner === address ?
+                              "(You)" : "(Opponent)"} ${props.gameState.score1}
+                               :
+                            ${props.gameState.score2} ${winner !== address ? "(You)" : "(Opponent)"}`}
               </p>
               <Button onClick={() => { navigate("/"); }}>Back Home</Button>
             </div>
