@@ -13,7 +13,7 @@ import { Button } from "../ui/button";
 export default function PingPongGame() {
   const { state } = useLocation();
   const navigate = useNavigate();
-  
+
   useEffect(() => {
       if (!state?.sessionId || !state?.gameId || !state?.player1 || !state?.player2) {
           navigate("/");
@@ -32,6 +32,7 @@ export default function PingPongGame() {
     { name: "Pat Stretch", icon: "💪", owned: 0 },
     { name: "Shield", icon: "🛡️", owned: 0 },
   ];
+  
   const BoostPack = () => (
     <section className="inventory">
       <h5>My Inventory</h5>

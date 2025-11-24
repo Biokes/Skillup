@@ -53,23 +53,34 @@ function CodeInput({ code, setCode, onProceed, onCancel }: { code: string; setCo
     );
 }
 
+function PaymentInput({ stakeAmount: stake, setStakeAmount, onProceed, onCancel }: { stakeAmount: number; setStakeAmount: (v: number) => void; onProceed: () => void; onCancel: () => void}) {
+    return (
+        <section className='codeCreator'>
+            <input type='number' placeholder="Enter Amount You want to stake" min={0} value={stake} onChange={(e) => setStakeAmount(Number(e.target.value))} />
+            <div>
+                <Button disabled={stake<0} onClick={onProceed}>Pay</Button>
+                <Button onClick={onCancel}>Cancel</Button>
+            </div>
+        </section>
+    );
+}
+
 export default function Pong() {
     const { quickMatch, retryQuickMatch, cancelQuickMatch, cancelCreateOrJoinMatch, connectFreeWithCode } = useOneChainGame();
     const navigate = useNavigate();
     const account = useCurrentAccount() ?? {};
     const address = account.address ?? null;
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const [code, setCode] = useState("");
+    const [timedOut, setTimedOut] = useState(false);
+    const [stakeAmount, setStakeAmount] = useState<number>(0);
     const [modal, setModal] = useState<{
-        mode: "connecting" | "failed" | "enterCode" | null;
+        mode: "connecting" | "failed" | "enterCode" | "stake" | 'friendlyStake' |null;
         open: boolean;
         header: string;
         description: string;
-        currentAction: "quickMatch" | "codeMatch" | null; 
+        currentAction: "quickMatch" | "codeMatch"| "stake" | null; 
     }>({ open: false, mode: null, header: "", description: "", currentAction: null});
-
-    const [code, setCode] = useState("");
-    const [isConnecting, setIsConnecting] = useState(false);
-    const [timedOut, setTimedOut] = useState(false);
 
     useEffect(() => {
         if (!socketService.isConnected()) {
@@ -91,7 +102,6 @@ export default function Pong() {
 
                 if (joined) {
                     setTimedOut(false);
-                    setIsConnecting(false);
                     setModal({ description:"",header:'', currentAction: null, mode: null, open: false });
                     navigate("/pong", { state: response });
                 }
@@ -110,7 +120,7 @@ export default function Pong() {
 
                 if (joined) {
                     setTimedOut(false);
-                    setIsConnecting(false);
+                    // setIsConnecting(false);
                     setModal({ description:"",header:'', currentAction: null, mode: null, open: false });
                     navigate("/pong", { state: response });
                 }
@@ -127,8 +137,6 @@ export default function Pong() {
         };
     }, [address, navigate]);
 
-
-
     const startTimeout = useCallback((cancelFn: () => void) => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
@@ -138,26 +146,24 @@ export default function Pong() {
         }, TIMEOUT_DURATION);
     }, []);
 
-    const cancelConnection = useCallback((mode:"connecting"| 'failed'|'enterCode'|null) => {
+    const cancelConnection = useCallback((mode:"connecting"| 'failed'|'enterCode'| "stake" |null) => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         socketService.cancelMatch(address)
         setTimedOut(false);
-        setIsConnecting(false);
+        // setIsConnecting(false);
         setModal({ currentAction:null,mode:mode, header:'', description:'', open: false });
     }, [address]);
 
     const handleRetryQuickMatch = useCallback(() => {
         setTimedOut(false);
-        setIsConnecting(true);
-
+        // setIsConnecting(true);
         retryQuickMatch(address);
-
         startTimeout(() => cancelQuickMatch(address));
     }, [address, cancelQuickMatch, retryQuickMatch, startTimeout]);
 
     function findQuickMatch() {
         if (!address) return toast.info("Please connect wallet");
-        setIsConnecting(true);
+        // setIsConnecting(true);
         setTimedOut(false);
         quickMatch(address);
         startTimeout(() => cancelQuickMatch(address));
@@ -183,7 +189,7 @@ export default function Pong() {
 
     const  proceedCreateOrJoin= useCallback(()=>{
         if (!address) return toast.info("Please connect wallet");
-        setIsConnecting(true);
+        // setIsConnecting(true);
         setTimedOut(false);
         connectFreeWithCode(address, code)
         startTimeout(() => cancelCreateOrJoinMatch(address, code));
@@ -199,16 +205,39 @@ export default function Pong() {
     
     const handleRetryCodeMatch = useCallback(() => {
         setTimedOut(false);
-        setIsConnecting(true);
+        // setIsConnecting(true);
         connectFreeWithCode(address, code);
         startTimeout(() => proceedCreateOrJoin());
     }, [address, code, connectFreeWithCode, proceedCreateOrJoin, startTimeout]);
+
+    function stake() {
+        if (!address) toast.error("Please Connect wallet")
+         setModal({
+            open: true,
+            mode: "stake",
+            header: "Stake against anybody",
+            description: "compete and earn against other players around the world",
+            currentAction: 'stake'
+         });        
+    }
+
+    function stakeAgainstFriends() {
+        if (!address) toast.error("Please Connect wallet")
+        setModal({
+        open: true,
+        mode: "friendlyStake",
+        header: "Stake against Friends",
+        description: "compete and earn against friends and relatives around the world",
+        currentAction: 'stake'
+        });
+    }
 
     function getRetryHandler() {
         if (modal.currentAction === "quickMatch") return handleRetryQuickMatch;
         if (modal.currentAction === "codeMatch") return handleRetryCodeMatch;
         return () => {};
     }
+
     function getModalBody() {
         if (modal.mode === "connecting") {
             if (!timedOut) {
@@ -227,21 +256,39 @@ export default function Pong() {
                 }}/>
             );
         }
-
+        if (modal.mode === 'stake') { 
+            return (
+                <PaymentInput stakeAmount={stakeAmount} setStakeAmount={setStakeAmount} onProceed={() => {
+                }} onCancel={() => {
+                    setStakeAmount(0);
+                    setModal((prev) => ({ ...prev, open: false }))
+                }}/>
+            )
+        }
+        if (modal.mode === "friendlyStake") {
+            return (
+                <PaymentInput stakeAmount={stakeAmount} setStakeAmount={setStakeAmount} onProceed={() => { }} onCancel={() => {
+                    setStakeAmount(0);
+                    setModal((prev) => ({ ...prev, open: false }))
+                }}/>
+            )
+        }
         return null;
     }
 
     const games = [
         { texts: "Quick Match", gameType: "Free", action: findQuickMatch },
         { texts: "Create / Join", gameType: "Free", action: createOrJoinCode },
-        { texts: "Friendly Stake", gameType: "Stake", action: () => {} },
-        { texts: "Compete", gameType: "Stake", action: () => {} },
+        { texts: "Friendly Stake", gameType: "Stake", action: stakeAgainstFriends },
+        { texts: "Compete", gameType: "Stake", action: stake },
     ];
+
      const powerups = [
         { name: 'Multiball mayhem', icon: '🎆', description: 'splits the ball for a burst of chaotic offence', owned: 0, },
         { name: 'Pat Stretch', icon: '💪', description: 'Increase the length of your pat for clutch saves', owned: 0,},
         { name: 'Guardian Shield', icon: '🛡️', description: 'Summons an energy barrier that block one goal', owned: 0,}
     ]
+
     const livegames =[]
     const players = []
     const BoostPack = () => (
