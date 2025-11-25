@@ -3,7 +3,6 @@ import { Application } from "express";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
 import SessionService from "../services/SessionService";
-import { CreateGameDTO } from "../data/DTO/CreateGame"
 import { JoinRoomDTO } from "../data/DTO/joinRoom";
 import { QuickMatchDTO } from "../data/DTO/QuickMatch";
 import { ReadyGameDTO } from "../data/DTO/ReadyGame";
@@ -57,7 +56,6 @@ export class WebSocket {
     await this.listenToGameEvents(socket);
   }
 
-
   async listenToGameEvents(socket: Socket) {
     socket.on('quickMatch', async (quickMatchDto: QuickMatchDTO) => await this.sessionService.handleQuickMatch(quickMatchDto, socket));
     socket.on('retryQuickMatch', async (dto: QuickMatchDTO) => await this.sessionService.handleRetryQuickMatch(dto, socket));
@@ -73,7 +71,6 @@ export class WebSocket {
     socket.on('checkStakedGame', async (dto: { price: number, walletAddress: string }, callback) => await this.sessionService.checkStakedMatch(dto, callback));
     socket.on('createStakedMatch', async () => {})
   }
-
 
   private async handleGameReady(socket: Socket,readyGameData:ReadyGameDTO): Promise<void> {
     const { gameId, playerNumber, sessionId } = readyGameData;
@@ -141,6 +138,7 @@ export class WebSocket {
       socket.emit("error", { message: "Forfeit failed" });
     }
   }
+
   private logErrorOnConsole(message: string, error: any) {
     console.error(message, error);
   }
