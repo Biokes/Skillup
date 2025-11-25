@@ -5,7 +5,7 @@ import { QuickMatchDTO, quickMatchSchema } from "../data/DTO/QuickMatch";
 import { SessionRepository } from "../data/repositories/sessionRepository";
 import { Session } from "../data/models/Session";
 import { ChainSkillsException } from "../exceptions";
-import { success, ZodError } from "zod";
+import { ZodError } from "zod";
 import { GameService } from "./GameService";
 import { Game } from "../data/models/Game";
 import { SESSION_STATUS } from "../utils";
@@ -170,7 +170,7 @@ export default class SessionService {
       socket.emit("cancelMatchError", { successful: false, walletAddress,message: (error as Error).message});
       return;
     }
-  }
+  }   
 
   async cancelCreateMatchWithCode(walletAddress: string, socket: Socket, code: string) {
      try {

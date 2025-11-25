@@ -1,17 +1,19 @@
 import Navbar from "@/components/commons/navbar";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { cn, TIMEOUT_DURATION } from "@/lib/utils";
+import { cn, TIMEOUT_DURATION, TOKEN_DECIMALS } from "@/lib/utils";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { JoinGameResponse, JoinWithCodeResponse, PopupProps } from "@/types";
+import { JoinGameResponse, JoinWithCodeResponse } from "@/types";
 import { Loader2 } from 'lucide-react';
 import { toast } from "sonner";
-import { useCurrentAccount } from "@mysten/dapp-kit"
+import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit"
 import { useOneChainGame } from "@/hooks/useOneChainGameContext";
 import { socketService } from "@/services/socketService"; 
 import { useNavigate } from "react-router-dom";
-
+import { Transaction } from "@mysten/sui/transactions";
+import { useSuiClient } from "@mysten/dapp-kit";
+import { Input } from "@/components/ui/input";
 
 function ConnectingSection({ onCancel }: { onCancel: () => void }) {
     return (
@@ -32,7 +34,7 @@ function ConnectingSection({ onCancel }: { onCancel: () => void }) {
 function FailedConnectionSection({ onRetry, onCancel }: { onRetry: () => void; onCancel: () => void }) {
     return (
         <section className="failedConnection">
-            <p>Cannot find opponent</p>
+            <p className="text-gradient">Cannot find opponent</p>
             <footer>
                 <Button onClick={onRetry}>Try Again</Button>
                 <Button onClick={onCancel}>Cancel</Button>
@@ -44,7 +46,7 @@ function FailedConnectionSection({ onRetry, onCancel }: { onRetry: () => void; o
 function CodeInput({ code, setCode, onProceed, onCancel }: { code: string; setCode: (v: string) => void; onProceed: () => void; onCancel: () => void}) {
     return (
         <section className='codeCreator'>
-            <input type="text" placeholder="Enter code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} />
+            <Input type="text" placeholder="Enter code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} />
             <div>
                 <Button disabled={code.length !== 6} onClick={onProceed}>Proceed</Button>
                 <Button onClick={onCancel}>Cancel</Button>
@@ -53,13 +55,30 @@ function CodeInput({ code, setCode, onProceed, onCancel }: { code: string; setCo
     );
 }
 
-function PaymentInput({ stakeAmount: stake, setStakeAmount, onProceed, onCancel }: { stakeAmount: number; setStakeAmount: (v: number) => void; onProceed: () => void; onCancel: () => void}) {
+function PaymentInput({ stakeAmount, setStakeAmount, onProceed, onCancel, balance }: { balance: number; stakeAmount: number; setStakeAmount: (v: number) => void; onProceed: () => void; onCancel: () => void }) {
+    const [pos, setPos] = useState<number>(-1);
     return (
         <section className='codeCreator'>
-            <input type='number' placeholder="Enter Amount You want to stake" min={0} value={stake} onChange={(e) => setStakeAmount(Number(e.target.value))} />
+            <section>
+               <p>Bal: {balance}</p>
+            </section>
+            <div >
+                {['0.1','0.5','1','5'].map((val, index) => (
+                    <p key={index} className={`${pos === index ? 'bg-primary/20' : ''}`}
+                        onClick={() => { 
+                            setPos(index)
+                            setStakeAmount(Number(val))
+                        }}
+                    >{val} ONE</p>
+                ))}
+            </div>
             <div>
-                <Button disabled={stake<0} onClick={onProceed}>Pay</Button>
-                <Button onClick={onCancel}>Cancel</Button>
+                <Button disabled={stakeAmount<0 || pos === -1 || balance < stakeAmount} onClick={onProceed}>Pay</Button>
+                <Button onClick={() => {
+                    setPos(-1)
+                    setStakeAmount(0)
+                    onCancel()
+                }}>Cancel</Button>
             </div>
         </section>
     );
@@ -74,21 +93,22 @@ export default function Pong() {
     const [code, setCode] = useState("");
     const [timedOut, setTimedOut] = useState(false);
     const [stakeAmount, setStakeAmount] = useState<number>(0);
+    const { signAndExecute } = useSignAndExecuteTransaction();
+    const client = useSuiClient()
     const [modal, setModal] = useState<{
         mode: "connecting" | "failed" | "enterCode" | "stake" | 'friendlyStake' |null;
         open: boolean;
         header: string;
         description: string;
         currentAction: "quickMatch" | "codeMatch"| "stake" | null; 
-    }>({ open: false, mode: null, header: "", description: "", currentAction: null});
-
+    }>({ open: false, mode: null, header: "", description: "", currentAction: null });
+    const [userBalance, setUserBalance] = useState<number>(0);
     useEffect(() => {
         if (!socketService.isConnected()) {
             if (!address) return;
             socketService.connect(address);
             console.log("🔌 Socket initialized");
         }
-
         const onJoined = (response: JoinGameResponse) => {
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current);
@@ -175,6 +195,24 @@ export default function Pong() {
             currentAction:'quickMatch'
         });
     }
+    async function getUserBalance() {
+        try {
+            const balanceData = await client.getBalance({ owner: address });
+            const totalBalance = balanceData?.totalBalance ?? "0";
+            return Number(totalBalance) / TOKEN_DECIMALS;
+        } catch (error: unknown) { 
+            toast.error("Couldn't fetch balance, check your internet connection or refresh");
+            console.error('bal error: ', error)
+            return 0;
+        }
+    }
+    useEffect(() => {
+        if (address) {
+            getUserBalance().then(balance => {
+                setUserBalance(balance);
+            });
+        }
+    }, [address]);
 
     function createOrJoinCode() {
         if (!address) return toast.info("Please connect wallet");
@@ -211,7 +249,10 @@ export default function Pong() {
     }, [address, code, connectFreeWithCode, proceedCreateOrJoin, startTimeout]);
 
     function stake() {
-        if (!address) toast.error("Please Connect wallet")
+        if (!address){
+            toast.error("Please Connect wallet");
+            return;
+        }
          setModal({
             open: true,
             mode: "stake",
@@ -222,7 +263,10 @@ export default function Pong() {
     }
 
     function stakeAgainstFriends() {
-        if (!address) toast.error("Please Connect wallet")
+        if (!address) {
+            toast.error("Please Connect wallet")
+            return;
+        }
         setModal({
         open: true,
         mode: "friendlyStake",
@@ -231,7 +275,10 @@ export default function Pong() {
         currentAction: 'stake'
         });
     }
-
+    function cancelPayment() {
+        setStakeAmount(0);
+        setModal((prev) => ({ ...prev, open: false }))
+    }
     function getRetryHandler() {
         if (modal.currentAction === "quickMatch") return handleRetryQuickMatch;
         if (modal.currentAction === "codeMatch") return handleRetryCodeMatch;
@@ -258,19 +305,38 @@ export default function Pong() {
         }
         if (modal.mode === 'stake') { 
             return (
-                <PaymentInput stakeAmount={stakeAmount} setStakeAmount={setStakeAmount} onProceed={() => {
-                }} onCancel={() => {
-                    setStakeAmount(0);
-                    setModal((prev) => ({ ...prev, open: false }))
-                }}/>
+                <PaymentInput stakeAmount={stakeAmount} setStakeAmount={setStakeAmount} balance={userBalance} onProceed={async () => {
+                    // const userBalance = await client.getBalance({ owner: address }).totalBalance;
+                    if (stakeAmount > (userBalance / TOKEN_DECIMALS)) { 
+                        return toast.error("StakeAmount is greater than your balance")
+                    }
+                    const tx = new Transaction();
+                    const paymentFees = tx.splitCoins(tx.gas, [tx.pure.u64(BigInt(stakeAmount * TOKEN_DECIMALS))]);
+                    tx.moveCall({
+                        target: 'module::vault::stake',
+                        arguments:[paymentFees]
+                    })
+                    try {
+                        const result = await signAndExecute({ transaction: tx});
+                        toast.success("Joined match successfully!");
+                        console.log(result);
+                    }
+                    catch (err) {
+                        toast.error("Payment failed,please try again.");
+                        console.error(err);
+                    }
+                }} onCancel={cancelPayment}/>
             )
         }
         if (modal.mode === "friendlyStake") {
             return (
-                <PaymentInput stakeAmount={stakeAmount} setStakeAmount={setStakeAmount} onProceed={() => { }} onCancel={() => {
-                    setStakeAmount(0);
-                    setModal((prev) => ({ ...prev, open: false }))
-                }}/>
+                <PaymentInput stakeAmount={stakeAmount} setStakeAmount={setStakeAmount} balance={userBalance} onProceed={async () => {
+                    // const owner = await client.getBalance({owner: address})
+                    // console.log("owner: ", owner.totalBalance);
+                    // // console.log(client.getClient().options?.url)
+                    // // console.log(client.transport);
+                    // const tx = new Transaction();
+                }} onCancel={cancelPayment} />
             )
         }
         return null;

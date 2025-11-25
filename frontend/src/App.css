@@ -3,6 +3,9 @@
   margin: 0;
   text-align: center;
 }
+p,h1,h2,h3,h4,h5,h6{
+  @apply transition-all transform duration-300;
+}
 
 @keyframes logo-spin {
   from {
@@ -173,7 +176,7 @@ button {
   font-family: "ribeye" !important;
 }
 .failedConnection > p {
-  @apply text-[1rem] text-gradient;
+  @apply text-[1rem];
   font-family: "ribeye";
 }
 .failedConnection > footer {
@@ -222,25 +225,36 @@ button {
 .gameOver button{
   @apply h-[30px] rounded-[5px];
 }
-.codeCreator p{
-  @apply text-gradient text-lg;
-  font-family: 'ribeye';
-}
+
 .codeCreator{
   @apply flex flex-col justify-center items-center gap-3;
 }
-.codeCreator > input{
+/* .codeCreator > input{
   @apply border-primary outline-none px-2 rounded py-2 h-[25px] text-[0.85rem] text-black;
   font-family:'ribeye';
+} */
+ .codeCreator> section> p{
+  @apply text-sm justify-end border-[1px] rounded px-2 justify-end flex;
+  font-family: 'ribeye';
 }
-.codeCreator > div {
+.codeCreator > :last-child {
   @apply flex gap-2 justify-center items-center;
+}
+.codeCreator > :first-child{
+  @apply w-full flex justify-end;
+}
+.codeCreator>  :nth-child(2){
+  @apply flex flex-wrap justify-around items-center w-[250px] sm:w-auto gap-2;
 }
 .codeCreator > div> * {
   @apply w-[90px] text-[1rem] h-[30px];
     font-family:'ribeye';
 }
-.codeCreator > div > :nth-child(2){
+.codeCreator > div> p {
+  @apply !text-[0.85rem] !h-[30px] rounded border-[1px] text-center flex justify-center items-center cursor-pointer hover:bg-primary/20;
+    font-family:'ribeye';
+}
+.codeCreator > div > :nth-child(3) :not(p){
   @apply cursor-not-allowed bg-red-400 ;  
 }
 .no-close [data-state] > button[data-dialog-close],
