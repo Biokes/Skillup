@@ -19,7 +19,7 @@ One = { git = "https://github.com/one-chain-labs/onechain.git", subdir = "crates
 # Override = { local = "../conflicting/version", override = true }
 
 [addresses]
-chainskills_vault = "0x0"
+skillup = "0x0"
 
 # Named addresses will be accessible in Move as `@name`. They're also exported:
 # for example, `std = "0x1"` is exported by the Standard Library.
