@@ -1,18 +1,17 @@
 import Navbar from "@/components/commons/navbar";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { cn, TIMEOUT_DURATION, TOKEN_DECIMALS } from "@/lib/utils";
+import { cn, CONTRACT_TARGET, TIMEOUT_DURATION, TOKEN_DECIMALS, VAULT_OBJECT_ID } from "@/lib/utils";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { JoinGameResponse, JoinWithCodeResponse } from "@/types";
 import { Loader2 } from 'lucide-react';
 import { toast } from "sonner";
-import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit"
+import { useCurrentAccount, useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit"
 import { useOneChainGame } from "@/hooks/useOneChainGameContext";
 import { socketService } from "@/services/socketService"; 
 import { useNavigate } from "react-router-dom";
 import { Transaction } from "@mysten/sui/transactions";
-import { useSuiClient } from "@mysten/dapp-kit";
 import { Input } from "@/components/ui/input";
 
 function ConnectingSection({ onCancel }: { onCancel: () => void }) {
@@ -249,40 +248,54 @@ export default function Pong() {
     }, [address, code, connectFreeWithCode, proceedCreateOrJoin, startTimeout]);
 
     function stake() {
-        if (!address){
-            toast.error("Please Connect wallet");
-            return;
-        }
-         setModal({
-            open: true,
-            mode: "stake",
-            header: "Stake against anybody",
-            description: "compete and earn against other players around the world",
-            currentAction: 'stake'
-         });        
+        if (!address) return   toast.error("Please Connect wallet");
+         setModal({open: true,mode: "stake",header: "Stake against anybody",description: "compete and earn against other players around the world",currentAction: 'stake'});        
     }
 
     function stakeAgainstFriends() {
-        if (!address) {
-            toast.error("Please Connect wallet")
-            return;
-        }
-        setModal({
-        open: true,
-        mode: "friendlyStake",
-        header: "Stake against Friends",
-        description: "compete and earn against friends and relatives around the world",
-        currentAction: 'stake'
-        });
+        if (!address) return toast.error("Please Connect wallet")
+        setModal({open: true,mode: "friendlyStake",header: "Stake against Friends",description: "compete and earn against friends and relatives around the world",currentAction: 'stake'});
     }
+
     function cancelPayment() {
         setStakeAmount(0);
         setModal((prev) => ({ ...prev, open: false }))
     }
+
     function getRetryHandler() {
         if (modal.currentAction === "quickMatch") return handleRetryQuickMatch;
         if (modal.currentAction === "codeMatch") return handleRetryCodeMatch;
         return () => {};
+    }
+
+    async function handleStake() {
+        const stakingPrice = stakeAmount * TOKEN_DECIMALS;
+        if ( stakingPrice > userBalance) { 
+            return toast.error("StakeAmount is greater than your balance")
+        }
+        // let funcToCall = 0;
+        // socketService.getSocket().emit('checkStakedGame', { price: stakingPrice, walletAddress: address.toLowerCase() }, (response: { success: boolean }) => {
+        //     if (response.success) funcToCall = 1;
+        //     else funcToCall = 0;
+        // })
+        // if (funcToCall === 0) {
+        const createdCoins = await client.getCoins({owner: address,coinType: "0x2::sui::SUI"});
+        if (!createdCoins.data.length) return toast.error("An error occured while processing payment");
+        const coinId = createdCoins.data[0].coinObjectId;
+        const transaction = new Transaction();
+        const [paymentCoin] = transaction.splitCoins(transaction.object(coinId), [transaction.pure.u64(stakingPrice)]);
+        transaction.moveCall({ target: CONTRACT_TARGET,arguments:[transaction.object(VAULT_OBJECT_ID),paymentCoin]})
+        
+        try {
+            const result = await signAndExecute({ transaction: transaction });
+
+            toast.success("Joined match successfully!");
+            console.log(result);
+        }
+        catch (err) {
+            toast.error("Payment failed,please try again.");
+            console.error(err);
+        }
     }
 
     function getModalBody() {
@@ -303,40 +316,15 @@ export default function Pong() {
                 }}/>
             );
         }
-        if (modal.mode === 'stake') { 
+        if (modal.mode === 'stake') {
+            
             return (
-                <PaymentInput stakeAmount={stakeAmount} setStakeAmount={setStakeAmount} balance={userBalance} onProceed={async () => {
-                    // const userBalance = await client.getBalance({ owner: address }).totalBalance;
-                    if (stakeAmount > (userBalance / TOKEN_DECIMALS)) { 
-                        return toast.error("StakeAmount is greater than your balance")
-                    }
-                    const tx = new Transaction();
-                    const paymentFees = tx.splitCoins(tx.gas, [tx.pure.u64(BigInt(stakeAmount * TOKEN_DECIMALS))]);
-                    tx.moveCall({
-                        target: 'module::vault::stake',
-                        arguments:[paymentFees]
-                    })
-                    try {
-                        const result = await signAndExecute({ transaction: tx});
-                        toast.success("Joined match successfully!");
-                        console.log(result);
-                    }
-                    catch (err) {
-                        toast.error("Payment failed,please try again.");
-                        console.error(err);
-                    }
-                }} onCancel={cancelPayment}/>
+                <PaymentInput stakeAmount={stakeAmount} setStakeAmount={setStakeAmount} balance={userBalance} onProceed={handleStake} onCancel={cancelPayment}/>
             )
         }
         if (modal.mode === "friendlyStake") {
             return (
-                <PaymentInput stakeAmount={stakeAmount} setStakeAmount={setStakeAmount} balance={userBalance} onProceed={async () => {
-                    // const owner = await client.getBalance({owner: address})
-                    // console.log("owner: ", owner.totalBalance);
-                    // // console.log(client.getClient().options?.url)
-                    // // console.log(client.transport);
-                    // const tx = new Transaction();
-                }} onCancel={cancelPayment} />
+                <PaymentInput stakeAmount={stakeAmount} setStakeAmount={setStakeAmount} balance={userBalance} onProceed={handleStake} onCancel={cancelPayment} />
             )
         }
         return null;

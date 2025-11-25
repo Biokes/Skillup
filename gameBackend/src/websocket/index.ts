@@ -60,18 +60,18 @@ export class WebSocket {
 
   async listenToGameEvents(socket: Socket) {
     socket.on('quickMatch', async (quickMatchDto: QuickMatchDTO) => await this.sessionService.handleQuickMatch(quickMatchDto, socket));
-    socket.on('retryQuickMatch', async (dto: QuickMatchDTO) => await this.sessionService.handleRetryQuickMatch(dto, socket))
-    socket.on("cancelQuickMatch", async (walletAddress:string) => await this.sessionService.cancelQuickMatch(walletAddress,socket))
-    // socket.on('createQuickMatch', async (createRoomDto: CreateGameDTO) => await this.sessionService.createGameRoom(createRoomDto));
+    socket.on('retryQuickMatch', async (dto: QuickMatchDTO) => await this.sessionService.handleRetryQuickMatch(dto, socket));
+    socket.on("cancelQuickMatch", async (walletAddress: string) => await this.sessionService.cancelQuickMatch(walletAddress, socket));
     socket.on('joinRoom', async (joinRoomDTO: JoinRoomDTO) => await this.sessionService.joinRoom(joinRoomDTO, socket));
-    socket.on('cancelJoinRoom',async (canceProps: {walletAddress: string, roomCode: string})=> await this.sessionService.cancelCreateMatchWithCode(canceProps.walletAddress, socket, canceProps.roomCode))
+    socket.on('cancelJoinRoom', async (canceProps: { walletAddress: string, roomCode: string }) => await this.sessionService.cancelCreateMatchWithCode(canceProps.walletAddress, socket, canceProps.roomCode));
     socket.on("gameReady", async (data: ReadyGameDTO) => { await this.handleGameReady(socket, data);});
     socket.on("paddleMove", (data: PaddleMovementDTO) => { this.handlePaddleMove(socket, data); });
-    // socket.on("usePowerup", (data: { playerNumber: number; powerupType: string; gameId: string }) => {this.handlePowerup(socket, data);});
-    socket.on("forfeitGame", (data: { gameId: string; playerNumber: number }) => { this.handleForfeit(socket, data); });
-    socket.on("disconnect", () => {this.handleDisconnect(socket);});
-    socket.on("reconnect_attempt", () => { this.handleReconnect(socket); });
-    socket.on('validateSession', async (dto: { sessionId: string }, callback) => await this.sessionService.validateSession(dto.sessionId, callback))
+    socket.on("forfeitGame", (data: { gameId: string; playerNumber: number }) => { this.handleForfeit(socket, data)});
+    socket.on("disconnect", () => {this.handleDisconnect(socket)});
+    socket.on("reconnect_attempt", () => { this.handleReconnect(socket)});
+    socket.on('validateSession', async (dto: { sessionId: string }, callback) => await this.sessionService.validateSession(dto.sessionId, callback));
+    socket.on('checkStakedGame', async (dto: { price: number, walletAddress: string }, callback) => await this.sessionService.checkStakedMatch(dto, callback));
+    socket.on('createStakedMatch', async () => {})
   }
 
 

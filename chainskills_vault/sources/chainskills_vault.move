@@ -10,16 +10,17 @@ module chainskills_vault::chainskills_vault;
 module skillup::vault;
 
 
-    use sui::coin::{Self, Coin};
-    use sui::balance::{Self, Balance};
-    use sui::object::{Self, UID};
-    use sui::tx_context::{Self, TxContext};
-    use sui::transfer;
-    use sui::table::{Table, Self};
+    use one::coin::{Self, Coin};
+    use one::balance::{Self, Balance};
+    // use one::object::{Self, UID}; provided by default
+    // use one::tx_context::{Self, TxContext};  provided by default
+    // use one::transfer;  provided by default
+    use one::table::{Table, Self};
+    use one::tx_context::epoch;
+    use one::oct::OCT;
     use std::vector;
     use std::option::{Self, Option};
-    use sui::tx_context::epoch;
-    use one::sui::SUI;
+    use one::event;
 
     const ERROR_GAMEPLAY_PAUSED: u64 = 1001;
     const INVALID_AMOUNT: u64= 1002;
@@ -37,8 +38,8 @@ module skillup::vault;
 
     public struct GameVault has key {
         id: UID,
-        active_stakes: Balance<SUI>,
-        dev_fee_vault: Balance<SUI>,
+        active_stakes: Balance<OCT>,
+        dev_fee_vault: Balance<OCT>,
         owner: address,
         total_games: u64,
         paused: bool,
@@ -78,8 +79,8 @@ module skillup::vault;
         let deployer = tx_context::sender(context);
         let vault = GameVault {
                 id: object::new(ctx),
-                active_stakes: balance::zero<SUI>(),
-                dev_fee_vault: balance::zero<SUI>(),
+                active_stakes: balance::zero<OCT>(),
+                dev_fee_vault: balance::zero<OCT>(),
                 owner: deployer,
                 total_games: 0,
                 paused: false,
@@ -87,7 +88,7 @@ module skillup::vault;
         transfer::share_object(vault);
     }
 
-    public fun createGame(vault: &mut GameVault,payment: Coin<SUI>, context: &mut TxContext): UID{
+    public fun createGame(vault: &mut GameVault,payment: Coin<OCT>, context: &mut TxContext): UID{
         let sender = tx_context::sender(context);
         let amountPaid = coin::value(payment);
         assert!(!vault.paused, ERROR_GAMEPLAY_PAUSED);
@@ -112,7 +113,7 @@ module skillup::vault;
             isRefunded: false
         }
 
-        sui::event::emit(GameCreated{
+        event::emit(GameCreated{
             game_id,
             game.player1,
             game.stake_amount, 
@@ -123,7 +124,7 @@ module skillup::vault;
         game.id
     }
 
-    public fun requestRefund(vault: &mut GameVault, game: &mut GameSession, context: &mut TxContext): Coin<SUI>{
+    public fun requestRefund(vault: &mut GameVault, game: &mut GameSession, context: &mut TxContext): Coin<OCT>{
         assert!(!vault.paused,ERROR_GAMEPLAY_PAUSED );
         assert!(game.status == ACTIVE_STATUS, ERROR_GAME_ACTIVE);
         // let msgSender = tx_context::sender(ctx);
@@ -132,7 +133,7 @@ module skillup::vault;
         let refund_balance: u64 = balance::split(&mut vault.active_stakes, refund_amount);
         game.isRefunded = true;
         game.status = CANCELLED_STATUS;
-        sui::event::emit(RefundClaimed {
+        event::emit(RefundClaimed {
                 game_id: game.game_id,
                 player: sender,
                 amount: refund_amount,
@@ -141,13 +142,13 @@ module skillup::vault;
         coin::from_balance(refund_balance, ctx)
     }
 
-    public entry fun ownerWithdrawal( vault: &mut GameVault, ctx: &mut TxContext): Coin<SUI> {
+    public entry fun ownerWithdrawal( vault: &mut GameVault, ctx: &mut TxContext): Coin<OCT> {
         assert!(tx_context::sender(ctx) == vault.owner, ERR_UNAUTHORISED);
         let fee_balance = balance::split(&mut vault.dev_fee_vault, vault.dev_fee_vault);
         coin::from_balance(fee_balance, ctx)
     }
 
-    public fun joinGame(vault: &mut GameVault,game: &mut GameSession ,context: &mut TxContext,payment: Coin<SUI>){
+    public fun joinGame(vault: &mut GameVault,game: &mut GameSession ,context: &mut TxContext,payment: Coin<OCT>){
         let sender = tx_context::sender(ctx);
         let stakeAmount = coin::value(&payment);
 
@@ -164,7 +165,7 @@ module skillup::vault;
         game.total_pool = game.stake_amount * 2;
         game.status = ACTIVE_STATUS;
 
-        sui::event::emit(StakeCreated {
+        event::emit(StakeCreated {
             game_id: game.game_id,
             player: sender,
             amount,

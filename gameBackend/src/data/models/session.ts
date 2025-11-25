@@ -10,7 +10,7 @@ export class Session {
   roomCode?: string;
   @Column({default:'WAITING'})
   status!: string;
-@Column({default:false})
+  @Column({default:false})
   isStaked!: boolean;
   @Column({ nullable: true })
   player1?: string;
@@ -18,15 +18,4 @@ export class Session {
   player2?: string;
   @Column({ default: 0 })
   amount!: number;
-  // @AfterLoad()
-  // deriveRoomCode() {
-  //   if (this.id && !this.roomCode) {
-  //       this.roomCode = this.id.replace(/-/g, '')
-  //           .substring(0, 6)
-  //           .split('')
-  //           .map((char) => CHARS[parseInt(char, 16) % CHARS.length])
-  //           .join('')
-  //           .toUpperCase()
-  //   }
-  // }
 }

@@ -14,3 +14,5 @@ export const BALL_RADIUS = 8;
 export const PADDLE_MOVEMENT = 20;
 export const TIMEOUT_DURATION = 15000;
 export const TOKEN_DECIMALS = 10_000_000_000
+export const VAULT_OBJECT_ID = ''
+export const CONTRACT_TARGET = ''

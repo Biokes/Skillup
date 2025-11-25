@@ -5,10 +5,11 @@ import { QuickMatchDTO, quickMatchSchema } from "../data/DTO/QuickMatch";
 import { SessionRepository } from "../data/repositories/sessionRepository";
 import { Session } from "../data/models/Session";
 import { ChainSkillsException } from "../exceptions";
-import { ZodError } from "zod";
+import { success, ZodError } from "zod";
 import { GameService } from "./GameService";
 import { Game } from "../data/models/Game";
 import { SESSION_STATUS } from "../utils";
+import { IsNull } from "typeorm";
 
 export default class SessionService {
   private readonly sessionRepository: SessionRepository;
@@ -195,6 +196,28 @@ export default class SessionService {
     }
     callback({success:false})
   }
+
+  async checkStakedMatch(dto: { price: number, walletAddress: string }, callback: any) {
+    try {
+      const sessions = await this.sessionRepository.find({
+        where: {
+          status: SESSION_STATUS.WAITING,
+          amount: dto.price,
+          isStaked: true,
+          roomCode: IsNull()
+        }
+      })
+      let sessionFound = sessions.find((session) => !!session.player1 && session.player1.toLowerCase() !== dto.walletAddress);
+      if (sessionFound) { 
+        callback({ success: true })
+        return;
+      }
+      callback({success:false})
+    } catch (error: unknown) {
+      console.error("error: ", error);
+      callback({success:false})
+    }
+  }
     
   private joinAndEmitSession(socket: Socket, sessionFound: Session) {
     socket.join(`game-${sessionFound.id}`);
@@ -207,46 +230,4 @@ export default class SessionService {
       amount: sessionFound.amount
     });
   }
-
-  //       async handleCreateRoom(socket, data) {
-  //     const { gameType, player, roomCode } = data;
-  //     try {
-  //       const room = this.roomService.createRoom(gameType, player, socket.id, roomCode);
-  //       socket.join(room.code);
-  //       socket.emit('roomCreated', { roomCode: room.code, room });
-  //       console.log(`Room created: ${room.code} (${gameType})`);
-  //     } catch (error) {
-  //       socket.emit('error', { message: error.message });
-  //     }
-  //   }
-
-  //   async handleJoinRoom(socket, data) {
-  //     const { roomCode, player } = data;
-
-  //     try {
-  //       const result = this.roomService.joinRoom(roomCode, player, socket.id);
-
-  //       if (!result.success) {
-  //         socket.emit('error', { message: result.error });
-  //         return;
-  //       }
-
-  //       socket.join(roomCode);
-
-  //       const gameRecord = await this.gameRepo.findByRoomCode(roomCode);
-
-  //       if (gameRecord?.isStaked && !gameRecord.player2TxHash) {
-  //         socket.emit('stakedMatchJoined', {
-  //           roomCode,
-  //           stakeAmount: gameRecord.stakeAmount,
-  //           player1Address: gameRecord.player1Address
-  //         });
-  //         return;
-  //       }
-  //       this.io.to(roomCode).emit('roomReady', { room: result.room });
-  //       this.startGame(roomCode, result.room.gameType);
-  //     } catch (error) {
-  //       socket.emit('error', { message: error.message });
-  //     }
-  //   }
 }
