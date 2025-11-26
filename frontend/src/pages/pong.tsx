@@ -102,12 +102,14 @@ export default function Pong() {
         currentAction: "quickMatch" | "codeMatch"| "stake" | null; 
     }>({ open: false, mode: null, header: "", description: "", currentAction: null });
     const [userBalance, setUserBalance] = useState<number>(0);
+
     useEffect(() => {
         if (!socketService.isConnected()) {
             if (!address) return;
             socketService.connect(address);
             console.log("🔌 Socket initialized");
         }
+
         const onJoined = (response: JoinGameResponse) => {
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current);

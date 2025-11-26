@@ -47,6 +47,17 @@ export const GAME_CONSTANTS = {
   GAME_LOOP_INTERVAL_MS: 1000 / 60,
 };
 
+export interface PlayerGameState {
+  address: string;
+  paddleY: number;
+  score: number;
+  activePowerup: string | null;
+  powerupDuration: number;
+  powerupCooldowns: Record<string, number>;
+  shieldActive: boolean;
+  disconnected: boolean;
+  disconnectTime?: number;
+}
 export interface Ball {
   x: number;
   y: number;
@@ -62,17 +73,6 @@ export interface Paddle {
   speed: number;
 }
 
-export interface PlayerGameState {
-  address: string;
-  paddleY: number;
-  score: number;
-  activePowerup: string | null;
-  powerupDuration: number;
-  powerupCooldowns: Record<string, number>;
-  shieldActive: boolean;
-  disconnected: boolean;
-  disconnectTime?: number;
-}
 
 export interface GameState {
   gameId: string;

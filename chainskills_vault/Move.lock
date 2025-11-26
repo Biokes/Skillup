@@ -24,3 +24,11 @@ dependencies = [
 compiler-version = "1.0.1"
 edition = "2024.beta"
 flavor = "one"
+
+[env]
+
+[env.testnet]
+chain-id = "1bd5c965"
+original-published-id = "0xef7dbd1a7f268aa8eceec235c5d5d423049b667f1981902a405e313b013ffa92"
+latest-published-id = "0xef7dbd1a7f268aa8eceec235c5d5d423049b667f1981902a405e313b013ffa92"
+published-version = "1"

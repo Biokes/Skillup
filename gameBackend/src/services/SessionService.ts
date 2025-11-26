@@ -1,11 +1,10 @@
 import { Socket, Server } from "socket.io";
-// import { CreateGameDTO } from "@/src/data/DTO/CreateGame";
 import { JoinRoomDTO } from "@/src/data/DTO/joinRoom";
 import { QuickMatchDTO, quickMatchSchema } from "../data/DTO/QuickMatch";
 import { SessionRepository } from "../data/repositories/sessionRepository";
 import { Session } from "../data/models/Session";
 import { ChainSkillsException } from "../exceptions";
-import { success, ZodError } from "zod";
+import { ZodError } from "zod";
 import { GameService } from "./GameService";
 import { Game } from "../data/models/Game";
 import { SESSION_STATUS } from "../utils";
@@ -21,8 +20,6 @@ export default class SessionService {
     this.socketServer = server;
     this.gameService = new GameService(server)  
   }
-
-    // async createGameRoom(createDTO: CreateGameDTO) {}
 
   async joinRoom(joinRoomDTO: JoinRoomDTO, socket: Socket) {
     const wallet = joinRoomDTO.walletAddress.toLowerCase();

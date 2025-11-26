@@ -1,6 +1,4 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-// import { CHARS } from "../../utils";
-
 
 @Entity()
 export class Session {
