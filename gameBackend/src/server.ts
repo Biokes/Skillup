@@ -28,7 +28,8 @@ async function startServer() {
         httpServer.listen(Number(PORT), () => {
             console.log(`🚀 Server started on port ${PORT}`);
             console.log(`🔌 Socket.IO available at ws://localhost:${PORT}/socket.io/`);
-            setInterval(async () => { await selfPing() }, 50_000 * 6);
+            setInterval(async () => {
+                await selfPing() }, 50_000 * 6);
         });
     } catch (error) {
         console.error("error encountered while starting app : " + (error instanceof Error ? error.message : String(error)));

@@ -16,4 +16,6 @@ export class Session {
   player2?: string;
   @Column({ default: 0 })
   amount!: number;
+  @Column({ nullable: true })
+  gameObjectId?: string
 }
