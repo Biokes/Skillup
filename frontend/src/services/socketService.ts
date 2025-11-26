@@ -105,6 +105,16 @@ class SocketService {
     this.socket?.emit('cancelJoinRoom', {walletAddress: walletAddress.toLowerCase(), roomCode: code.toLowerCase()})
   }
 
+  createPaidMatch(gameId: string, paymentTransactionId: string, address: string, stakingPrice: number) {
+    this.ensureConnected()
+    this.socket?.emit('createPaidMatch', {
+      walletAddress: address,
+      amount: stakingPrice,
+      transactionId: paymentTransactionId,
+      gameId: gameId
+    })
+  }
+
   on(event: string, callback: Function) {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, []);

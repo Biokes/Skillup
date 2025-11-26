@@ -12,7 +12,7 @@ export default function OneChainProviders({ children }: { children: ReactNode })
     return (
         <QueryClientProvider client={queryClient}>
             <SuiClientProvider networks={networkConfig} defaultNetwork="onechainTestnet" >
-                <WalletProvider>
+                <WalletProvider autoConnect>
                         {children}
                 </WalletProvider>
             </SuiClientProvider>

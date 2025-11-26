@@ -1,17 +1,17 @@
 import Navbar from "@/components/commons/navbar";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { cn, CONTRACT_TARGET, TIMEOUT_DURATION, TOKEN_DECIMALS, VAULT_OBJECT_ID } from "@/lib/utils";
+import { cn, VAULT_PACKAGE_ID, TIMEOUT_DURATION, TOKEN_DECIMALS, VAULT_OBJECT_ID } from "@/lib/utils";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { JoinGameResponse, JoinWithCodeResponse } from "@/types";
 import { Loader2 } from 'lucide-react';
 import { toast } from "sonner";
 import { useCurrentAccount, useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit"
+import { Transaction } from "@mysten/sui/transactions";
 import { useOneChainGame } from "@/hooks/useOneChainGameContext";
 import { socketService } from "@/services/socketService"; 
 import { useNavigate } from "react-router-dom";
-import { Transaction } from "@mysten/sui/transactions";
 import { Input } from "@/components/ui/input";
 
 function ConnectingSection({ onCancel }: { onCancel: () => void }) {
@@ -196,24 +196,24 @@ export default function Pong() {
             currentAction:'quickMatch'
         });
     }
-    async function getUserBalance() {
+    const getUserBalance= useCallback(async ()=>{
         try {
             const balanceData = await client.getBalance({ owner: address });
             const totalBalance = balanceData?.totalBalance ?? "0";
-            return Number(totalBalance) / TOKEN_DECIMALS;
+            console.log("userbalance: ", totalBalance)
+            console.log("userbalance1: ", Number(totalBalance) / TOKEN_DECIMALS)
+            setUserBalance(Number(totalBalance) / TOKEN_DECIMALS);
         } catch (error: unknown) { 
             toast.error("Couldn't fetch balance, check your internet connection or refresh");
             console.error('bal error: ', error)
             return 0;
         }
-    }
+    },[address, client])
     useEffect(() => {
         if (address) {
-            getUserBalance().then(balance => {
-                setUserBalance(balance);
-            });
+            getUserBalance();
         }
-    }, [address]);
+    }, [address, getUserBalance]);
 
     function createOrJoinCode() {
         if (!address) return toast.info("Please connect wallet");
@@ -275,29 +275,57 @@ export default function Pong() {
         if ( stakingPrice > userBalance) { 
             return toast.error("StakeAmount is greater than your balance")
         }
-        // let funcToCall = 0;
-        // socketService.getSocket().emit('checkStakedGame', { price: stakingPrice, walletAddress: address.toLowerCase() }, (response: { success: boolean }) => {
-        //     if (response.success) funcToCall = 1;
-        //     else funcToCall = 0;
-        // })
-        // if (funcToCall === 0) {
-        const createdCoins = await client.getCoins({owner: address,coinType: "0x2::sui::SUI"});
-        if (!createdCoins.data.length) return toast.error("An error occured while processing payment");
-        const coinId = createdCoins.data[0].coinObjectId;
-        const transaction = new Transaction();
-        const [paymentCoin] = transaction.splitCoins(transaction.object(coinId), [transaction.pure.u64(stakingPrice)]);
-        transaction.moveCall({ target: CONTRACT_TARGET,arguments:[transaction.object(VAULT_OBJECT_ID),paymentCoin]})
-        
-        try {
-            const result = await signAndExecute({ transaction: transaction });
+        let funcToCall = 0;
+        socketService.getSocket().emit('checkStakedGame', { price: stakingPrice, walletAddress: address.toLowerCase() }, (response: { success: boolean }) => {
+            if (response.success) funcToCall = 1;
+            else funcToCall = 0;
+        })
+        console.log("mathc is available: ", funcToCall === 1);
+        // if (funcToCall == 0) {
+        //     const createdCoins = await client.getCoins({ owner: address, coinType: "0x2::oct::OCT" });
+        //     if (!createdCoins.data.length) return toast.error("An error occured while processing payment");
+        //     const coinId = createdCoins.data[0].coinObjectId;
+        //     const transaction = new Transaction();
+        //     const [paymentCoin] = transaction.splitCoins(transaction.object(coinId), [transaction.pure.u64(stakingPrice)]);
+        //     transaction.moveCall({ target: `${VAULT_PACKAGE_ID}::vault::createGame`, arguments: [transaction.object(VAULT_OBJECT_ID), paymentCoin] })
+        //     try {
+        //         const result = await signAndExecute({ transaction: transaction }, {
+        //             onSuccess: (response) => {
+        //                 const status = response.effects?.status?.status;
+        //                 // const error = response.effects?.status?.error;
+        //                 if (status === 'success') {
+        //                     console.log('Transaction successful');
+        //                     const gameId = response.objectChanges?.find(object => object.type === 'created' && object.objectType?.includes('GameSession'))?.objectId;
+        //                     const paymentTransactionId = response.digest;
+        //                     console.log('Game ID:', gameId);
+        //                     socketService.createPaidMatch(gameId, paymentTransactionId, address, stakingPrice);
+        //                 } else {
+        //                     const error = response.effects?.status?.error;
+        //                     if (error?.includes('1001')) {
+        //                         toast.error("Gameplay is paused");
+        //                     } else if (error?.includes('1002')) {
+        //                         toast.error("Invalid stake amount");
+        //                     } else if (error?.includes('1013')) {
+        //                         toast.error("Insufficient balance");
+        //                     } else {
+        //                         toast.error("Game creation failed");
+        //                     }
+        //                 }
+        //             },
+        //             onError: (error) => {
+        //                 toast.error("Payment failed, please try again.");
+        //                 console.error(error);
+        //             }
+        //         });
 
-            toast.success("Joined match successfully!");
-            console.log(result);
-        }
-        catch (err) {
-            toast.error("Payment failed,please try again.");
-            console.error(err);
-        }
+        //         toast.success("Joined match successfully!");
+        //         console.log(result);
+        //     }
+        //     catch (err) {
+        //         toast.error("Payment failed,please try again.");
+        //         console.error(err);
+        //     }
+        // }
     }
 
     function getModalBody() {
@@ -326,7 +354,7 @@ export default function Pong() {
         }
         if (modal.mode === "friendlyStake") {
             return (
-                <PaymentInput stakeAmount={stakeAmount} setStakeAmount={setStakeAmount} balance={userBalance} onProceed={handleStake} onCancel={cancelPayment} />
+                <PaymentInput stakeAmount={stakeAmount} setStakeAmount={setStakeAmount} balance={userBalance} onProceed={()=>{}} onCancel={cancelPayment} />
             )
         }
         return null;
@@ -347,6 +375,7 @@ export default function Pong() {
 
     const livegames =[]
     const players = []
+
     const BoostPack = () => (
         <section className="boostpack ">
             <nav>
@@ -401,6 +430,7 @@ export default function Pong() {
             }
         </div>
     )
+
     const HowToPlay = () => (
         <article className="howToPlay">
             <header>
