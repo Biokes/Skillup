@@ -119,7 +119,14 @@ export interface JoinWithCodeResponse{
   amount: number,
   gameId: number
 }
-
+export interface PaidGameWaitingResponse { 
+  sessionId: string,
+  status: string,
+  isStaked: boolean,
+  player1: string,
+  amount: number,
+  transaction: string
+}
 export interface GameBoardProps {
   playerNumber: 1 | 2;
   playerAddresses: { player1: string; player2: string };

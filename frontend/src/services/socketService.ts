@@ -64,6 +64,21 @@ class SocketService {
       toast.error("Please try again, something went wrong");      
       console.error("Quick match error: ", errorResponse)
     })
+    this.socket.on('cancelStakedMatchError', (res:  { successful: boolean, walletAddress:string, message: string }) => { 
+      console.error("cancelStakedMatchError: ", res);
+    })
+    this.socket.on('pauseStakedMatchError', (res:  { successful: boolean, walletAddress:string, message: string }) => { 
+      console.error("pauseStakedMatchError: ", res);
+    })
+    this.socket.on('createStakedMatchError', (res:  { successful: boolean, walletAddress:string, message: string }) => { 
+      console.error("createStakedMatchError: ", res);
+    })
+    this.socket.on('joinError', (res:  { successful: boolean, message: string }) => { 
+      console.error("joinError: ", res);
+    })
+    this.socket.on('cancelMatchWithCodeError', (res:  { successful: boolean, walletAddress:string, message: string }) => { 
+      console.error("cancelMatchWithCodeError: ", res);
+    })
   }
 
   gameReady(gameId: string, playerNumber: number, sessionId: string) {
