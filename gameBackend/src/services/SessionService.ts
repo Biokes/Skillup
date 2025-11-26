@@ -311,6 +311,14 @@ export default class SessionService {
       socket.emit("pauseStakedMatchError", { successful: false, walletAddress: dto.address, message: (error as Error).message });
     }
   }
+
+  async joinStakedMatch(dto: {}, socket: Socket) {
+    try { }
+    catch (error) { 
+      
+    }
+  }
+  
   private joinAndEmitSession(socket: Socket, sessionFound: Session) {
     socket.join(`game-${sessionFound.id}`);
     socket.emit("waitingWithCode", {
