@@ -70,8 +70,9 @@ export class WebSocket {
     socket.on('validateSession', async (dto: { sessionId: string }, callback) => await this.sessionService.validateSession(dto.sessionId, callback));
     socket.on('checkStakedGame', async (dto: { price: number, walletAddress: string }, callback) => await this.sessionService.checkStakedMatch(dto, callback));
     socket.on('createPaidMatch', async (dto: { gameId: string, paymentTransactionId: string, address: string, stakingPrice: number }, socket) => await this.sessionService.createStakedMatch(dto, socket));
-    socket.on('pauseGameConnection', async (dto: { gameId: string, paymentTransactionId: string, address: string, stakingPrice: number }) => await this.sessionService.pauseStakeGameConection(dto, socket))
-    
+    socket.on('pauseStakedGameConnection', async (dto: { sessionId: string, address: string, stakingPrice: number }) => await this.sessionService.pauseStakeGameConection(dto, socket))
+    socket.on('onStakedGameConnection', async (dto: {sessionId:string,address:string,stakingPrice: number, transactionId:string}) => await this.sessionService.onStakedGameConnection(dto, socket))
+    socket.on('cancelStakedGameConnection', async (dto: {sessionId:string,address:string,stakingPrice: number}) => await this.sessionService.cancelStakedGame(dto, socket))
   }
 
   private async handleGameReady(socket: Socket,readyGameData:ReadyGameDTO): Promise<void> {

@@ -10,6 +10,7 @@ import { Game } from "../data/models/Game";
 import { SESSION_STATUS } from "../utils";
 import { IsNull } from "typeorm";
 import { TransactionRepository } from "../data/repositories/transaction";
+import { Transaction } from "../data/models/Transaction";
 
 export default class SessionService {
   private readonly sessionRepository: SessionRepository;
@@ -227,16 +228,14 @@ export default class SessionService {
         status: SESSION_STATUS.WAITING,
         gameObjectId: dto.gameId
       });
-      const transactionCreated = await this.transactionRepo.create({ transactionDigest: dto.paymentTransactionId, gameObjectId: dto.gameId, amount: dto.stakingPrice, isValid: true })
-      socket.join(`paid-game-${sessionCreated.id}`);
-      socket.emit('waitingForPaidConnection', {
-        sessionId: sessionCreated.id,
-        status: sessionCreated.status,
-        isStaked: sessionCreated.isStaked,
-        player1: sessionCreated.player1,
-        amount: sessionCreated.amount,
-        transaction: transactionCreated.id
+      const transactionCreated = await this.transactionRepo.create({
+        owner: dto.address,
+        transactionDigest: dto.paymentTransactionId,
+        gameObjectId: dto.gameId,
+        amount: dto.stakingPrice,
+        isValid: true
       })
+      this.joinAndEmitPaidGameConnection(socket, sessionCreated, transactionCreated);
     }
     catch (error: unknown) {
       socket.emit("createStakedMatchError", { successful: false, walletAddress: dto.address, message: (error as Error).message });
@@ -244,11 +243,67 @@ export default class SessionService {
     }
   }
 
+  private joinAndEmitPaidGameConnection(socket:Socket, sessionCreated: Session, transactionCreated: Transaction) {
+    socket.join(`paid-game-${sessionCreated.id}`);
+    socket.emit('waitingForPaidConnection', {
+      sessionId: sessionCreated.id,
+      status: sessionCreated.status,
+      isStaked: sessionCreated.isStaked,
+      player1: sessionCreated.player1,
+      amount: sessionCreated.amount,
+      transaction: transactionCreated.id
+    });
+  }
+
   async pauseStakeGameConection(dto: {sessionId:string,address:string,stakingPrice: number}, socket: Socket) { 
     try {
       const sessionFound = await this.getSessionById(dto.sessionId);
-      if (sessionFound) {
-        await this.sessionRepository.update(dto.sessionId, { status:SESSION_STATUS.PAUSED })
+      if (
+        sessionFound && sessionFound.status == SESSION_STATUS.WAITING &&
+        sessionFound.amount == dto.stakingPrice && sessionFound.player1?.toLowerCase() == dto.address.toLowerCase() && !sessionFound.player2
+      ) {
+        await this.sessionRepository.update(dto.sessionId, { status: SESSION_STATUS.PAUSED })
+        socket.leave(`paid-game-${sessionFound.id}`)
+        return;
+      }
+      socket.emit("pauseStakedMatchError", { successful: false, walletAddress: dto.address, message: 'session not found'});
+     }
+    catch (error) {
+      socket.emit("pauseStakedMatchError", { successful: false, walletAddress: dto.address, message: (error as Error).message });
+    }
+  }
+
+  async cancelStakedGame(dto: { sessionId: string, address: string, stakingPrice: number }, socket: Socket) {
+    try{
+      const sessionFound = await this.getSessionById(dto.sessionId);
+      if (
+        sessionFound && (sessionFound.status == SESSION_STATUS.WAITING || sessionFound.status == SESSION_STATUS.PAUSED )&&
+        sessionFound.amount == dto.stakingPrice && sessionFound.player1?.toLowerCase() == dto.address.toLowerCase() && !sessionFound.player2
+      ) {
+        await this.sessionRepository.update(dto.sessionId, { status: SESSION_STATUS.ENDED })
+        socket.leave(`paid-game-${sessionFound.id}`)
+        // refund player
+        // contract execution to refund
+        return;
+      }
+      socket.emit("cancelStakedMatchError", { successful: false, walletAddress: dto.address, message: 'session not found' });
+    }catch (error) { 
+      socket.emit("cancelStakedMatchError", { successful: false, walletAddress: dto.address, message: (error as Error).message });
+    }
+  }
+
+  async onStakedGameConnection(dto: { sessionId: string, address: string, stakingPrice: number, transactionId:string }, socket: Socket) {
+     try {
+      const sessionFound = await this.getSessionById(dto.sessionId);
+      if (
+        sessionFound && sessionFound.status == SESSION_STATUS.PAUSED &&
+        sessionFound.amount == dto.stakingPrice && sessionFound.player1?.toLowerCase() == dto.address.toLowerCase() 
+      ) {
+        await this.sessionRepository.update(dto.sessionId, { status: SESSION_STATUS.WAITING })
+        const transaction = await this.transactionRepo.findById(dto.transactionId);
+        if(!transaction) throw new ChainSkillsException("invalid transaction id")
+        this.joinAndEmitPaidGameConnection(socket,sessionFound,transaction)
+        return;
       }
       socket.emit("pauseStakedMatchError", { successful: false, walletAddress: dto.address, message: 'session not found'});
      }
