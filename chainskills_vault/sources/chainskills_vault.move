@@ -24,6 +24,12 @@ const ERR_UNAUTHORISED: u64 = 1004;
 const INVALID_ACTION: u64 = 1005;
 const ERR_PLAYER2_SLOT_NOT_EMPTY: u64 = 1006;
 const ERR_CANNOT_JOIN_OWN_GAME: u64 = 1007;
+const ERR_GAME_NOT_ACTIVE: u64 = 1008;
+const ERR_INVALID_WINNER: u64 = 1009;
+const ERR_GAME_NOT_ENDED: u64 = 1010;
+const ERR_WINNER_ALREADY_CLAIMED: u64 = 1011;
+
+
 
 const WAITING_STATUS: u8 = 1;
 const ACTIVE_STATUS: u8 = 2;
@@ -63,6 +69,20 @@ public struct GameCreated has copy, drop {
     status: u8
 }
 
+public struct WinnerClaimed has copy, drop {
+    game_id: u64,
+    winner: address,
+    prize_amount: u64,
+    claimed_at: u64,
+}
+
+public struct GameEnded has copy, drop {
+    game_id: u64,
+    winner: address,
+    loser: address,
+    prize_amount: u64,
+    completed_at: u64,
+}
 public struct RefundClaimed has copy, drop {
     game_id: u64,
     player: address,
@@ -198,6 +218,61 @@ public fun joinGame( vault: &mut GameVault, game: &mut GameSession, context: &mu
     });
 }
 
+public fun endGame(vault: &GameVault, game: &mut GameSession, winner: address, context: &mut TxContext) {
+    let sender = tx_context::sender(context);
+    
+    assert!(sender == vault.owner, ERR_UNAUTHORISED);
+    assert!(game.status == ACTIVE_STATUS, ERR_GAME_NOT_ACTIVE);
+    let player2 = option::borrow(&game.player2);
+    assert!(winner == game.player1 || winner == *player2, ERR_INVALID_WINNER);
+    game.winner = option::some(winner);
+    game.status = ENDED_STATUS;
+    game.completed_at = tx_context::epoch(context);
+    
+    let loser = if (winner == game.player1) {
+        *player2
+    } else {
+        game.player1
+    };
+
+    event::emit(GameEnded {
+        game_id: game.game_id,
+        winner,
+        loser,
+        prize_amount: game.total_pool,
+        completed_at: game.completed_at,
+    });
+}
+
+public fun claimWinnerPrize(vault: &mut GameVault, game: &mut GameSession, context: &mut TxContext): Coin<OCT> {
+    let sender = tx_context::sender(context);
+    
+    assert!(!vault.paused, ERROR_GAMEPLAY_PAUSED);
+    assert!(game.status == ENDED_STATUS, ERR_GAME_NOT_ENDED);
+    assert!(!game.winner_claimed, ERR_WINNER_ALREADY_CLAIMED);
+    
+    let winner = option::borrow(&game.winner);
+    assert!(sender == *winner, ERR_UNAUTHORISED);
+    
+    let prize_amount = game.total_pool;
+    
+    let dev_fee = (prize_amount * 5) / 100;
+    let winner_payout = prize_amount - dev_fee;
+    
+    let mut total_balance = balance::split(&mut vault.active_stakes, prize_amount);
+    let dev_fee_balance = balance::split(&mut total_balance, dev_fee);
+    balance::join(&mut vault.dev_fee_vault, dev_fee_balance);
+    
+    game.winner_claimed = true;
+    event::emit(WinnerClaimed {
+        game_id: game.game_id,
+        winner: *winner,
+        prize_amount: winner_payout,
+        claimed_at: tx_context::epoch(context),
+    });
+
+    coin::from_balance(total_balance, context)
+}
 
 public fun toggleVaultPause(vault: &mut GameVault, ctx: &mut TxContext) {
     assert!(tx_context::sender(ctx) == vault.owner, ERR_UNAUTHORISED);
