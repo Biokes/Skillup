@@ -79,7 +79,7 @@ export class WebSocket {
     socket.on('pauseStakedGameConnection', async (dto: { sessionId: string, address: string, stakingPrice: number }) => await this.sessionService.pauseStakeGameConection(dto, socket))
     socket.on('onStakedGameConnection', async (dto: {sessionId:string,address:string,stakingPrice: number, transactionId:string}) => await this.sessionService.onStakedGameConnection(dto, socket))
     socket.on('cancelStakedGameConnection', async (dto: { sessionId: string, address: string, stakingPrice: number }) => await this.sessionService.cancelStakedGame(dto, socket));
-    socket.on('joinStakedMatch', async (dto: {}) => await this.sessionService.joinStakedMatch(dto, socket));
+    socket.on('joinStakedMatch', async (dto: { gameId:string, paymentTransactionId:string, address: string, stakingPrice: number }, socket:Socket) => await this.sessionService.joinStakedMatch(dto, socket));
   }
 
 

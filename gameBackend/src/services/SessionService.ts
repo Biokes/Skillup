@@ -8,7 +8,7 @@ import { ZodError } from "zod";
 import { GameService } from "./GameService";
 import { Game } from "../data/models/Game";
 import { SESSION_STATUS } from "../utils";
-import { IsNull } from "typeorm";
+import { IsNull, Not } from "typeorm";
 import { TransactionRepository } from "../data/repositories/transaction";
 import { Transaction } from "../data/models/Transaction";
 
@@ -226,12 +226,12 @@ export default class SessionService {
         amount: dto.stakingPrice,
         isStaked: true,
         status: SESSION_STATUS.WAITING,
-        gameObjectId: dto.gameId
+        gameObjectId: dto.gameId.toLowerCase()
       });
       const transactionCreated = await this.transactionRepo.create({
-        owner: dto.address,
-        transactionDigest: dto.paymentTransactionId,
-        gameObjectId: dto.gameId,
+        owner: dto.address.toLowerCase(),
+        transactionDigest: dto.paymentTransactionId.toLowerCase(),
+        gameObjectId: dto.gameId.toLowerCase(),
         amount: dto.stakingPrice,
         isValid: true
       })
@@ -312,8 +312,40 @@ export default class SessionService {
     }
   }
 
-  async joinStakedMatch(dto: {}, socket: Socket) {
-    try { }
+  async joinStakedMatch(dto: { gameId:string, paymentTransactionId:string, address: string, stakingPrice: number }, socket: Socket) {
+    try { 
+      const sessionsFound = await this.sessionRepository.findOne({ where:
+        {
+          status: SESSION_STATUS.WAITING,
+          isStaked: true,
+          amount: dto.stakingPrice,
+          gameObjectId: dto.gameId.toLowerCase(),
+          player1: Not(dto.address.toLowerCase()),
+        }
+      })
+      if (sessionsFound) { 
+        await this.sessionRepository.update(sessionsFound.id, {
+          player2: dto.address.toLowerCase(),
+          status: SESSION_STATUS.READY
+        })
+        await this.transactionRepo.create({
+            owner: dto.address.toLowerCase(),
+            transactionDigest: dto.paymentTransactionId.toLowerCase(),
+            gameObjectId: dto.gameId.toLowerCase(),
+            amount: dto.stakingPrice,
+            isValid: true
+        })
+       socket.join(`paid-game-${sessionsFound.id}`);
+       socket.emit('joinedPaidConnection', {
+          sessionId: sessionsFound.id,
+          status: sessionsFound.status,
+          isStaked: sessionsFound.isStaked,
+          player1: sessionsFound.player1,
+          amount: sessionsFound.amount,
+          transaction: transaction.id
+        });
+      }
+    }
     catch (error) { 
       
     }
