@@ -1,3 +1,4 @@
+import { SessionRepository } from './../data/repositories/sessionRepository';
 import { Server } from "socket.io";
 import { GameRepository } from "../data/repositories/gameRepository";
 import { Game } from "../data/models/Game";
@@ -9,6 +10,7 @@ import PlayerRepository from "../data/repositories/playerRepository";
 import { ChainSkillsException } from "../exceptions";
 import { Stats } from "../data/models/Stats";
 import { Player } from "../data/models/Player";
+import { PaymentService } from './paymentService';
 
 export class GameService {
   private readonly gameRepository: GameRepository;
@@ -16,12 +18,16 @@ export class GameService {
   private activeGames: Map<string, GameState> = new Map();
   private gameLoops: Map<string, NodeJS.Timeout> = new Map();
   private lastFrameTime: Map<string, number> = new Map();
-  private readonly playerRepo: PlayerRepository;  
-    
+  private readonly playerRepo: PlayerRepository; 
+  private readonly sessionRepository: SessionRepository;
+  private readonly paymentService: PaymentService;
+
   constructor(socketServer: Server) {
     this.gameRepository = new GameRepository();
     this.socketServer = socketServer;
     this.playerRepo = new PlayerRepository()
+    this.sessionRepository = new SessionRepository()
+    this.paymentService = new PaymentService()
   }
 
   async createGameForSession(session: Session,isStaked: boolean): Promise<Game> {
@@ -157,10 +163,41 @@ export class GameService {
     }, GAME_CONSTANTS.SCORE_PAUSE_DURATION_MS);
   }
 
+  private async isStakedGame(sessionId: string): Promise<boolean> {
+    const sessionFound = await this.sessionRepository.findById(sessionId)
+    if (!sessionFound) return false;
+    return sessionFound.isStaked;
+  }
+
   async endGame(gameId: string, winnerAddress: string): Promise<void> {
     const gameState = this.activeGames.get(gameId);
     if (!gameState) return;
-    if()
+    if (await this.isStakedGame(gameState.sessionId)) {
+      await this.endFreeGame(gameState, winnerAddress, gameId);
+      return;
+    }
+    await this.endStakedGame(gameId, winnerAddress, gameState);
+  }
+
+  private async endStakedGame(gameId: string, winnerAddress: string, gameState: GameState) { 
+    gameState.status = "ENDED";
+    gameState.winner = winnerAddress;
+    const { cleanWinner, cleanPlayer1, cleanPlayer2 } = this.cleanAddresses(winnerAddress, gameState);
+    const { winnerPlayer, loserPlayer } = await this.extractPlayersAndWinnerFromAddresses(cleanWinner, cleanPlayer1, cleanPlayer2);
+    this.updatePlayersStats(winnerPlayer, loserPlayer);
+    await this.playerRepo.save([winnerPlayer!, loserPlayer!]);
+    this.stopGameLoop(gameId);
+    this.socketServer.to(`paid-game-${gameId}`).emit("gameOver", { winner: winnerAddress, score1: gameState.player1.score, score2: gameState.player2.score, message: `${winnerAddress} wins!`, });
+    try {
+      const game = await this.gameRepository.findOne({ where: { id: gameState.gameId } });
+      if (game && winnerPlayer) await this.gameRepository.update(gameState.gameId, { winner: winnerPlayer });
+      await this.paymentService.settleWinner(winnerAddress, game!);
+    } catch (error) {
+      throw new ChainSkillsException(`Error saving game result: ${error instanceof Error ? error: (error as Error).message}`);
+    }
+    this.cleanUpGameAfterEnding(gameId);
+  }
+  private async endFreeGame(gameState: GameState, winnerAddress: string, gameId: string) {
     gameState.status = "ENDED";
     gameState.winner = winnerAddress;
     const { cleanWinner, cleanPlayer1, cleanPlayer2 } = this.cleanAddresses(winnerAddress, gameState);
@@ -169,15 +206,15 @@ export class GameService {
     await this.playerRepo.save([winnerPlayer!, loserPlayer!]);
     this.stopGameLoop(gameId);
     try {
-        const game = await this.gameRepository.findOne({where: { id: gameState.gameId }});
-        if (game && winnerPlayer) await this.gameRepository.update(gameState.gameId, { winner: winnerPlayer });
+      const game = await this.gameRepository.findOne({ where: { id: gameState.gameId } });
+      if (game && winnerPlayer) await this.gameRepository.update(gameState.gameId, { winner: winnerPlayer });
     } catch (error) {
       throw new ChainSkillsException(`Error saving game result: ${(error as Error).message}`);
     }
-    this.socketServer.to(`game-${gameId}`).emit("gameOver", { winner: winnerAddress, score1: gameState.player1.score, score2: gameState.player2.score, message: `${winnerAddress} wins!`,});
+    this.socketServer.to(`game-${gameId}`).emit("gameOver", { winner: winnerAddress, score1: gameState.player1.score, score2: gameState.player2.score, message: `${winnerAddress} wins!`, });
     this.cleanUpGameAfterEnding(gameId);
   }
-  
+
   stopGameLoop(gameId: string): void {
     const loop = this.gameLoops.get(gameId);
     if (loop) {
