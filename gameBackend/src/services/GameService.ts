@@ -172,7 +172,7 @@ export class GameService {
   async endGame(gameId: string, winnerAddress: string): Promise<void> {
     const gameState = this.activeGames.get(gameId);
     if (!gameState) return;
-    if (await this.isStakedGame(gameState.sessionId)) {
+    if (!await this.isStakedGame(gameState.sessionId)) {
       await this.endFreeGame(gameState, winnerAddress, gameId);
       return;
     }

@@ -57,6 +57,7 @@ export default class SessionService {
         !!session.player1 &&
         session.player1.toLowerCase() !== wallet
     );
+    
     if (sessionFound) {
       const updatedSession = await this.sessionRepository.update(sessionFound.id, {
         player2: wallet,
@@ -98,14 +99,31 @@ export default class SessionService {
  
   async findQuickMatch(quickMatchDTO: QuickMatchDTO): Promise<Session> {
     try {
-      const existing = await this.sessionRepository.findOne({ where: { player1: quickMatchDTO.walletAddress, status: SESSION_STATUS.WAITING, isStaked: quickMatchDTO.isStaked, amount: quickMatchDTO.amount }, });
+      const existing = await this.sessionRepository.findOne({
+        where: {
+          player1: quickMatchDTO.walletAddress,
+          status: SESSION_STATUS.WAITING,
+          isStaked: quickMatchDTO.isStaked,
+          amount: quickMatchDTO.amount,
+          roomCode: IsNull()
+        },
+      });
       if (existing) return existing;
       const foundSessions: Session[] = await this.sessionRepository.find({ where: { status: SESSION_STATUS.WAITING, isStaked: quickMatchDTO.isStaked, amount: quickMatchDTO.amount } });
       const availableSession = foundSessions.find((entity) => entity.player1 !== quickMatchDTO.walletAddress);
       if (availableSession) {
-        return (await this.sessionRepository.update(availableSession.id, { player2: quickMatchDTO.walletAddress, status: SESSION_STATUS.READY, isStaked: quickMatchDTO.isStaked, amount: quickMatchDTO.amount, })) as Session;
+        return (await this.sessionRepository.update(availableSession.id, {
+          player2: quickMatchDTO.walletAddress,
+          status: SESSION_STATUS.READY, isStaked: quickMatchDTO.isStaked,
+          amount: quickMatchDTO.amount,
+        })) as Session;
       }
-      return await this.sessionRepository.create({ player1: quickMatchDTO.walletAddress, amount: quickMatchDTO.amount, isStaked: quickMatchDTO.isStaked, status: SESSION_STATUS.WAITING });
+      return await this.sessionRepository.create({
+        player1: quickMatchDTO.walletAddress,
+        amount: quickMatchDTO.amount,
+        isStaked: quickMatchDTO.isStaked,
+        status: SESSION_STATUS.WAITING
+      });
     } catch (error) {
       throw new ChainSkillsException(`Error finding quickMatch: ${(error as Error).message}, at SessionService.ts:findQuickMatch`);
     }
