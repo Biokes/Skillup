@@ -190,7 +190,6 @@ export class GameService {
     this.socketServer.to(`paid-game-${gameId}`).emit("gameOver", { winner: winnerAddress, score1: gameState.player1.score, score2: gameState.player2.score, message: `${winnerAddress} wins!`, });
     try {
       const game = await this.gameRepository.findOne({ where: { id: gameState.gameId } });
-      if (game && winnerPlayer) await this.gameRepository.update(gameState.gameId, { winner: winnerPlayer });
       const reciept = await this.paymentService.settleWinner(winnerAddress, game!);
       await this.gameRepository.update(game!.id, {
         isPaid: true,
@@ -198,10 +197,11 @@ export class GameService {
         isValidForPayment: false,
         paymentTx: reciept
       } )
+      this.cleanUpGameAfterEnding(gameId);
+      if (game && winnerPlayer) await this.gameRepository.update(gameState.gameId, { winner: winnerPlayer });
     } catch (error) {
       throw new ChainSkillsException(`Error saving game result: ${error instanceof Error ? error: (error as Error).message}`);
     }
-    this.cleanUpGameAfterEnding(gameId);
   }
   private async endFreeGame(gameState: GameState, winnerAddress: string, gameId: string) {
     gameState.status = "ENDED";
