@@ -38,7 +38,8 @@ export class PaymentService {
         })
         if (result.effects?.status.error) {
             throw new ChainSkillsException(`error settling winner: ${result.effects?.status.error}`)
-         }
+        }
+        return result.digest;
     }
 
 }

@@ -17,5 +17,14 @@ export class Game {
     winner?: Player;
     @Column({default:false})
     isStaked!: boolean;
-    
-}
+    @Column({ default: false })
+    isValidForPayment!: boolean;
+    @Column({ default: false })
+    isPaid!: boolean;
+
+    @Column({ nullable: true })
+    paymentTx?: string;
+
+    @Column({ nullable: true })
+    paidAt?: Date;
+}   

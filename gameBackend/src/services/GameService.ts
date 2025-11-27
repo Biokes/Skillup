@@ -191,7 +191,13 @@ export class GameService {
     try {
       const game = await this.gameRepository.findOne({ where: { id: gameState.gameId } });
       if (game && winnerPlayer) await this.gameRepository.update(gameState.gameId, { winner: winnerPlayer });
-      await this.paymentService.settleWinner(winnerAddress, game!);
+      const reciept = await this.paymentService.settleWinner(winnerAddress, game!);
+      await this.gameRepository.update(game!.id, {
+        isPaid: true,
+        paidAt: new Date(),
+        isValidForPayment: false,
+        paymentTx: reciept
+      } )
     } catch (error) {
       throw new ChainSkillsException(`Error saving game result: ${error instanceof Error ? error: (error as Error).message}`);
     }
