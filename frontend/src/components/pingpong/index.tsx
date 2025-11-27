@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import Navbar from "../commons/navbar";
 import { useRef, useState, useEffect } from "react";
-import { CountdownState, GameState } from "@/types";
+import { CountdownState, GameState, PongGameState } from "@/types";
 import { BALL_RADIUS, CANVAS_HEIGHT, CANVAS_WIDTH, PADDLE_WIDTH } from "@/lib/utils";
 import { socketService } from "@/services/socketService";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -13,19 +13,32 @@ import { Button } from "../ui/button";
 export default function PingPongGame() {
   const { state } = useLocation();
   const navigate = useNavigate();
+ 
 
   useEffect(() => {
-      if (!state?.sessionId || !state?.gameId || !state?.player1 || !state?.player2) {
-          navigate("/");
-          return;
+    const requiredFields = ['sessionId', 'player1', 'player2'];
+    const missingFields = requiredFields.filter(field => !state[field as keyof PongGameState]);
+
+    if (!state) {
+      toast.error("No game data found. Please create or join a game first.");
+      navigate("/");
+      return;
     }
 
-      socketService.getSocket().emit("validateSession", { sessionId: state?.sessionId }, (response:{success:boolean}) => {
-              if (!response.success) {
-                  toast.error("Create a game to play first");
-                  navigate("/")
-              }
-      })
+    if (missingFields.length > 0) {
+      console.error("Missing required fields:", missingFields);
+      toast.error("Invalid game data. Please try again.");
+      navigate("/");
+      return;
+    }
+
+    socketService.getSocket().emit("validateSession", { sessionId: state?.sessionId }, (response:{success:boolean}) => {
+      if (!response.success) {
+          toast.error("Create a game to play first");
+          navigate("/")
+      }
+    })
+    
   }, [])
   
   const powerups = [
