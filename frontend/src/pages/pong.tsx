@@ -62,7 +62,7 @@ export default function Pong() {
                 if (joined) {
                     setTimedOut(false);
                     setModal({ description: "", header: '', currentAction: null, mode: null, open: false });
-                    navigate("/pong", { state: response });
+                    navigate("/pong", { state: {...response, gameType: 'quickfree'}});
                 }
             }
         };
@@ -80,28 +80,47 @@ export default function Pong() {
                 if (joined) {
                     setTimedOut(false);
                     setModal({ description: "", header: '', currentAction: null, mode: null, open: false });
-                    navigate("/pong", { state: response });
+                    navigate("/pong", { state: {...response, gameType: 'freeCoded'} });
                 }
             }
         }
+
+        const handleJoiningPaidGame = (response: { sessionId: string, status: string, isStaked: boolean, player1: string, player2: string, amount: number, game: string }) => {
+             if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+            }
+            if (address) { 
+                const joined = response.player1.toLowerCase() === address.toLowerCase() || response.player2.toLowerCase() === address.toLowerCase();
+                 if (joined) {
+                    setTimedOut(false);
+                    setModal({ description: "", header: '', currentAction: null, mode: null, open: false });
+                    navigate("/pong", { state: {...response, status:"staked"} });
+                }
+            }
+
+        }
+        
         const handleWaitForPaidConection = (response: PaidGameWaitingResponse) => {
             const isOwnedConnection = response.player1.toLowerCase() === address;
-            if (isOwnedConnection) setPaidGameResponse(response);
+        if (isOwnedConnection) setPaidGameResponse(response);
         }
+        
         socketService.on("joined", onJoined);
         socketService.on('joinedWithCode', joinWithCode);
         socketService.on('waitingForPaidConnection', handleWaitForPaidConection)
+        socketService.on('joinedPaidConnection',handleJoiningPaidGame)
 
         return () => {
             socketService.off("joined");
             socketService.off('joinedWithCode')
+            socketService.off('joinedPaidConnection')
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
     }, [address, navigate]);
 
     const startTimeout = useCallback((cancelFn: () => void) => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
         timeoutRef.current = setTimeout(() => {
             cancelFn();
             setTimedOut(true);

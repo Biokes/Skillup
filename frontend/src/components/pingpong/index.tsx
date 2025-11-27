@@ -18,7 +18,8 @@ export default function PingPongGame() {
       if (!state?.sessionId || !state?.gameId || !state?.player1 || !state?.player2) {
           navigate("/");
           return;
-      }
+    }
+
       socketService.getSocket().emit("validateSession", { sessionId: state?.sessionId }, (response:{success:boolean}) => {
               if (!response.success) {
                   toast.error("Create a game to play first");

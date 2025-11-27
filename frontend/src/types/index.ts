@@ -149,3 +149,13 @@ export interface CountdownState {
   active: boolean;
   remaining: number;
 }
+export interface PongGameState {
+    sessionId: string;
+    gameId?: string;
+    player1: string;
+    player2: string;
+    amount?: number;
+    isStaked: boolean;
+    gameType: "quickfree" | "freeCoded" | "staked" | "stakedCoded";
+    roomId?: string;
+}
