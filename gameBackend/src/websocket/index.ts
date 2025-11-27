@@ -23,7 +23,7 @@ export class WebSocket {
     this.socketServer = createServer(app);
     this.server = new Server(this.socketServer, {
       cors: {
-        origin: this.FRONTEND_URL,
+        // origin: this.FRONTEND_URL,
         methods: ["GET", "POST", "PATCH"],
         credentials: true,
         allowedHeaders: ["*"],

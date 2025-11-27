@@ -70,7 +70,7 @@ export default class SessionService {
         return;
       }
       sessionFound = updatedSession;
-      const game: Game = await this.gameService.createGameForSession(sessionFound);
+      const game: Game = await this.gameService.createGameForSession(sessionFound,false);
       socket.join(`game-${sessionFound.id}`);
       this.socketServer.to(`game-${sessionFound.id}`).emit("joinedWithCode", {
         sessionId: sessionFound.id,
@@ -125,7 +125,7 @@ export default class SessionService {
     const session: Session = await this.findQuickMatch(validatedDto!);
     socket.join(`game-${session.id}`);
     if (session.player2) {
-      const game: Game = await this.gameService.createGameForSession(session)
+      const game: Game = await this.gameService.createGameForSession(session, false)
       this.socketServer.to(`game-${session.id}`).emit("joined", {
         sessionId: session.id,
         status: session.status,
@@ -243,18 +243,6 @@ export default class SessionService {
     }
   }
 
-  private joinAndEmitPaidGameConnection(socket:Socket, sessionCreated: Session, transactionCreated: Transaction) {
-    socket.join(`paid-game-${sessionCreated.id}`);
-    socket.emit('waitingForPaidConnection', {
-      sessionId: sessionCreated.id,
-      status: sessionCreated.status,
-      isStaked: sessionCreated.isStaked,
-      player1: sessionCreated.player1,
-      amount: sessionCreated.amount,
-      transaction: transactionCreated.id
-    });
-  }
-
   async pauseStakeGameConection(dto: {sessionId:string,address:string,stakingPrice: number}, socket: Socket) { 
     try {
       const sessionFound = await this.getSessionById(dto.sessionId);
@@ -314,8 +302,7 @@ export default class SessionService {
 
   async joinStakedMatch(dto: { gameId:string, paymentTransactionId:string, address: string, stakingPrice: number }, socket: Socket) {
     try { 
-      const sessionsFound = await this.sessionRepository.findOne({ where:
-        {
+      const sessionsFound = await this.sessionRepository.findOne({ where:{
           status: SESSION_STATUS.WAITING,
           isStaked: true,
           amount: dto.stakingPrice,
@@ -335,14 +322,16 @@ export default class SessionService {
             amount: dto.stakingPrice,
             isValid: true
         })
-       socket.join(`paid-game-${sessionsFound.id}`);
-       socket.emit('joinedPaidConnection', {
+        const game: Game = await this.gameService.createGameForSession(sessionsFound, true);
+        socket.join(`paid-game-${sessionsFound.id}`)
+        this.socketServer.to(`paid-game-${sessionsFound.id}`).emit('joinedPaidConnection', {
           sessionId: sessionsFound.id,
           status: sessionsFound.status,
           isStaked: sessionsFound.isStaked,
           player1: sessionsFound.player1,
+          player2: sessionsFound.player2,     
           amount: sessionsFound.amount,
-          transaction: transaction.id
+          game: game.id
         });
       }
     }
@@ -362,5 +351,18 @@ export default class SessionService {
       amount: sessionFound.amount
     });
   }
+
+  private joinAndEmitPaidGameConnection(socket: Socket, sessionCreated: Session, transactionCreated: Transaction) {
+    socket.join(`paid-game-${sessionCreated.id}`);
+    socket.emit('waitingForPaidConnection', {
+      sessionId: sessionCreated.id,
+      status: sessionCreated.status,
+      isStaked: sessionCreated.isStaked,
+      player1: sessionCreated.player1,
+      amount: sessionCreated.amount,
+      transaction: transactionCreated.id
+    });
+  }
+
 
 }

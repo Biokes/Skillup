@@ -1,4 +1,4 @@
-import { Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Session } from "./Session";
 import { Player } from "./Player";
 
@@ -15,4 +15,7 @@ export class Game {
     @JoinColumn()
     @ManyToOne(() => Player, { cascade: true, eager: true })
     winner?: Player;
+    @Column({default:false})
+    isStaked!: boolean;
+    
 }

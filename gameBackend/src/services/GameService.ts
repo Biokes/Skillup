@@ -24,8 +24,8 @@ export class GameService {
     this.playerRepo = new PlayerRepository()
   }
 
-  async createGameForSession(session: Session): Promise<Game> {
-    return await this.gameRepository.create({ session });
+  async createGameForSession(session: Session,isStaked: boolean): Promise<Game> {
+    return await this.gameRepository.create({session, isStaked});
   }
 
   async initializeGame(session: Session, gameId: string): Promise<GameState> {
@@ -160,6 +160,7 @@ export class GameService {
   async endGame(gameId: string, winnerAddress: string): Promise<void> {
     const gameState = this.activeGames.get(gameId);
     if (!gameState) return;
+    if()
     gameState.status = "ENDED";
     gameState.winner = winnerAddress;
     const { cleanWinner, cleanPlayer1, cleanPlayer2 } = this.cleanAddresses(winnerAddress, gameState);
@@ -173,7 +174,6 @@ export class GameService {
     } catch (error) {
       throw new ChainSkillsException(`Error saving game result: ${(error as Error).message}`);
     }
-
     this.socketServer.to(`game-${gameId}`).emit("gameOver", { winner: winnerAddress, score1: gameState.player1.score, score2: gameState.player2.score, message: `${winnerAddress} wins!`,});
     this.cleanUpGameAfterEnding(gameId);
   }
