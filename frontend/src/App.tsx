@@ -2,10 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/landingPage";
-import GameProviders from "./contexts/GameContext";
+// import GameProviders from "./contexts/GameContext";
 import Pong from "./pages/pong"
 import OneChainProviders from "./contexts/OneChainProvider";
 import OneChainGameProviders from "./contexts/OneChainGameContext";
@@ -14,12 +13,11 @@ import PingPongGame from "./components/pingpong";
 const App = () => (
   <OneChainProviders>
     <OneChainGameProviders>
-      <GameProviders>
+      {/* <GameProviders> */}
         <TooltipProvider>
           <BrowserRouter>
             <Routes>
               <Route path="/home" element={<LandingPage />} />
-              {/* <Route path="/home" element={<Index />} /> */}
               <Route path="*" element={<NotFound />} />
               <Route path='/' element={<Pong />} />
               <Route path='/pong' element={ <PingPongGame/>}/>
@@ -28,7 +26,7 @@ const App = () => (
           <Toaster />
           <Sonner />
         </TooltipProvider>
-      </GameProviders>
+      {/* </GameProviders> */}
     </OneChainGameProviders>
   </OneChainProviders>
  

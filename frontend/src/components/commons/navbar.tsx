@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { ConnectButton } from "@mysten/dapp-kit";
-import { Button } from "../ui/button";
+import { ConnectButton, ConnectModal, useCurrentAccount } from "@onelabs/dapp-kit";
+// import { useState } from "react";
 
 export default function Navbar() {
     const navigate = useNavigate()
@@ -10,7 +10,8 @@ export default function Navbar() {
             <aside className='w-[70px] h-[70%] cursor-pointer' onClick={() => navigate('/')}>
                 <img src="/logo.png" alt="logo" className="w-full h-full object-cover object-contain" />
             </aside>
-            <ConnectButton className='connectButton' />
+            { }
+            <ConnectButton className="connectButton"/>
         </nav>
     )
 }

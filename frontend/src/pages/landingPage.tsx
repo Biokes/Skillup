@@ -3,12 +3,12 @@
   import Footer from "../components/commons/footer";
   import Navbar from "../components/commons/navbar";
   import { useNavigate } from "react-router-dom";
-  import { useCurrentAccount} from "@mysten/dapp-kit"
+  import { useCurrentAccount} from "@onelabs/dapp-kit"
   import { toast } from "@/components/ui/sonner";
 
   export default function LandingPage() {
     const navigate = useNavigate()
-    const account = useCurrentAccount() ?? {};
+    const account = useCurrentAccount();
     const address = account?.address ?? null
 
     const Hero = () => (

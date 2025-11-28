@@ -22,6 +22,21 @@ export default function OneChainGameProviders({ children }: { children: ReactNod
     const cancelQuickMatch = useCallback((walletAddress: string) => { 
         socketService.cancelMatch(walletAddress);
     }, [])
+
+    const cancelCreateOrJoinMatch = useCallback((walletAddress: string, code: string) => {
+        socketService.cancelCreateOrJoinMatch(walletAddress, code)
+    }, [])
+    
+    const connectFreeWithCode = useCallback((walletAddress: string, code: string) => {
+        socketService.connectWithCode(walletAddress, code);
+    }, [])
+
+    const connectPaid = useCallback((walletAddress: string, amount:number) => { 
+
+    }, [])
+    const connectPaidWithCode = useCallback((walletadddress: string, code: string, amount: number) => { 
+
+    },[])
     
     return (
         <OneChainGameContext.Provider value={{
@@ -29,7 +44,11 @@ export default function OneChainGameProviders({ children }: { children: ReactNod
             setErrorMessage,
             quickMatch,
             retryQuickMatch,
-            cancelQuickMatch
+            cancelQuickMatch,
+            cancelCreateOrJoinMatch,
+            connectFreeWithCode,
+            connectPaid,
+            connectPaidWithCode
         }}>
             { children}
         </OneChainGameContext.Provider>

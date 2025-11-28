@@ -1,44 +1,17 @@
-import mongoose from "mongoose";
-import { IPlayer } from "./types.js";
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, } from "typeorm";
+import { Stats } from './Stats';
 
-const playerSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-      unique: false,
-      trim: true,
-      index: true,
-    },
-    walletAddress: {
-      type: String,
-      lowercase: true,
-      sparse: true,
-      index: true,
-      unique: true,
-      required: true,
-    },
-    avatar: {
-      type: String,
-      default: null,
-    },
-    lastActive: {
-      type: Date,
-      default: Date.now,
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
-
-playerSchema.index({ name: 1 });
-playerSchema.index({ walletAddress: 1 });
-playerSchema.methods.updateActivity = function (): Promise<IPlayer> {
-  this.lastActive = new Date();
-  return this.save();
-};
-
-const Player = mongoose.model<IPlayer>("Player", playerSchema);
-
-export default Player;
+@Entity()
+export class Player {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
+  @Column({ default: "", nullable: false })
+  username!: string;
+  @Column({ unique: true, nullable: false })
+  walletAddress!: string;
+  @Column({ nullable: false, default:'' })
+  avatarURL!: string;
+  @OneToOne(() => Stats, { cascade: true, eager: true })
+  @JoinColumn()
+  stats?: Stats;
+}

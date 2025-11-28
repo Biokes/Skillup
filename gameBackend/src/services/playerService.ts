@@ -1,8 +1,10 @@
-import PlayerRepository from "../data/db/playerRepository";
+import PlayerRepository from "../data/repositories/playerRepository";
 import { ChainSkillsException } from "../exceptions"
 
 export default class PlayerService {
+    
     private readonly playerRepository: PlayerRepository;
+    
     constructor() { 
         this.playerRepository = new PlayerRepository();
     }
@@ -16,7 +18,22 @@ export default class PlayerService {
     async findByWalletAddress(walletAddress:string) {
         return await this.playerRepository.findOne({where:{ walletAddress: walletAddress.toLowerCase() }});
     }
+
     async findByName(name: string) {
         return this.playerRepository.find({ where: {username:name.toLowerCase()} })
+    }
+
+    async fetchLeaderBoard(): Promise<{ walletAddress: string; avatarURL: string; username: string; ratings: number }[]>{
+        const players = await this.playerRepository.find({
+            order: {stats: {rating: "DESC"}},
+            take: 20
+        });
+
+        return players.map(player => ({
+            walletAddress: player.walletAddress,
+            avatarURL: player.avatarURL,
+            username: player.username,
+            ratings: player.stats?.rating ?? 0
+        }));
     }
  }

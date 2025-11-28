@@ -17,26 +17,48 @@ export async function selfPing() {
 }
 
 export const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+export const SESSION_STATUS = {
+  WAITING: 'WAITING',
+  READY: 'READY',
+  ENDED: "ENDED",
+  PAUSED:"PAUSED"
+}
+export const XP = {
+  WIN: 100,
+  LOSS: 30
+}
 export const GAME_CONSTANTS = {
   CANVAS_WIDTH: 800,
-  CANVAS_HEIGHT: 600,
+  CANVAS_HEIGHT: 500,
   PADDLE_WIDTH: 15,
   PADDLE_HEIGHT: 100,
   PADDLE_HEIGHT_STRETCHED: 150,
   BALL_RADIUS: 8,
   BALL_SPEED_INITIAL: 5,
-  BALL_SPEED_MAX: 15,
+  BALL_SPEED_MAX: 8,
   BALL_ACCELERATION: 1.05,
   WIN_SCORE: 5,
   POWERUP_DURATION_FRAMES: 300,
   POWERUP_COOLDOWN_MS: 3000,
   DISCONNECT_TIMEOUT_MS: 5000,
   COUNTDOWN_DURATION_MS: 3000,
-  SCORE_PAUSE_DURATION_MS: 1000,
+  SCORE_PAUSE_DURATION_MS: 3000,
   GAME_LOOP_FPS: 60,
   GAME_LOOP_INTERVAL_MS: 1000 / 60,
 };
 
+export interface PlayerGameState {
+  address: string;
+  paddleY: number;
+  score: number;
+  activePowerup: string | null;
+  powerupDuration: number;
+  powerupCooldowns: Record<string, number>;
+  shieldActive: boolean;
+  disconnected: boolean;
+  disconnectTime?: number;
+}
 export interface Ball {
   x: number;
   y: number;
@@ -52,17 +74,6 @@ export interface Paddle {
   speed: number;
 }
 
-export interface PlayerGameState {
-  address: string;
-  paddleY: number;
-  score: number;
-  activePowerup: string | null;
-  powerupDuration: number;
-  powerupCooldowns: Record<string, number>;
-  shieldActive: boolean;
-  disconnected: boolean;
-  disconnectTime?: number;
-}
 
 export interface GameState {
   gameId: string;

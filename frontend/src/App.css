@@ -3,6 +3,9 @@
   margin: 0;
   text-align: center;
 }
+p,h1,h2,h3,h4,h5,h6{
+  @apply transition-all transform duration-300;
+}
 
 @keyframes logo-spin {
   from {
@@ -13,7 +16,7 @@
   }
 }
 .spin {
-  animation: spin 1s linear infinite;
+  animation: logo-spin 1s linear infinite;
 }
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
@@ -126,19 +129,41 @@ button {
   @apply text-amber-400 text-3xl font-bold text-start rounded p-2 text-nowrap;
   font-family: "ribeye";
 }
-.livegames > :nth-child(2),
-.leadersBoard > :nth-child(2) {
-  @apply flex flex-grow text-center justify-center items-center rounded-b-lg;
+.livegames > :nth-child(2){
+  @apply flex flex-grow text-center justify-center items-center overflow-y-auto rounded-b-lg;
+  border: 1px solid #f8b141;
+}
+.leadersBoard > :nth-child(2), .howToPlay> div {
+  @apply flex flex-grow p-2 overflow-y-auto rounded-b-lg;
   border: 1px solid #f8b141;
 }
 .leadersBoard {
-  @apply min-h-[350px] flex w-full max-h-[450px] p-2 overflow-y-auto flex-col border-[2px] border-primary rounded-lg
+  @apply min-h-[350px] flex w-full max-h-[450px] p-2 flex-col border-[2px] border-primary rounded-lg
   sm:max-w-[350px] lg:max-w-[400px];
 }
 .leadersBoard > header {
   @apply text-amber-400 lg:text-xl text-xl font-bold text-start rounded p-2 text-nowrap;
   font-family: "ribeye";
 }
+.leadersBoard :is(li) {
+  @apply list-none flex items-center gap-2 px-2 my-[2px] py-1 border-[#00FBFA] border-[2px] rounded-[5px] w-full;
+  border: 1px solid #f8b141;
+}
+.leadersBoard :is(div) {
+  @apply flex flex-col justify-start items-start rounded-b-lg w-full;
+    border: 1px solid #f8b141;
+}
+.leadersBoard :is(li){
+  @apply list-none flex items-start justify-end w-full;
+}
+.leadersBoard :is(li) :is(p) {
+  @apply flex items-center gap-2 w-full text-[1rem] ;
+    font-family: "ribeye";
+}
+.leadersBoard > div > li{
+  @apply flex justify-between gap-[60px];
+}
+
 .howToPlay {
   @apply min-h-[350px] flex w-full max-h-[450px] p-2 overflow-y-auto flex-col border-[2px] border-primary rounded-lg
   sm:max-w-[350px] lg:max-w-[400px] w-full;
@@ -147,8 +172,14 @@ button {
   @apply text-amber-400 text-2xl font-bold text-start rounded p-2 text-nowrap;
   font-family: "ribeye";
 }
-.howToPlay > p {
-  @apply border-[1px] border-[#f8b141] rounded-lg h-full text-lg text-center flex p-2 items-center;
+.howToPlay > div {
+  @apply flex flex-col gap-2;
+}
+.howToPlay> div> p{
+  @apply text-start rounded w-full p-1;
+    border: 1px solid #f8b141;
+    font-family: "ribeye";
+
 }
 .dialogBody {
   @apply flex flex-col justify-center w-full p-3 items-center min-h-[120px] rounded;
@@ -168,23 +199,24 @@ button {
   @apply h-[30px] w-[100px] rounded-sm bg-[#0B0B0E] hover:bg-[#0B0B0E] border-[#f8b141] border-[1px] text-primary hover:text-red-400 hover:cursor-not-allowed;
   font-family: "ribeye";
 }
-.connectButton {
-  @apply !bg-primary !px-3 !py-1 !shadow-none hover:!shadow-none transition-none !text-[0.9rem] !duration-300 transition-all transform;
+.connectButton, .connectButton *  {
+  @apply !bg-primary !px-3 !py-1 !shadow-none hover:!shadow-none transition-none !text-[0.9rem] !duration-300 transition-all transform !text-black rounded;
   font-family: "ribeye" !important;
 }
+
 .failedConnection > p {
-  @apply text-[1rem] text-gradient;
+  @apply text-[1rem];
   font-family: "ribeye";
 }
 .failedConnection > footer {
   @apply flex justify-center items-center gap-2 transition-all transform duration-300;
 }
 .failedConnection > footer > :first-child {
-  @apply bg-green-400 hover:bg-green-700 text-white cursor-pointer;
+  @apply bg-green-400 hover:bg-green-700 text-white cursor-pointer h-[30px];
   font-family: "ribeye";
 }
 .failedConnection > footer > :last-child {
-  @apply !bg-red-400 hover:!bg-red-700 text-white cursor-not-allowed;
+  @apply !bg-red-400 hover:!bg-red-700 text-white cursor-not-allowed h-[30px];
   font-family: "ribeye";
 }
 .inventory{
@@ -205,5 +237,56 @@ button {
   hover:cursor-pointer transition-all transform duration-150 hover:bg-primary/20;
   border: 1px solid #f8b141;
   font-family: "ribeye";
+}
+.gameBoard{
+  @apply px-3
+}
+.gameBoard > canvas{
+  @apply rounded-lg max-w-full h-auto bg-black border-primary/75 border-[2px];
+}
+.gameOver{
+  @apply flex flex-col justify-center items-center py-3 rounded gap-2 border-primary border-[1px];
+}
+.gameOver> p{
+  @apply text-[0.85rem] text-primary;
+  font-family: "ribeye";
+}
+.gameOver button{
+  @apply h-[30px] rounded-[5px];
+}
 
+.codeCreator{
+  @apply flex flex-col justify-center items-center gap-3;
+}
+/* .codeCreator > input{
+  @apply border-primary outline-none px-2 rounded py-2 h-[25px] text-[0.85rem] text-black;
+  font-family:'ribeye';
+} */
+ .codeCreator> section> p{
+  @apply text-sm justify-end border-[1px] rounded px-2 justify-end flex;
+  font-family: 'ribeye';
+}
+.codeCreator > :last-child {
+  @apply flex gap-2 justify-center items-center;
+}
+.codeCreator > :first-child{
+  @apply w-full flex justify-end;
+}
+.codeCreator>  :nth-child(2){
+  @apply flex flex-wrap justify-around items-center w-[250px] sm:w-auto gap-2;
+}
+.codeCreator > div> * {
+  @apply w-[90px] text-[1rem] h-[30px];
+    font-family:'ribeye';
+}
+.codeCreator > div> p {
+  @apply !text-[0.85rem] !h-[30px] rounded border-[1px] text-center flex justify-center items-center cursor-pointer hover:bg-primary/20;
+    font-family:'ribeye';
+}
+.codeCreator > div > :nth-child(3) :not(p){
+  @apply cursor-not-allowed bg-red-400 ;  
+}
+.no-close [data-state] > button[data-dialog-close],
+.no-close .absolute.right-4.top-4 {
+    display: none !important;
 }

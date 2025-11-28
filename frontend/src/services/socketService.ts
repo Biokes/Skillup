@@ -25,7 +25,11 @@ class SocketService {
       transports: ["websocket"],
       reconnection: true,
       reconnectionAttempts: 5,
-      reconnectionDelay: 1000
+      reconnectionDelay: 1000,
+      upgrade: false,
+      path: "/socket.io/",
+      withCredentials: true,
+      timeout: 20000,
     });
 
     this.socket.on("connect", () => {
@@ -40,157 +44,95 @@ class SocketService {
       console.log("⚠️ Socket error:", data);
       this.emit("error", data.message);
     });
-
+    
     this.setupGameEventListeners();
   }
   private ensureConnected() {
     if (!this.socket || !this.socket.connected) {
       console.error("Socket is not connected. Reconnecting...");
       const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
-      this.socket = io(backendUrl, { transports: ["websocket"] });
+      this.socket = io(backendUrl, {
+        transports: ["websocket"],
+      });
     }
   }
 
   private setupGameEventListeners() {
     if (!this.socket) return;
-
-    // this.socket.on("roomCreated", (data: { roomCode: string; room: any }) => {
-    //   this.emit("roomCreated", data);
-    // });
-    // this.socket.on("waitingForOpponent", (data: { roomCode: string }) => {
-    //   this.emit("waitingForOpponent", data);
-    // });
-    // this.socket.on("roomReady", (data: { room: any }) => {
-    //   this.emit("roomReady", data);
-    // });
-    // this.socket.on('joined', (data: Session) => { 
-    // })
-    // // this.socket.on("gameStart", (gameState: GameState) => {
-    // //   this.emit("gameStart", gameState);
-    // // });
-    // this.socket.on("gameUpdate", (gameState: GameState) => {
-    //   this.emit("gameUpdate", gameState);
-    // });
-    // this.socket.on("gameOver", (result: GameResult) => {
-    //   this.emit("gameOver", result);
-    // });
-    // this.socket.on("gamePaused", (data: { pausesRemaining: number }) => {
-    //   this.emit("gamePaused", data);
-    // });
-    // this.socket.on("gameResumed", () => {
-    //   this.emit("gameResumed");
-    // });
-    // this.socket.on("opponentLeft", () => {
-    //   this.emit("opponentLeft");
-    // });
-    // this.socket.on('waiting', () => {
-    //   console.warn("waiting for another player connection to join room")
-    // })
-    // this.socket.on("opponentDisconnected", () => {
-    //   this.emit("opponentDisconnected");
-    // });
-    
+     
     this.socket.on("quickMatchError", (errorResponse: { message?: string, successful: boolean, error?: Error }) => { 
       toast.error("Please try again, something went wrong");      
       console.error("Quick match error: ", errorResponse)
     })
-  
+    this.socket.on('cancelStakedMatchError', (res:  { successful: boolean, walletAddress:string, message: string }) => { 
+      console.error("cancelStakedMatchError: ", res);
+    })
+    this.socket.on('pauseStakedMatchError', (res:  { successful: boolean, walletAddress:string, message: string }) => { 
+      console.error("pauseStakedMatchError: ", res);
+    })
+    this.socket.on('createStakedMatchError', (res:  { successful: boolean, walletAddress:string, message: string }) => { 
+      console.error("createStakedMatchError: ", res);
+    })
+    this.socket.on('joinError', (res:  { successful: boolean, message: string }) => { 
+      console.error("joinError: ", res);
+    })
+    this.socket.on('cancelMatchWithCodeError', (res:  { successful: boolean, walletAddress:string, message: string }) => { 
+      console.error("cancelMatchWithCodeError: ", res);
+    })
   }
 
-  
+  gameReady(gameId: string, playerNumber: number, sessionId: string) {
+    this.ensureConnected();
+    this.socket?.emit("gameReady", { gameId, playerNumber, sessionId });
+  }
+
   quickMatch(walletAddress:string, gameType: GameType, isStaked:boolean, amount: number) {
     this.ensureConnected();
-    this.socket?.emit("quickMatch", { walletAddress, gameType, isStaked, amount });
+    this.socket?.emit("quickMatch", { walletAddress: walletAddress.toLowerCase(), gameType, isStaked, amount });
   }
 
   cancelMatch(walletAddress:string) {
     this.ensureConnected();
-    this.socket?.emit("cancelQuickMatch", { walletAddress });
+    this.socket?.emit("cancelQuickMatch", { walletAddress: walletAddress.toLowerCase() });
   }
 
   retryQuickMatch(walletAddress:string, gameType: GameType, isStaked:boolean, amount: number) {
     this.ensureConnected();
-    this.socket?.emit("retryQuickMatch", { walletAddress, gameType, isStaked, amount });
+    this.socket?.emit("retryQuickMatch", { walletAddress: walletAddress.toLowerCase(), gameType, isStaked, amount });
   }
 
-
-
-
-
-
-
-
-
-
-
-  createRoom(gameType: GameType, player: Player, roomCode?: string) {
-    this.socket?.emit("createRoom", { gameType, player, roomCode });
-  }
-
-  joinRoom(roomCode: string, player: Player) {
-    this.socket?.emit("joinRoom", { roomCode, player });
-  }
-
-
-  createQuickMatch(walletAddress: string, gameCode: string) {
+  paddleMove(playerNumber: number, position: number, gameId: string) {
     this.ensureConnected();
-    this.socket?.emit("createQuickMatch", { walletAddress, gameCode });
+    this.socket?.emit("paddleMove", { playerNumber, position, gameId });
   }
-
-  joinQuickMatch(gameType: GameType, player: Player) {
-    this.ensureConnected();
-    this.socket?.emit("joinQuickMatch", { gameType, player });
-  }
-
-  createStakedGame(data: {
-    roomCode: string;
-    gameType: GameType;
-    player1: Player;
-    stakeAmount: string;
-    player1Address: string;
-    player1TxHash: string;
-  }) {
-    this.socket?.emit("createStakedGame", data);
-  }
-
-  leaveRoom() {
-    this.socket?.emit("leaveRoom");
-  }
-
-  paddleMove(data: { position: number }) {
-    this.socket?.emit("paddleMove", data);
-  }
-
-  // strikerMove(position: { x: number; y: number }) {
-  //   this.socket?.emit("strikerMove", { position });
-  // }
-
-  // chessMove(moveData: { from: string; to: string; promotion?: string }) {
-  //   this.socket?.emit("chessMove", moveData);
-  // }
-
-  // poolShoot(angle: number, power: number) {
-  //   this.socket?.emit("poolShoot", { angle, power });
-  // }
-
-  // checkersMove(moveData: { from: { row: number; col: number }; to: { row: number; col: number } }) {
-  //   this.socket?.emit("checkersMove", moveData);
-  // }
-
-  pauseGame() {
-    this.socket?.emit("pauseGame");
-  }
-
-  resumeGame() {
-    this.socket?.emit("resumeGame");
-  }
-
+ 
   forfeitGame() {
     this.socket?.emit("forfeitGame");
   }
 
-  getLeaderboard(gameType: GameType, limit = 10) {
-    this.socket?.emit("getLeaderboard", { gameType, limit });
+  connectWithCode(walletAddress: string, code: string) {
+    this.ensureConnected();
+    this.socket?.emit('joinRoom',{walletAddress: walletAddress.toLowerCase(), gameCode: code.toLowerCase()})
+  }
+
+  cancelCreateOrJoinMatch(walletAddress: string, code: string) { 
+    this.ensureConnected();
+    this.socket?.emit('cancelJoinRoom', {walletAddress: walletAddress.toLowerCase(), roomCode: code.toLowerCase()})
+  }
+
+  createPaidMatch(gameobjectId: string, paymentTransactionId: string, address: string, stakingPrice: number) {
+    this.ensureConnected()
+    console.log(address,stakingPrice,paymentTransactionId,gameobjectId)
+    this.socket?.emit('createPaidMatch', {
+      walletAddress: address,
+      amount: stakingPrice,
+      transactionId: paymentTransactionId,
+      gameId: gameobjectId
+    })
+  }
+  fetchLeaderBoard(){ 
+    this.ensureConnected()
+    this.socket.emit('leaderboard')
   }
 
   on(event: string, callback: Function) {
@@ -198,11 +140,24 @@ class SocketService {
       this.listeners.set(event, []);
     }
     this.listeners.get(event)!.push(callback);
+    // Setup actual socket.io listener if socket exists
+    if (this.socket) {
+      this.socket.off(event);
+      this.socket.on(event, (data) => {
+        const callbacks = this.listeners.get(event);
+        if (callbacks) {
+          callbacks.forEach((cb) => cb(data));
+        }
+      });
+    }
   }
 
   off(event: string, callback?: Function) {
     if (!callback) {
       this.listeners.delete(event);
+      if (this.socket) {
+        this.socket.off(event);
+      }
     } else {
       const callbacks = this.listeners.get(event);
       if (callbacks) {

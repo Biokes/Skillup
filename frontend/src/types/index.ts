@@ -1,4 +1,4 @@
-import { OneChainGameType } from "@/";
+// import { OneChainGameType } from "@/";
 import React, { ReactNode } from "React";
 
 export type GameType =
@@ -18,24 +18,24 @@ export interface Player {
   socketId?: string;
 }
 
-export interface GameState {
-  id?: string;
-  roomCode?: string;
-  gameType?: GameType;
-  players: Player[];
-  status?: "waiting" | "active" | "paused" | "finished";
-  score?: any;
-  isPaused: boolean;
-  currentPlayer?: any;
-  // Game-specific properties
-  ball?: any;
-  paddle1?: any;
-  paddle2?: any;
-  puck?: any;
-  board?: any;
-  capturedPieces?: any;
-  currentRally?: number;
-}
+// export interface GameState {
+//   id?: string;
+//   roomCode?: string;
+//   gameType?: GameType;
+//   players: Player[];
+//   status?: "waiting" | "active" | "paused" | "finished";
+//   score?: any;
+//   isPaused: boolean;
+//   currentPlayer?: any;
+//   // Game-specific properties
+//   ball?: any;
+//   paddle1?: any;
+//   paddle2?: any;
+//   puck?: any;
+//   board?: any;
+//   capturedPieces?: any;
+//   currentRally?: number;
+// }
 
 export interface GameResult {
   winner?: string;
@@ -94,13 +94,74 @@ export interface OneChainGameType {
   quickMatch: (walletAddress: string) => void;
   retryQuickMatch: (walletAddress: string) => void;
   cancelQuickMatch: (walletAddress: string) => void;
+  cancelCreateOrJoinMatch: (walletAddress: string, code: string) => void;
+  connectFreeWithCode: (walletAddress: string, code: string) => void;
+  connectPaid: (walletAddress: string, amount: number) => void;
+  connectPaidWithCode: (walletAddress: string, code: string, amount: number) => void;
+
 }
 export interface JoinGameResponse {
-  id: string;
+  sessionId: string;
   status: string;
   isStaked: boolean;
   player1: string;
   player2: string;
   amount: number;
   gameId: string;
+}
+export interface JoinWithCodeResponse{
+  sessionId: string,
+  status: string,
+  code: string,
+  isStaked: string,
+  player1: string,
+  player2: string,
+  amount: number,
+  gameId: number
+}
+export interface PaidGameWaitingResponse { 
+  sessionId: string,
+  status: string,
+  isStaked: boolean,
+  player1: string,
+  amount: number,
+  transaction: string
+}
+export interface GameBoardProps {
+  playerNumber: 1 | 2;
+  playerAddresses: { player1: string; player2: string };
+  gameId: string;
+  sessionId: string;
+}
+export interface GameState {
+  ballX: number;
+  ballY: number;
+  paddle1Y: number;
+  paddle2Y: number;
+  paddle1Height: number;
+  paddle2Height: number;
+  score1: number;
+  score2: number;
+  activePowerups: { player1: string | null; player2: string | null };
+  status:  'COUNTDOWN' | 'PLAYING' | 'SCORE_PAUSE' | 'ENDED';
+}
+export interface CountdownState {
+  active: boolean;
+  remaining: number;
+}
+export interface PongGameState {
+    sessionId: string;
+    gameId?: string;
+    player1: string;
+    player2: string;
+    amount?: number;
+    isStaked: boolean;
+    gameType: "quickfree" | "freeCoded" | "staked" | "stakedCoded";
+    roomId?: string;
+}
+export interface PlayerStat { 
+  walletAddress: string,
+  avatarURL: string,
+  username: string,
+  ratings: number,
 }
