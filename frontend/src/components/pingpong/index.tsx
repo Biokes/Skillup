@@ -132,6 +132,48 @@ export default function PingPongGame() {
     }, []);
 
     useEffect(() => {
+      const handleVisibilityChange = () => {
+        if (document.hidden && !gameOverRef.current && state?.gameId) {
+          // User navigated away or minimized tab
+          // socketService.getSocket().emit("playerDisconnect", { 
+          //   gameId: state.gameId, 
+          //   playerNumber: playerNumber,
+          //   sessionId: state?.sessionId
+          // });
+          console.log('player navigated away')
+        }
+      };
+
+      const handleBeforeUnload = () => {
+        // if (!gameOverRef.current && state?.gameId) {
+        //   socketService.getSocket().emit("playerDisconnect", { 
+        //     gameId: state.gameId, 
+        //     playerNumber: playerNumber,
+        //     sessionId: state?.sessionId
+        //   });
+        // }
+        console.log('player navigated away')
+
+      };
+
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      window.addEventListener("beforeunload", handleBeforeUnload);
+
+      return () => {
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+        window.removeEventListener("beforeunload", handleBeforeUnload);
+        // Also disconnect when component unmounts
+        // if (!gameOverRef.current && state?.gameId) {
+        //   socketService.getSocket().emit("playerDisconnect", { 
+        //     gameId: state.gameId, 
+        //     playerNumber: playerNumber,
+        //     sessionId: state?.sessionId
+        //   });
+        // }
+      };
+    }, [playerNumber]);
+    
+    useEffect(() => {
       const handleGameStart = () => {
         if (gameOverRef.current) return;
         setCountdown({ active: true, remaining: 3 });
@@ -159,13 +201,15 @@ export default function PingPongGame() {
       };
 
       const handleGameOver = (data: { winner: string; score1: number; score2: number; message: string }) => {
+        setCountdown({ active: false, remaining: 0 });
         setWinner(data.winner);
         setGameOver(true);
       };
 
-      const handleOpponentDisconnected = (data: { playerNumber: number; message: string }) => {
+      const handleOpponentDisconnected = () => {
         setWinner(address);
         setGameOver(true);
+        setCountdown({ active: false, remaining: 0 });
         toast.success("Opponent disconnected. You win!");
       };
 
@@ -308,9 +352,8 @@ export default function PingPongGame() {
     useEffect(() => {
       let rafId = 0;
       const draw = () => {
-        if (gameOverRef.current) {
-          return;
-        }
+        if (gameOverRef.current) return;
+        
         const canvas = canvasRef.current;
         if (!canvas) {
           rafId = requestAnimationFrame(draw);
@@ -339,7 +382,7 @@ export default function PingPongGame() {
         ctx.font = "12px Ribeye";
         ctx.fillStyle = "#64c8ff";
         ctx.textAlign = "left";
-        ctx.fillText(state?.player1 ? "You" : "Opponent", 30, 25);
+        ctx.fillText(state?.player1 === address ? "You" : "Opponent", 30, 25);
         ctx.textAlign = "right";
         ctx.fillText(state?.player2 === address ? "You" : "Opponent", CANVAS_WIDTH - 30, 25);
 
@@ -381,8 +424,9 @@ export default function PingPongGame() {
           ctx.fillText(cd.remaining.toString(), CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
           ctx.shadowBlur = 0;
         }
-
-        rafId = requestAnimationFrame(draw);
+         if (!gameOverRef.current) {
+          rafId = requestAnimationFrame(draw);
+        }
       };
 
       rafId = requestAnimationFrame(draw);
@@ -418,10 +462,10 @@ export default function PingPongGame() {
                 {winner === address ? "You won 🎉🤭🕺" : "Your Opponent won 😔😔"}
               </motion.p>
               <p>
-                          {`${winner === address ?
-                              "(You)" : "(Opponent)"} ${props.gameState.score1}
-                               :
-                            ${props.gameState.score2} ${winner !== address ? "(You)" : "(Opponent)"}`}
+                {(state.player1.toLowerCase() === address.toLowerCase() ? "(You)" : "(Opponent)") +
+                  " " + props.gameState.score1 + " : " +
+                  props.gameState.score2 + " " +
+                  (state.player2.toLowerCase() === address.toLowerCase() ? "(You)" : "(Opponent)")}
               </p>
               <Button onClick={() => { navigate("/"); }}>Back Home</Button>
             </div>

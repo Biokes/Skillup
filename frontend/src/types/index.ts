@@ -1,4 +1,4 @@
-import { OneChainGameType } from "@/";
+// import { OneChainGameType } from "@/";
 import React, { ReactNode } from "React";
 
 export type GameType =
@@ -158,4 +158,10 @@ export interface PongGameState {
     isStaked: boolean;
     gameType: "quickfree" | "freeCoded" | "staked" | "stakedCoded";
     roomId?: string;
+}
+export interface PlayerStat { 
+  walletAddress: string,
+  avatarURL: string,
+  username: string,
+  ratings: number,
 }

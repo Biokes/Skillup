@@ -15,6 +15,7 @@
     "@mysten/dapp-kit": "^0.19.9",
     "@mysten/sui": "^1.45.0",
     "@onelabs/dapp-kit": "^0.15.4",
+    "@onelabs/sui": "^1.26.2",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-aspect-ratio": "^1.1.7",

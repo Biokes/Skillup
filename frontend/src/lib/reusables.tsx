@@ -49,7 +49,7 @@ export function PaymentInput({ stakeAmount, setStakeAmount, onProceed, onCancel,
     return (
         <section className='codeCreator'>
             <section>
-                <p>Bal: {balance}</p>
+                <p>Bal: {String(balance).substring(0, 5)} OCT</p>
             </section>
             <div >
                 {['0.1','0.5','1','5'].map((val, index) => (
@@ -58,7 +58,7 @@ export function PaymentInput({ stakeAmount, setStakeAmount, onProceed, onCancel,
                            setPos(index)
                            setStakeAmount(Number(val))
                        }}
-                    >{val} ONE</p>
+                    >{val} OCT</p>
                 ))}
             </div>
             <div>

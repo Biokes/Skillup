@@ -120,14 +120,18 @@ class SocketService {
     this.socket?.emit('cancelJoinRoom', {walletAddress: walletAddress.toLowerCase(), roomCode: code.toLowerCase()})
   }
 
-  createPaidMatch(gameId: string, paymentTransactionId: string, address: string, stakingPrice: number) {
+  createPaidMatch(gameobjectId: string, paymentTransactionId: string, address: string, stakingPrice: number) {
     this.ensureConnected()
     this.socket?.emit('createPaidMatch', {
       walletAddress: address,
       amount: stakingPrice,
       transactionId: paymentTransactionId,
-      gameId: gameId
+      gameId: gameobjectId
     })
+  }
+  fetchLeaderBoard(){ 
+    this.ensureConnected()
+    this.socket.emit('leaderboard')
   }
 
   on(event: string, callback: Function) {
