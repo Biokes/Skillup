@@ -8,16 +8,18 @@ import { QuickMatchDTO } from "../data/DTO/QuickMatch";
 import { ReadyGameDTO } from "../data/DTO/ReadyGame";
 import { GameService } from "../services/GameService";
 import { PaddleMovementDTO } from "../data/DTO/PaddleMovementDTO";
+import PlayerService from "../services/playerService";
 dotenv.config();
 
 
 export class WebSocket {
-  private FRONTEND_URL = process.env.FRONTEND_URL;
+  // private FRONTEND_URL = process.env.FRONTEND_URL;
   private readonly socketServer;
   private readonly server: Server;
   private readonly sessionService: SessionService;
   private readonly pongGameService: GameService;
   private socketToGameMap: Map<string, { gameId: string; playerNumber: number }> = new Map();
+  private readonly playerService: PlayerService;
 
   constructor(app: Application) {
     this.socketServer = createServer(app);
@@ -42,6 +44,7 @@ export class WebSocket {
     this.server.on("error", (error) => this.logErrorOnConsole("Socket on failed with error: ", error));
     this.sessionService = new SessionService(this.server);
     this.pongGameService = new GameService(this.server);
+    this.playerService = new PlayerService();
   }
       
   getSocketServerSetup() {
@@ -57,6 +60,10 @@ export class WebSocket {
   }
 
   async listenToGameEvents(socket: Socket) {
+    socket.on('leaderboard', async () => {
+      const bestPlayers = await this.playerService.fetchLeaderBoard()
+      socket.emit('leaderBoard', bestPlayers);
+    })
     socket.on('quickMatch', async (quickMatchDto: QuickMatchDTO) => await this.sessionService.handleQuickMatch(quickMatchDto, socket));
 
     socket.on('retryQuickMatch', async (dto: QuickMatchDTO) => await this.sessionService.handleRetryQuickMatch(dto, socket));
@@ -73,13 +80,13 @@ export class WebSocket {
     socket.on("reconnect_attempt", () => { this.handleReconnect(socket)});
     socket.on('validateSession', async (dto: { sessionId: string }, callback) => await this.sessionService.validateSession(dto.sessionId, callback));
 
-    socket.on('checkStakedGame', async (dto: { price: number, walletAddress: string }, callback) => await this.sessionService.checkStakedMatch(dto, callback));
-    socket.on('createPaidMatch', async (dto: { gameId: string, paymentTransactionId: string, address: string, stakingPrice: number }, socket) => await this.sessionService.createStakedMatch(dto, socket));
+    socket.on('checkStakedGame', async (dto: { price: string, walletAddress: string }, callback) => await this.sessionService.checkStakedMatch(dto, callback));
+    socket.on('createPaidMatch', async (dto: { gameId: string, paymentTransactionId: string, address: string, stakingPrice: string }, socket) => await this.sessionService.createStakedMatch(dto, socket));
 
-    socket.on('pauseStakedGameConnection', async (dto: { sessionId: string, address: string, stakingPrice: number }) => await this.sessionService.pauseStakeGameConection(dto, socket))
-    socket.on('onStakedGameConnection', async (dto: {sessionId:string,address:string,stakingPrice: number, transactionId:string}) => await this.sessionService.onStakedGameConnection(dto, socket))
-    socket.on('cancelStakedGameConnection', async (dto: { sessionId: string, address: string, stakingPrice: number }) => await this.sessionService.cancelStakedGame(dto, socket));
-    socket.on('joinStakedMatch', async (dto: { gameId:string, paymentTransactionId:string, address: string, stakingPrice: number }, socket:Socket) => await this.sessionService.joinStakedMatch(dto, socket));
+    socket.on('pauseStakedGameConnection', async (dto: { sessionId: string, address: string, stakingPrice: string }) => await this.sessionService.pauseStakeGameConection(dto, socket))
+    socket.on('onStakedGameConnection', async (dto: {sessionId:string,address:string,stakingPrice: string, transactionId:string}) => await this.sessionService.onStakedGameConnection(dto, socket))
+    socket.on('cancelStakedGameConnection', async (dto: { sessionId: string, address: string, stakingPrice: string }) => await this.sessionService.cancelStakedGame(dto, socket));
+    socket.on('joinStakedMatch', async (dto: { gameId:string, paymentTransactionId:string, address: string, stakingPrice: string }, socket:Socket) => await this.sessionService.joinStakedMatch(dto, socket));
   }
 
 

@@ -29,9 +29,9 @@ export class PowerupManager {
   static updatePowerups(playerState: PlayerGameState, deltaTimeMs: number): void {
     // Update cooldowns
     Object.keys(playerState.powerupCooldowns).forEach((key) => {
-      playerState.powerupCooldowns[key] -= deltaTimeMs;
-      if (playerState.powerupCooldowns[key] < 0) {
-        playerState.powerupCooldowns[key] = 0;
+      const cooldown = playerState.powerupCooldowns[key];
+      if (cooldown !== undefined) {
+        playerState.powerupCooldowns[key] = Math.max(cooldown - deltaTimeMs, 0);
       }
     });
 

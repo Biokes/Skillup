@@ -23,7 +23,17 @@ export default function Pong() {
     const [code, setCode] = useState("");
     const [timedOut, setTimedOut] = useState(false);
     const [stakeAmount, setStakeAmount] = useState<number>(0);
-    const { mutate } = useSignAndExecuteTransaction();
+    const { mutate } = useSignAndExecuteTransaction({
+        execute: async ({ bytes, signature }) =>
+            await client.executeTransactionBlock({
+                transactionBlock: bytes,
+                signature,
+                options: {
+                    showRawEffects: true,
+                    showObjectChanges: true,
+                },
+            }),
+    });
     const client = useSuiClient()
     const [modal, setModal] = useState<{
         mode: "connecting" | "failed" | "enterCode" | "stake" | 'friendlyStake' | null;
@@ -46,7 +56,6 @@ export default function Pong() {
         if (!socketService.isConnected()) {
             if (!address) return;
             socketService.connect(address);
-            console.log("🔌 Socket initialized");
         }
 
         const onJoined = (response: JoinGameResponse) => {
@@ -233,180 +242,196 @@ export default function Pong() {
         if (modal.currentAction === "stakeMatch") return handleRetryStakedMatch;
         return () => {};
     }
-    async function handleFriendlyStake() {
-        const stakingPrice =  stakeAmount * TOKEN_DECIMALS;
-        setTimedOut(false);
-        startTimeout(() => {console.log('times up')})
-        if ( stakingPrice > userBalance* TOKEN_DECIMALS) return toast.error("StakeAmount is greater than your balance")
-        setModal({open: true,mode: "connecting",header: "Processing Payment...",description: "Please wait while we check for available games",currentAction: 'friendlyStake'});
-        const gameCheck = await new Promise<{ success: boolean, gameId: string }>((resolve) => {
-            socketService.getSocket().emit('checkFriendlyStakedGame',
-                { price: stakingPrice, code,walletAddress: address.toLowerCase() },
-                (response: { success: boolean, gameId: string }) => {
-                    resolve(response);
-                }
-            );
-        });
-        console.log(gameCheck)
-    }
 
+    async function handleFriendlyStake() {
+        return toast.info('Friendly stake coming soon');
+    }
     async function handleStake() {
         const stakingPrice = stakeAmount * TOKEN_DECIMALS;
-        if ( stakingPrice > userBalance * TOKEN_DECIMALS) return toast.error("StakeAmount is greater than your balance")
-        setModal({ open: true, mode: "connecting", header: "Processing Payment...", description: "Please wait while we check for available games", currentAction: 'stakeMatch' });
-        const gameCheck = await new Promise<{ success: boolean, gameId: string }>((resolve) => {
-            socketService.getSocket().emit('checkStakedGame',
-                { price: stakingPrice, walletAddress: address.toLowerCase() },
-                (response: { success: boolean, gameId: string }) => {
-                    resolve(response);
-                }
-            );
+        
+        if (stakingPrice > userBalance * TOKEN_DECIMALS) {
+            return toast.error("StakeAmount is greater than your balance");
+        }
+
+        setModal({ 
+            open: true, 
+            mode: "connecting", 
+            header: "Processing Payment...", 
+            description: "Please wait while we check for available games", 
+            currentAction: 'stakeMatch' 
         });
 
-        const isExistingGame = gameCheck.success;
-        const existingGameId = gameCheck.gameId || '';
-
-        const createdCoins = await client.getCoins({ owner: address, coinType: "0x2::oct::OCT" });
-
-        if (!createdCoins.data.length) {
-            setModal(prev => ({ ...prev, open: false }));
-            console.error("created coins: ", createdCoins)
-            return toast.error("An error occurred while processing payment");
-        }
-
-        const coinId = createdCoins.data[0].coinObjectId;
-        const transaction = new Transaction();
-        const [paymentCoin] = transaction.splitCoins(transaction.object(coinId), [transaction.pure.u64(stakingPrice)]);
-        transaction.setGasBudget(50000)
         try {
-            if (!isExistingGame) {
-                console.log("🧪 Starting dry run...");
-            const dryRunResult = await client.devInspectTransactionBlock({
-                transactionBlock: transaction,
-                sender: address,
+            const gameCheck = await new Promise<{ success: boolean; gameId: string }>((resolve) => {
+                socketService.getSocket().emit('checkStakedGame', { price: stakingPrice, walletAddress: address.toLowerCase() },
+                    (response: { success: boolean; gameId: string }) => resolve(response)
+                );
             });
-        
-            console.log("Dry run result:", dryRunResult);
-        
-            if (dryRunResult.error) {
-                console.error("❌ Dry run error:", dryRunResult.error);
+
+            const isExistingGame = gameCheck.success;
+            const existingGameId = gameCheck.gameId || '';
+
+            const allOctCoins = await client.getCoins({ 
+                owner: address, 
+                coinType: "0x2::oct::OCT",
+                limit: 10
+            });
+
+            if (!allOctCoins.data.length) {
                 setModal(prev => ({ ...prev, open: false }));
-                toast.error(`Transaction would fail: ${dryRunResult.error}`);
-                return;
+                return toast.error("No OCT coins found in your wallet");
             }
-            
-            const gasUsed = dryRunResult.effects?.gasUsed;
-            console.log("📊 Gas info:", gasUsed);
-            
-            // ✅ Dry run passed, now execute
-            setModal(prev => ({ ...prev, description: "Waiting for wallet confirmation..." }));
-            
-                transaction.moveCall({ target: `${VAULT_PACKAGE}createGame`, arguments: [transaction.object(VAULT_OBJECT_ID), paymentCoin] });
-                const transactionExecution = mutate({ transaction: transaction }, {
-                    onSuccess: (response) => { 
-                        console.log(response)
-                    }, onError: (res) => {
-                        if (res && typeof res === 'object' && 'code' in res && res.code === 4001) {
-                            toast.error("transaction rejected")
-                            setModal(prev => ({...prev, open :false}))
+
+            if (allOctCoins.data.length > 1) {
+                const consolidationTx = new Transaction();
+                consolidationTx.setSender(address);
+                const [primaryCoin, ...restCoins] = allOctCoins.data;
+                consolidationTx.mergeCoins(
+                    consolidationTx.object(primaryCoin.coinObjectId),
+                    restCoins.map(coin => consolidationTx.object(coin.coinObjectId))
+                );
+                consolidationTx.setGasBudget(5000000);
+                await new Promise<void>((resolve) => {
+                    mutate({ transaction: consolidationTx }, {
+                        onSuccess: (_response) => resolve(),
+                        onError: (_error) => resolve()
+                    });
+                });
+                await new Promise<void>(resolve => setTimeout(resolve, 2000));
+            }
+
+            const freshCoins = await client.getCoins({ 
+                owner: address, 
+                coinType: "0x2::oct::OCT",
+                limit: 10
+            });
+
+            if (!freshCoins.data.length) {
+                setModal(prev => ({ ...prev, open: false }));
+                return toast.error("Failed to retrieve coins after consolidation");
+            }
+
+            const primaryCoinId = freshCoins.data[0].coinObjectId;
+            const stakeTransaction = new Transaction();
+            stakeTransaction.setSender(address);
+
+            const [paymentCoin] = stakeTransaction.splitCoins(
+                stakeTransaction.object(primaryCoinId), 
+                [stakeTransaction.pure.u64(stakingPrice)]
+            );
+            stakeTransaction.setGasBudget(5000000);
+
+            if (!isExistingGame) {
+                const dryRunResult = await client.devInspectTransactionBlock({
+                    transactionBlock: stakeTransaction,
+                    sender: address,
+                });
+
+                if (dryRunResult.error) {
+                    setModal(prev => ({ ...prev, open: false }));
+                    return toast.error(`Transaction validation failed: ${dryRunResult.error}`);
+                }
+
+                stakeTransaction.moveCall({
+                    target: `${VAULT_PACKAGE}createGame`,
+                    arguments: [
+                        stakeTransaction.object(VAULT_OBJECT_ID),
+                        paymentCoin
+                    ],
+                });
+
+                setModal(prev => ({ ...prev, description: "Waiting for wallet confirmation..." }));
+
+                await new Promise<void>((resolve) => {
+                    mutate({ transaction: stakeTransaction }, {
+                        onSuccess: (response) => {
+                            const newGameId = response?.objectChanges
+                                ?.filter((c) => c.type === "created")
+                                .find((c) => c.objectType?.includes("GameSession"))
+                                ?.objectId;
+
+                            const paymentTransactionId = response?.digest;
+
+                            if (newGameId && paymentTransactionId) {
+                                socketService.createPaidMatch(newGameId, paymentTransactionId, address, stakingPrice);
+                                setModal({
+                                    open: true,
+                                    mode: "connecting",
+                                    header: "Waiting for Opponent",
+                                    description: "Your staked game is ready. Waiting for another player to join...",
+                                    currentAction: 'stakeMatch'
+                                });
+                            } else {
+                                setModal(prev => ({ ...prev, open: false }));
+                                toast.error("Failed to extract game ID from transaction response");
+                            }
+                            resolve();
+                        },
+                        onError: (_error) => {
+                            console.error(_error)
+                            setModal(prev => ({ ...prev, open: false }));
+                            resolve();
                         }
-                        console.log("error response: ", res)
-                        setModal(prev => ({ ...prev, open: false }))
-                        return;
-                    }
-                })
-                // console.log('client response: ', transactionExecution);
-                return;
-                // if (isSuccessfulPayment) {
-                //     console.log("execution object changes: ",transactionExecution.objectChanges)
-                //     // const newGame = transactionExecution.objectChanges?.find(object => object.type === 'created' && object.objectType?.includes('GameSession'));
-                //     // const newGameId = newGame && 'objectId' in newGame ? newGame.objectId : undefined;
-                //     const newGameId = transactionExecution.objectChanges
-                //         ?.filter((c): c is Extract<SuiObjectChange, { type: "created" }> => c.type === "created")
-                //         .find(c => c.objectType?.includes("GameSession"))
-                //         ?.objectId;
-                    
-                //     const paymentTransactionId = transactionExecution.digest;
-                //     if (newGameId) {
-                //         socketService.createPaidMatch(newGameId, paymentTransactionId, address, stakingPrice);
-                //         setModal({
-                //             open: true,
-                //             mode: "connecting",
-                //             header: "Waiting for Opponent",
-                //             description: "Your staked game is ready. Waiting for another player to join...",
-                //             currentAction: 'stakeMatch'
-                //         });
-                //         startTimeout(() => {
-                //             setTimedOut(true)
-                //             socketService.getSocket().emit('pauseStakedGameConnection', { newGameId, paymentTransactionId, address, stakingPrice });
-                //         })
-                //     }
-                //     else {
-                //         setModal(prev => ({ ...prev, open: false }));
-                //         toast.error("Failed to get game ID from transaction");
-                //         console.error("error response: ", transactionExecution);
-                //     }
-                //     return;
-                // }
+                    });
+                });
+            } else {
+                stakeTransaction.moveCall({
+                    target: `${VAULT_PACKAGE}joinGame`,
+                    arguments: [
+                        stakeTransaction.object(VAULT_OBJECT_ID),
+                        stakeTransaction.object(existingGameId),
+                        paymentCoin
+                    ],
+                });
+
+                setModal(prev => ({ ...prev, description: "Waiting for wallet confirmation..." }));
+
+                await new Promise<void>((resolve) => {
+                    mutate({ transaction: stakeTransaction }, {
+                        onSuccess: (response) => {
+                            const gameId = response?.objectChanges
+                                ?.filter((c) => c.type === "mutated")
+                                .find((c) => c.objectType?.includes("GameSession"))
+                                ?.objectId;
+
+                            const paymentTransactionId = response?.digest;
+
+                            if (gameId && paymentTransactionId) {
+                                socketService.getSocket().emit("joinStakedMatch", {
+                                    gameId,
+                                    paymentTransactionId,
+                                    address,
+                                    stakingPrice
+                                });
+
+                                setModal({
+                                    open: true,
+                                    mode: 'connecting',
+                                    header: "Game Started",
+                                    description: "Opponent found! Initializing game...",
+                                    currentAction: 'stakeMatch'
+                                });
+                            } else {
+                                setModal(prev => ({ ...prev, open: false }));
+                                toast.error("Failed to extract game ID from transaction response");
+                            }
+                            resolve();
+                        },
+                        onError: (_error) => {
+                            console.error(_error)
+                            setModal(prev => ({ ...prev, open: false }));
+                            resolve();
+                        }
+                    });
+                });
             }
-            await joinExistingPaidGame(transaction, existingGameId, paymentCoin, stakingPrice);
-        }
-        catch (error) {
-            toast.error("something went wrong joining game.");
-            console.error("error joining game: ", error);
-            setModal(prev => ({...prev,open:false}))
+        } catch (error) {
+            setModal(prev => ({ ...prev, open: false }));
+            toast.error("Something went wrong processing your stake");
         }
     }
 
 
-       // await signAndExecute({ transaction: transaction }, {
-        //     onSuccess: (response) => {
-        //         const status = response.effects?.status?.status;
-        //         if (status === 'success') {
-        //             console.log('create game Transaction successful');
-        //             const gameId = response.objectChanges?.find(object => object.type === 'mutated' && object.objectType?.includes('GameSession'))?.objectId;
-        //             const paymentTransactionId = response.digest;
-        //             console.log("transaction id: ", paymentTransactionId);
-        //             if (gameId) {
-        //                 socketService.getSocket().emit("joinStakedMatch", { gameId, paymentTransactionId, address, stakingPrice });
-        //                 setModal({
-        //                     open: true,
-        //                     mode: 'connecting',
-        //                     header: "Waiting for Opponent",
-        //                     description: "Your staked game is ready. Waiting for another player to join...",
-        //                     currentAction: 'stakeMatch'
-        //                 });
-        //             }
-        //             else {
-        //                 setModal(prev => ({ ...prev, open: false }));
-        //                 toast.error("something went wrong connect with the blockchain");
-        //                 console.error("error response: ", response);
-        //             }
-        //         }
-        //         else {
-        //             const error = response.effects?.status?.error;
-        //             if (error?.includes('1001')) {
-        //                 toast.error("Gameplay is paused");
-        //             } else if (error?.includes('1002')) {
-        //                 toast.error("Invalid stake amount");
-        //             } else if (error?.includes('1015')) {
-        //                 toast.error("Invalid game status");
-        //             } else if (error?.includes('1013')) {
-        //                 toast.error("Insufficient balance");
-        //             } else if (error?.includes('1012')) {
-        //                 toast.error("Invalid game status, try again");
-        //             } else {
-        //                 toast.error("Failed to enter game");
-        //             }
-        //             setModal(prev => ({ ...prev, isOpen: false }));
-        //         }
-        //     },
-        //     onError: (error) => {
-        //         toast.error("Payment failed, please try again.");
-        //         console.error(error);
-        //         setModal(prev => ({ ...prev, isOpen: false }));
-        //     }
-        // });
     async function joinExistingPaidGame(transaction: Transaction, existingGameId: string, paymentCoin: { $kind: "NestedResult"; NestedResult: [number, number]; }, stakingPrice: number) {
         transaction.moveCall({ target: `${VAULT_PACKAGE}joinGame`, arguments: [transaction.object(VAULT_OBJECT_ID), transaction.object(existingGameId), paymentCoin] });
         console.log('join new game');
@@ -554,7 +579,7 @@ export default function Pong() {
         <section className="boostpack ">
             <nav>
                 <h5>Inventory</h5>
-                <Button className={cn("refresh ribeye")}>refresh</Button>
+                <Button className={cn("refresh ribeye")} disabled>refresh</Button>
             </nav>
             <div>
                 {
@@ -570,7 +595,12 @@ export default function Pong() {
                     ))
                 }
             </div>
-            <Button className={cn("w-[160px] h-[35px] rounded ribeye text-[1rem]")}>Loot Daily crate</Button>
+            <Button
+                className={cn("w-[160px] h-[35px] rounded ribeye text-[1rem]")}
+                onClick={() => { 
+                    toast.info('Daily crate looting available soon')
+                }}
+            >Loot Daily crate</Button>
         </section>
     )
     
@@ -595,7 +625,6 @@ export default function Pong() {
         useEffect(() => { 
             const handleSetPlayers = (res: PlayerStat[]) => {
                 setPlayers(res)
-                console.log(res)
             }
             socketService.fetchLeaderBoard();
             socketService.on('leaderBoard',(res: PlayerStat[])=>handleSetPlayers(res))

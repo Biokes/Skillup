@@ -1,3 +1,4 @@
+
 // /*
 // /// Module: chainskills_vault
 // module chainskills_vault::chainskills_vault;
@@ -139,7 +140,7 @@ fun init(context: &mut TxContext) {
     transfer::share_object(vault);
 }
 
-public fun createGame(vault: &mut GameVault, payment: Coin<OCT>, context: &mut TxContext): ID {
+public entry fun createGame(vault: &mut GameVault, payment: Coin<OCT>, context: &mut TxContext) {
     assert!(!vault.paused, ERROR_GAMEPLAY_PAUSED);
     let sender = tx_context::sender(context);
     let amount_paid = coin::value(&payment);
@@ -163,8 +164,6 @@ public fun createGame(vault: &mut GameVault, payment: Coin<OCT>, context: &mut T
         completed_at: 0,
     };
 
-    let game_uid = object::id(&game);
-
     event::emit(GameCreated {
         game_id,
         player1: sender,
@@ -174,10 +173,9 @@ public fun createGame(vault: &mut GameVault, payment: Coin<OCT>, context: &mut T
     });
 
     transfer::share_object(game);
-    game_uid
 }
 
-public fun joinGame(vault: &mut GameVault, game: &mut GameSession, payment: Coin<OCT>, context: &mut TxContext) {
+public entry fun joinGame(vault: &mut GameVault, game: &mut GameSession, payment: Coin<OCT>, context: &mut TxContext) {
     assert!(!vault.paused, ERROR_GAMEPLAY_PAUSED);
     assert!(game.status == WAITING_STATUS, ERR_INVALID_STATUS);
     validate_status_transition(game.status, ACTIVE_STATUS);
@@ -204,7 +202,7 @@ public fun joinGame(vault: &mut GameVault, game: &mut GameSession, payment: Coin
     });
 }
 
-public fun endGame(vault: &mut GameVault, game: &mut GameSession, winner: address, context: &mut TxContext) {
+public entry fun endGame(vault: &mut GameVault, game: &mut GameSession, winner: address, context: &mut TxContext) {
     assert!(!vault.paused, ERROR_GAMEPLAY_PAUSED);
     let sender = tx_context::sender(context);
     assert!(sender == vault.owner, ERR_UNAUTHORISED);
@@ -245,7 +243,7 @@ public fun endGame(vault: &mut GameVault, game: &mut GameSession, winner: addres
     });
 }
 
-public fun requestRefund(vault: &GameVault, game: &mut GameSession, context: &mut TxContext): Coin<OCT> {
+public entry fun requestRefund(vault: &GameVault, game: &mut GameSession, context: &mut TxContext) {
     assert!(!vault.paused, ERROR_GAMEPLAY_PAUSED);
     assert!(game.status == WAITING_STATUS, ERR_INVALID_STATUS);
     validate_status_transition(game.status, CANCELLED_STATUS);
@@ -256,8 +254,6 @@ public fun requestRefund(vault: &GameVault, game: &mut GameSession, context: &mu
     let refund_amount = balance::value(&game.escrow_balance);
     assert!(refund_amount > 0, INVALID_AMOUNT);
 
-    let refund_balance = balance::split(&mut game.escrow_balance, refund_amount);
-    game.status = CANCELLED_STATUS;
     game.completed_at = tx_context::epoch(context);
 
     event::emit(RefundClaimed {
@@ -266,8 +262,6 @@ public fun requestRefund(vault: &GameVault, game: &mut GameSession, context: &mu
         amount: refund_amount,
         timestamp: game.completed_at,
     });
-
-    coin::from_balance(refund_balance, context)
 }
 
 public entry fun grant_powerup_from_crate(vault: &GameVault, inventory: &mut PowerupInventory, powerup_type: u8, context: &mut TxContext) {
@@ -293,7 +287,7 @@ public entry fun grant_powerup_from_crate(vault: &GameVault, inventory: &mut Pow
     });
 }
 
-public fun use_powerup(vault: &GameVault, inventory: &mut PowerupInventory, game: &GameSession, powerup_type: u8, context: &mut TxContext) {
+public entry fun use_powerup(vault: &GameVault, inventory: &mut PowerupInventory, game: &GameSession, powerup_type: u8, context: &mut TxContext) {
     assert!(!vault.paused, ERROR_GAMEPLAY_PAUSED);
     let sender = tx_context::sender(context);
     assert!(sender == inventory.owner, ERR_UNAUTHORISED);
@@ -334,7 +328,7 @@ public entry fun ownerWithdrawal(vault: &mut GameVault, context: &mut TxContext)
     });
 }
 
-public fun toggleVaultPause(vault: &mut GameVault, context: &mut TxContext) {
+public entry fun toggleVaultPause(vault: &mut GameVault, context: &mut TxContext) {
     assert!(tx_context::sender(context) == vault.owner, ERR_UNAUTHORISED);
     vault.paused = !vault.paused;
     event::emit(VaultPauseToggled {

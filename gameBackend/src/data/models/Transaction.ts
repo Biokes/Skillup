@@ -11,7 +11,7 @@ export class Transaction {
   @Column()
   isValid!: boolean;
   @Column()
-    owner!: string;
-    @Column()
-    amount!: number;
+  owner!: string;
+  @Column()
+  amount!: string;
 }

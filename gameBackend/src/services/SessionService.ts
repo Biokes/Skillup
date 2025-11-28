@@ -33,7 +33,7 @@ export default class SessionService {
         player1: wallet,
         status: SESSION_STATUS.WAITING,
         isStaked: false,
-        amount: 0,
+        amount: '0',
         roomCode: code
       }
     });
@@ -47,7 +47,7 @@ export default class SessionService {
       where: {
         status: SESSION_STATUS.WAITING,
         isStaked: false,
-        amount: 0,
+        amount: '0',
         roomCode: code
       }
     });
@@ -57,7 +57,7 @@ export default class SessionService {
         !!session.player1 &&
         session.player1.toLowerCase() !== wallet
     );
-    
+
     if (sessionFound) {
       const updatedSession = await this.sessionRepository.update(sessionFound.id, {
         player2: wallet,
@@ -90,7 +90,7 @@ export default class SessionService {
       player1: wallet,
       roomCode: code,
       isStaked: false,
-      amount: 0,
+      amount: '0',
       status: SESSION_STATUS.WAITING
     });
 
@@ -104,23 +104,25 @@ export default class SessionService {
           player1: quickMatchDTO.walletAddress,
           status: SESSION_STATUS.WAITING,
           isStaked: quickMatchDTO.isStaked,
-          amount: quickMatchDTO.amount,
+          amount: String(quickMatchDTO.amount),
           roomCode: IsNull()
         },
       });
       if (existing) return existing;
-      const foundSessions: Session[] = await this.sessionRepository.find({ where: { status: SESSION_STATUS.WAITING, isStaked: quickMatchDTO.isStaked, amount: quickMatchDTO.amount } });
+      const foundSessions: Session[] = await this.sessionRepository.find({
+        where: { status: SESSION_STATUS.WAITING, isStaked: quickMatchDTO.isStaked, amount: String(quickMatchDTO.amount) }
+      });
       const availableSession = foundSessions.find((entity) => entity.player1 !== quickMatchDTO.walletAddress);
       if (availableSession) {
         return (await this.sessionRepository.update(availableSession.id, {
           player2: quickMatchDTO.walletAddress,
           status: SESSION_STATUS.READY, isStaked: quickMatchDTO.isStaked,
-          amount: quickMatchDTO.amount,
+          amount: String(quickMatchDTO.amount),
         })) as Session;
       }
       return await this.sessionRepository.create({
         player1: quickMatchDTO.walletAddress,
-        amount: quickMatchDTO.amount,
+        amount: String(quickMatchDTO.amount),
         isStaked: quickMatchDTO.isStaked,
         status: SESSION_STATUS.WAITING
       });
@@ -215,7 +217,7 @@ export default class SessionService {
     callback({ success: false })
   }
 
-  async checkStakedMatch(dto: { price: number, walletAddress: string }, callback: any) {
+  async checkStakedMatch(dto: { price: string, walletAddress: string }, callback: any) {
     try {
       const sessions = await this.sessionRepository.find({
         where: {
@@ -237,7 +239,7 @@ export default class SessionService {
     }
   }
 
-  async createStakedMatch(dto: { gameId: string, paymentTransactionId: string, address: string, stakingPrice: number }, socket: Socket) {
+  async createStakedMatch(dto: { gameId: string, paymentTransactionId: string, address: string, stakingPrice: string }, socket: Socket) {
     try {
       const sessionCreated = await this.sessionRepository.create({
         player1: dto.address.toLowerCase(),
@@ -261,12 +263,16 @@ export default class SessionService {
     }
   }
 
-  async pauseStakeGameConection(dto: {sessionId:string,address:string,stakingPrice: number}, socket: Socket) { 
+  async pauseStakeGameConection(dto: {sessionId:string,address:string,stakingPrice: string}, socket: Socket) { 
     try {
       const sessionFound = await this.getSessionById(dto.sessionId);
       if (
-        sessionFound && sessionFound.status == SESSION_STATUS.WAITING &&
-        sessionFound.amount == dto.stakingPrice && sessionFound.player1?.toLowerCase() == dto.address.toLowerCase() && !sessionFound.player2
+        sessionFound && 
+        sessionFound.status == SESSION_STATUS.WAITING && 
+        sessionFound.amount == dto.stakingPrice &&
+        sessionFound.player1?.toLowerCase() == dto.address.toLowerCase() &&
+        !sessionFound.player2 &&
+        (sessionFound.roomCode == null)
       ) {
         await this.sessionRepository.update(dto.sessionId, { status: SESSION_STATUS.PAUSED })
         socket.leave(`paid-game-${sessionFound.id}`)
@@ -279,7 +285,7 @@ export default class SessionService {
     }
   }
 
-  async cancelStakedGame(dto: { sessionId: string, address: string, stakingPrice: number }, socket: Socket) {
+  async cancelStakedGame(dto: { sessionId: string, address: string, stakingPrice: string }, socket: Socket) {
     try{
       const sessionFound = await this.getSessionById(dto.sessionId);
       if (
@@ -288,8 +294,6 @@ export default class SessionService {
       ) {
         await this.sessionRepository.update(dto.sessionId, { status: SESSION_STATUS.ENDED })
         socket.leave(`paid-game-${sessionFound.id}`)
-        // refund player
-        // contract execution to refund
         return;
       }
       socket.emit("cancelStakedMatchError", { successful: false, walletAddress: dto.address, message: 'session not found' });
@@ -298,7 +302,7 @@ export default class SessionService {
     }
   }
 
-  async onStakedGameConnection(dto: { sessionId: string, address: string, stakingPrice: number, transactionId:string }, socket: Socket) {
+  async onStakedGameConnection(dto: { sessionId: string, address: string, stakingPrice: string, transactionId:string }, socket: Socket) {
      try {
       const sessionFound = await this.getSessionById(dto.sessionId);
       if (
@@ -318,7 +322,7 @@ export default class SessionService {
     }
   }
 
-  async joinStakedMatch(dto: { gameId:string, paymentTransactionId:string, address: string, stakingPrice: number }, socket: Socket) {
+  async joinStakedMatch(dto: { gameId:string, paymentTransactionId:string, address: string, stakingPrice: string }, socket: Socket) {
     try { 
       const sessionsFound = await this.sessionRepository.findOne({ where:{
           status: SESSION_STATUS.WAITING,

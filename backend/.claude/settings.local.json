@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//c/Users/DELL/blockchain_development/integrations/chain-skill-games/frontend//**)"
-    ],
-    "deny": [],
-    "ask": []
-  }
-}

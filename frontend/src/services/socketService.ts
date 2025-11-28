@@ -122,6 +122,7 @@ class SocketService {
 
   createPaidMatch(gameobjectId: string, paymentTransactionId: string, address: string, stakingPrice: number) {
     this.ensureConnected()
+    console.log(address,stakingPrice,paymentTransactionId,gameobjectId)
     this.socket?.emit('createPaidMatch', {
       walletAddress: address,
       amount: stakingPrice,

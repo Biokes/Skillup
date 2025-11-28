@@ -358,7 +358,7 @@ export class GameService {
       loserPlayer.stats.losses += 1;
       loserPlayer.stats.gamePlayed += 1;
       loserPlayer.stats.winStreak = 0;
-      loserPlayer.stats.rating = XP.LOSS;
+      loserPlayer.stats.rating += XP.LOSS;
       loserPlayer.stats.recentForm.push('L');
     }
   }
