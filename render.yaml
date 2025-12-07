@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: chainskills-backend
+    rootDir: gameBackend
+    env: node
+    plan: free
+    buildCommand: pnpm install && pnpm run build
+    startCommand: pnpm run serve
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
