@@ -225,7 +225,7 @@ export default function Pong() {
     }
 
     function cancelPayment() {
-        setStakeAmount(0);
+        setStakeAmount(0);<
         setModal((prev) => ({ ...prev, open: false }))
     }
 
@@ -685,7 +685,7 @@ export default function Pong() {
     )
 
     return (
-        <>
+        <div className=''>
             <Navbar />
             <div className='pong_hero'>
                 <section>
@@ -714,6 +714,6 @@ export default function Pong() {
                     <div className="dialogBody">{getModalBody()}</div>
                 </DialogContent>
             </Dialog>
-        </>
+        </div>
     );
 }

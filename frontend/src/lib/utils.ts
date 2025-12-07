@@ -29,15 +29,15 @@ export const ADMIN_ADDRESS = '0xa4e4f919c3797d79c7879e105db64a1c83d7e03f2fac48a7
 class PaymentService {
     private readonly keypair: Ed25519Keypair | Secp256k1Keypair | Secp256r1Keypair;
   constructor() {
-    const decoded: ParsedKeypair = decodeSuiPrivateKey(import.meta.env.VITE_WALLET_PRIVATE_KEY!);
-    let keypair: Ed25519Keypair | Secp256k1Keypair | Secp256r1Keypair | '' = '';
-    if (decoded.scheme === 'ED25519') keypair = Ed25519Keypair.fromSecretKey(decoded.secretKey);
-    else if (decoded.scheme === 'Secp256k1') keypair = Secp256k1Keypair.fromSecretKey(decoded.secretKey);
-    else if (decoded.scheme === 'Secp256r1') keypair = Secp256r1Keypair.fromSecretKey(decoded.secretKey);
-    this.keypair = keypair as Ed25519Keypair | Secp256k1Keypair | Secp256r1Keypair;
+    // const decoded: ParsedKeypair = decodeSuiPrivateKey(import.meta.env.VITE_WALLET_PRIVATE_KEY!);
+    // let keypair: Ed25519Keypair | Secp256k1Keypair | Secp256r1Keypair | '' = '';
+    // if (decoded.scheme === 'ED25519') keypair = Ed25519Keypair.fromSecretKey(decoded.secretKey);
+    // else if (decoded.scheme === 'Secp256k1') keypair = Secp256k1Keypair.fromSecretKey(decoded.secretKey);
+    // else if (decoded.scheme === 'Secp256r1') keypair = Secp256r1Keypair.fromSecretKey(decoded.secretKey);
+    // this.keypair = keypair as Ed25519Keypair | Secp256k1Keypair | Secp256r1Keypair;
   }
   getKeyPair() { 
     return this.keypair;
   }
 }
-export const paymentClient = new PaymentService();
+export const paymentClient = new PaymentService();  

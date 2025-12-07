@@ -8,6 +8,7 @@ class SocketService {
 
   connect( walletAddress: string) {
     const backendUrl = import.meta.env.VITE_BACKEND_URL!;
+    console.log(backendUrl)
     if (this.socket && this.socket.connected) {
       console.log("⚠️ Socket already connected. Skipping new connection.");
       return;
